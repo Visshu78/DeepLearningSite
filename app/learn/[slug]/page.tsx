@@ -1,0 +1,75 @@
+import React from 'react';
+import { notFound } from 'next/navigation';
+import { getLessonBySlug, ALL_LESSONS } from '@/lib/lesson-data/curriculum';
+import { LESSON_DETAILS } from '@/lib/lesson-data/lessonContent';
+import { LessonLayout } from '@/components/lesson/LessonLayout';
+import { NeuronVisualizer } from '@/components/visualizers/NeuronVisualizer';
+import { ActivationGraphVisualizer } from '@/components/visualizers/ActivationGraphVisualizer';
+import { ForwardPassVisualizer } from '@/components/visualizers/ForwardPassVisualizer';
+import { LossLandscapeVisualizer } from '@/components/visualizers/LossLandscapeVisualizer';
+import { GradientDescentVisualizer } from '@/components/visualizers/GradientDescentVisualizer';
+import { BackpropagationVisualizer } from '@/components/visualizers/BackpropagationVisualizer';
+import type { Metadata } from 'next';
+
+export async function generateStaticParams() {
+  return ALL_LESSONS.filter(l => l.status === 'available').map(l => ({
+    slug: l.slug
+  }));
+}
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const lesson = getLessonBySlug(slug);
+  if (!lesson) return { title: 'Lesson Not Found — NeuroPlay' };
+  return {
+    title: `${lesson.title} — NeuroPlay`,
+    description: lesson.subtitle
+  };
+}
+
+export default async function LessonPage({ params }: PageProps) {
+  const { slug } = await params;
+  const meta = getLessonBySlug(slug);
+  const content = LESSON_DETAILS[slug];
+
+  if (!meta || !content) {
+    notFound();
+  }
+
+  // Select the appropriate visualizer
+  let visualizer: React.ReactNode = null;
+  switch (slug) {
+    case 'what-is-an-artificial-neuron':
+      visualizer = <NeuronVisualizer />;
+      break;
+    case 'activation-functions':
+      visualizer = <ActivationGraphVisualizer />;
+      break;
+    case 'forward-propagation':
+      visualizer = <ForwardPassVisualizer />;
+      break;
+    case 'loss-functions':
+      visualizer = <LossLandscapeVisualizer />;
+      break;
+    case 'gradient-descent':
+      visualizer = <GradientDescentVisualizer />;
+      break;
+    case 'backpropagation-fundamentals':
+      visualizer = <BackpropagationVisualizer />;
+      break;
+    default:
+      visualizer = <div className="p-8 text-center text-sm text-[#5C626B]">Interactive visualizer initializing...</div>;
+  }
+
+  return (
+    <LessonLayout
+      meta={meta}
+      content={content}
+      visualizer={visualizer}
+    />
+  );
+}
