@@ -9,6 +9,10 @@ import { ForwardPassVisualizer } from '@/components/visualizers/ForwardPassVisua
 import { LossLandscapeVisualizer } from '@/components/visualizers/LossLandscapeVisualizer';
 import { GradientDescentVisualizer } from '@/components/visualizers/GradientDescentVisualizer';
 import { BackpropagationVisualizer } from '@/components/visualizers/BackpropagationVisualizer';
+import { ConvolutionVisualizer } from '@/components/visualizers/ConvolutionVisualizer';
+import { PoolingVisualizer } from '@/components/visualizers/PoolingVisualizer';
+import { RegularizationVisualizer } from '@/components/visualizers/RegularizationVisualizer';
+import { AdaptiveOptimizersVisualizer } from '@/components/visualizers/AdaptiveOptimizersVisualizer';
 import type { Metadata } from 'next';
 
 export async function generateStaticParams() {
@@ -60,6 +64,18 @@ export default async function LessonPage({ params }: PageProps) {
       break;
     case 'backpropagation-fundamentals':
       visualizer = <BackpropagationVisualizer />;
+      break;
+    case 'convolutional-filters':
+      visualizer = <ConvolutionVisualizer />;
+      break;
+    case 'pooling-and-receptive-fields':
+      visualizer = <PoolingVisualizer />;
+      break;
+    case 'regularization-dropout':
+      visualizer = <RegularizationVisualizer />;
+      break;
+    case 'adaptive-optimizers':
+      visualizer = <AdaptiveOptimizersVisualizer />;
       break;
     default:
       visualizer = <div className="p-8 text-center text-sm text-[#5C626B]">Interactive visualizer initializing...</div>;

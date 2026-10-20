@@ -178,7 +178,7 @@ export const CURRICULUM: ModuleMeta[] = [
     number: 5,
     title: 'Convolutional Neural Networks',
     description: 'Learn spatial feature extraction, 2D convolutions, receptive fields, and downsampling techniques.',
-    status: 'upcoming',
+    status: 'available',
     lessons: [
       {
         id: 'lesson-7',
@@ -191,8 +191,13 @@ export const CURRICULUM: ModuleMeta[] = [
         lessonNumber: 7,
         duration: '20 min',
         prerequisites: ['forward-propagation'],
-        status: 'upcoming',
-        keyTakeaways: []
+        status: 'available',
+        keyTakeaways: [
+          'A 2D convolution slides a small matrix of weights (kernel) across an input to detect local spatial patterns',
+          'Weight sharing dramatically reduces parameter count compared to fully-connected layers',
+          'Output dimensions depend on input size, kernel size, padding P, and stride S: W_out = ⌊(W_in - K + 2P)/S⌋ + 1',
+          'Feature maps represent the spatial excitation intensity of learned visual detectors (edges, textures, motifs)'
+        ]
       },
       {
         id: 'lesson-8',
@@ -205,8 +210,13 @@ export const CURRICULUM: ModuleMeta[] = [
         lessonNumber: 8,
         duration: '15 min',
         prerequisites: ['convolutional-filters'],
-        status: 'upcoming',
-        keyTakeaways: []
+        status: 'available',
+        keyTakeaways: [
+          'Max pooling extracts the most salient local feature while reducing spatial dimensions and computational load',
+          'Pooling provides local translational invariance, making feature detection robust to minor spatial shifts',
+          'Receptive field (RF) measures the pixel region in the raw input image that directly influences a given deep neuron',
+          'Successive convolutions and strided poolings expand receptive fields hierarchically, enabling deep neurons to perceive global context'
+        ]
       }
     ]
   },
@@ -215,7 +225,7 @@ export const CURRICULUM: ModuleMeta[] = [
     number: 6,
     title: 'Training and Generalization',
     description: 'Diagnose underfitting, overfitting, regularization methods, learning rate decay, and adaptive optimizers.',
-    status: 'upcoming',
+    status: 'available',
     lessons: [
       {
         id: 'lesson-9',
@@ -228,8 +238,13 @@ export const CURRICULUM: ModuleMeta[] = [
         lessonNumber: 9,
         duration: '20 min',
         prerequisites: ['backpropagation-fundamentals'],
-        status: 'upcoming',
-        keyTakeaways: []
+        status: 'available',
+        keyTakeaways: [
+          'Overfitting occurs when a high-capacity model fits sample-specific noise rather than true underlying relationships',
+          'L2 regularization (weight decay) penalizes large squared weights: L_reg = L + (λ/2)Σw², shrinking parameter magnitudes',
+          'Dropout randomly zeroes activations with probability p during training, preventing neurons from co-adapting',
+          'Inverted dropout scales surviving activations by 1/(1-p) during training so no scaling is required at test time'
+        ]
       },
       {
         id: 'lesson-10',
@@ -242,8 +257,13 @@ export const CURRICULUM: ModuleMeta[] = [
         lessonNumber: 10,
         duration: '25 min',
         prerequisites: ['gradient-descent'],
-        status: 'upcoming',
-        keyTakeaways: []
+        status: 'available',
+        keyTakeaways: [
+          'Standard SGD struggles in ravines where surface curvature is ill-conditioned (much steeper along one dimension)',
+          'Momentum adds an exponentially decaying moving average of past gradients to maintain directional velocity',
+          'RMSprop scales individual parameter updates inversely by the root mean square of recent gradients',
+          'Adam combines first moments (momentum) and second moments (RMSprop) with bias corrections for robust training across deep architectures'
+        ]
       }
     ]
   }

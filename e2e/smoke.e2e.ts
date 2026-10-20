@@ -7,6 +7,10 @@ const LESSONS = [
   'loss-functions',
   'gradient-descent',
   'backpropagation-fundamentals',
+  'convolutional-filters',
+  'pooling-and-receptive-fields',
+  'regularization-dropout',
+  'adaptive-optimizers',
 ];
 
 const PAGES = ['/', '/learn', '/playground', '/practice', '/about'];

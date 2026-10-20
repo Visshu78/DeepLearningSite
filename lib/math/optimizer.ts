@@ -90,3 +90,141 @@ export function performOptimizationStep(
     isDiverged
   };
 }
+
+export type OptimizerAlgorithm = 'sgd' | 'momentum' | 'rmsprop' | 'adam';
+
+export interface MultiOptimizerConfig {
+  algorithm: OptimizerAlgorithm;
+  lr: number;
+  beta1?: number; // Momentum coefficient or Adam first moment (default 0.9)
+  beta2?: number; // Adam second moment or RMSprop decay (default 0.999 / 0.9)
+  epsilon?: number; // (default 1e-8)
+}
+
+export interface OptimizerState2D {
+  algorithm: OptimizerAlgorithm;
+  x: number;
+  y: number;
+  vx: number; // velocity / first moment
+  vy: number;
+  sx: number; // second moment
+  sy: number;
+  step: number;
+  history: Array<{ x: number; y: number; loss: number }>;
+}
+
+export interface Landscape2D {
+  id: string;
+  name: string;
+  formula: string;
+  evaluate: (x: number, y: number) => number;
+  gradient: (x: number, y: number) => [number, number];
+  bounds: { xMin: number; xMax: number; yMin: number; yMax: number };
+  globalMin: [number, number];
+}
+
+export const RAVINE_LANDSCAPE: Landscape2D = {
+  id: 'ravine',
+  name: 'Anisotropic Ravine (Elongated Valley)',
+  formula: 'L(x, y) = 0.5 · x² + 8.0 · y²',
+  evaluate: (x: number, y: number) => 0.5 * x * x + 8.0 * y * y,
+  gradient: (x: number, y: number) => [x, 16.0 * y],
+  bounds: { xMin: -4.5, xMax: 4.5, yMin: -2.5, yMax: 2.5 },
+  globalMin: [0, 0]
+};
+
+export function initOptimizerState2D(
+  algorithm: OptimizerAlgorithm,
+  startX: number = -3.8,
+  startY: number = 1.8
+): OptimizerState2D {
+  const initialLoss = RAVINE_LANDSCAPE.evaluate(startX, startY);
+  return {
+    algorithm,
+    x: startX,
+    y: startY,
+    vx: 0,
+    vy: 0,
+    sx: 0,
+    sy: 0,
+    step: 0,
+    history: [{ x: startX, y: startY, loss: initialLoss }]
+  };
+}
+
+export function stepOptimizer2D(
+  state: OptimizerState2D,
+  landscape: Landscape2D,
+  lr: number,
+  beta1: number = 0.9,
+  beta2: number = 0.999,
+  eps: number = 1e-8
+): OptimizerState2D {
+  const [gx, gy] = landscape.gradient(state.x, state.y);
+  let newX = state.x;
+  let newY = state.y;
+  let newVx = state.vx;
+  let newVy = state.vy;
+  let newSx = state.sx;
+  let newSy = state.sy;
+  const t = state.step + 1;
+
+  switch (state.algorithm) {
+    case 'sgd': {
+      newX = state.x - lr * gx;
+      newY = state.y - lr * gy;
+      break;
+    }
+    case 'momentum': {
+      newVx = beta1 * state.vx + (1 - beta1) * gx;
+      newVy = beta1 * state.vy + (1 - beta1) * gy;
+      newX = state.x - lr * newVx;
+      newY = state.y - lr * newVy;
+      break;
+    }
+    case 'rmsprop': {
+      newSx = beta1 * state.sx + (1 - beta1) * (gx * gx);
+      newSy = beta1 * state.sy + (1 - beta1) * (gy * gy);
+      newX = state.x - (lr / (Math.sqrt(newSx) + eps)) * gx;
+      newY = state.y - (lr / (Math.sqrt(newSy) + eps)) * gy;
+      break;
+    }
+    case 'adam': {
+      // First moment
+      newVx = beta1 * state.vx + (1 - beta1) * gx;
+      newVy = beta1 * state.vy + (1 - beta1) * gy;
+      // Second moment
+      newSx = beta2 * state.sx + (1 - beta2) * (gx * gx);
+      newSy = beta2 * state.sy + (1 - beta2) * (gy * gy);
+      // Bias correction
+      const bc1 = 1 - Math.pow(beta1, t);
+      const bc2 = 1 - Math.pow(beta2, t);
+      const mHatX = newVx / (bc1 > 1e-10 ? bc1 : 1);
+      const mHatY = newVy / (bc1 > 1e-10 ? bc1 : 1);
+      const vHatX = newSx / (bc2 > 1e-10 ? bc2 : 1);
+      const vHatY = newSy / (bc2 > 1e-10 ? bc2 : 1);
+
+      newX = state.x - (lr / (Math.sqrt(vHatX) + eps)) * mHatX;
+      newY = state.y - (lr / (Math.sqrt(vHatY) + eps)) * mHatY;
+      break;
+    }
+  }
+
+  // Clip extreme divergence
+  if (Math.abs(newX) > 30) newX = Math.sign(newX) * 30;
+  if (Math.abs(newY) > 30) newY = Math.sign(newY) * 30;
+
+  const currentLoss = landscape.evaluate(newX, newY);
+
+  return {
+    algorithm: state.algorithm,
+    x: Math.round(newX * 1000) / 1000,
+    y: Math.round(newY * 1000) / 1000,
+    vx: newVx,
+    vy: newVy,
+    sx: newSx,
+    sy: newSy,
+    step: t,
+    history: [...state.history, { x: newX, y: newY, loss: currentLoss }]
+  };
+}

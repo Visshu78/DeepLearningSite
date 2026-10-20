@@ -400,5 +400,283 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Every weight gradient equals the product of the receiving neuron\'s error delta δ and the sending neuron\'s activation a.',
       'Numerical gradient checking provides mathematical assurance that analytical derivatives are correct.'
     ]
+  },
+  'convolutional-filters': {
+    slug: 'convolutional-filters',
+    intuition: [
+      'Fully-connected networks treat every pixel independently, discarding the critical 2D spatial arrangement of visual data.',
+      'A convolutional layer slides a compact matrix of learnable parameters (a kernel or filter) across an image, computing local dot-products.',
+      'Weight sharing means the same filter is applied at every spatial position, providing translation equivariance: if a feature shifts, its representation in the feature map shifts identically.',
+      'Padding allows preserving image border dimensions, while stride controls how many pixels the filter hops between evaluations.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Discrete 2D Cross-Correlation / Convolution',
+        latex: 'S(i, j) = (I * K)(i, j) = \\sum_m \\sum_n I(i + m, j + n) K(m, n) + b',
+        explanation: 'At each spatial coordinate (i, j), the kernel elements K(m, n) are multiplied by the overlapping input patch I(i+m, j+n) and summed with a bias b.'
+      },
+      {
+        name: 'Output Dimension Formula',
+        latex: 'W_{out} = \\left\\lfloor \\frac{W_{in} - K + 2P}{S} \\right\\rfloor + 1',
+        explanation: 'Output spatial width depends on input width W_in, kernel width K, zero-padding P on each side, and stride S.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Convolving a 3×3 patch of pixels [[10, 10, 90], [10, 10, 90], [10, 10, 90]] with a Sobel Vertical Filter [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]] and zero bias.',
+      steps: [
+        { label: 'Step 1: Top row product', math: '(10 \\times -1) + (10 \\times 0) + (90 \\times 1) = -10 + 0 + 90 = 80', note: 'Strong contrast across column boundary.' },
+        { label: 'Step 2: Center row product', math: '(10 \\times -2) + (10 \\times 0) + (90 \\times 2) = -20 + 0 + 180 = 160', note: 'Center row receives double weight in Sobel.' },
+        { label: 'Step 3: Bottom row product', math: '(10 \\times -1) + (10 \\times 0) + (90 \\times 1) = -10 + 0 + 90 = 80', note: 'Symmetric vertical boundary contribution.' },
+        { label: 'Step 4: Sum and bias', math: 'S = 80 + 160 + 80 + 0 = 320', note: 'Large positive output indicates an intense vertical dark-to-bright edge.' }
+      ],
+      result: 'Output feature value = 320.0',
+      params: {
+        kernel: 'Sobel Vertical',
+        stride: 1,
+        padding: 0
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'What is the primary architectural advantage of weight sharing in convolutional layers compared to dense layers?',
+        options: [
+          'It forces every neuron to have zero bias.',
+          'It dramatically reduces the number of learnable parameters while establishing translation equivariance.',
+          'It eliminates the need for non-linear activation functions.',
+          'It guarantees the loss surface is strictly convex.'
+        ],
+        correctIndex: 1,
+        explanation: 'In a fully connected layer for a 256x256 image with 100 hidden units, there would be 6.5 million weights. A 3x3 convolution has only 9 weights plus a bias regardless of image size, drastically reducing overfitting while encoding the inductive bias that visual features can appear anywhere in the image.'
+      },
+      {
+        id: 'q2',
+        question: 'Given an input of size 32×32, a 5×5 filter, padding P=2, and stride S=1, what is the output spatial size?',
+        options: [
+          '28 × 28',
+          '30 × 30',
+          '32 × 32',
+          '36 × 36'
+        ],
+        correctIndex: 2,
+        explanation: 'Using W_out = ⌊(W_in - K + 2P)/S⌋ + 1 = ⌊(32 - 5 + 4)/1⌋ + 1 = 31 + 1 = 32. Padding P = (K-1)/2 with stride S=1 perfectly preserves spatial resolution ("Same" padding).'
+      }
+    ],
+    summary: [
+      'Convolutions apply local sliding filters to extract translation-invariant visual patterns.',
+      'Weight sharing enables deep networks to process high-resolution images with very few parameters.',
+      'Output spatial dimensions are strictly governed by input size, kernel size, padding, and stride.'
+    ]
+  },
+  'pooling-and-receptive-fields': {
+    slug: 'pooling-and-receptive-fields',
+    intuition: [
+      'Once a feature (such as an eye or edge) is detected, its exact sub-pixel coordinate is less important than its relative arrangement to other features.',
+      'Pooling downsamples feature maps by summarizing local neighborhoods into a single representative value (typically via Max or Average).',
+      'Max pooling introduces local translational invariance: small shifts in the input do not alter the maximum response.',
+      'Crucially, pooling accelerates receptive field expansion: downstream neurons cover progressively wider swaths of the original image.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Max Pooling Operation',
+        latex: 'y_{i, j} = \\max_{(p, q) \\in \\Omega(i, j)} x_{p, q}',
+        explanation: 'Computes the maximum activation value across all coordinates (p, q) inside window neighborhood Ω.'
+      },
+      {
+        name: 'Receptive Field Recurrence Formula',
+        latex: 'RF_l = RF_{l-1} + (k_l - 1) \\cdot S_{cumulative, l-1}',
+        explanation: 'The receptive field of layer l grows as a function of previous receptive field RF_{l-1}, kernel size k_l, and cumulative stride through previous layers.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Applying 2×2 Max Pooling with stride S=2 to a 4×4 patch [[12, 20, 30, 0], [8, 12, 2, 0], [34, 70, 37, 4], [112, 100, 25, 12]].',
+      steps: [
+        { label: 'Step 1: Top-Left 2×2 window', math: '\\max(12, 20, 8, 12) = 20', note: 'Picks dominant local excitation.' },
+        { label: 'Step 2: Top-Right 2×2 window', math: '\\max(30, 0, 2, 0) = 30', note: 'Captures peak edge presence.' },
+        { label: 'Step 3: Bottom-Left 2×2 window', math: '\\max(34, 70, 112, 100) = 112', note: 'Highest activation in lower corner.' },
+        { label: 'Step 4: Bottom-Right 2×2 window', math: '\\max(37, 4, 25, 12) = 37', note: 'Downsampled 2×2 result obtained.' }
+      ],
+      result: 'Downsampled 2×2 map: [[20, 30], [112, 37]]',
+      params: {
+        poolSize: 2,
+        stride: 2,
+        type: 'max'
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'Why is Max Pooling generally preferred over Average Pooling for feature extraction in modern convolutional classification networks?',
+        options: [
+          'Average pooling requires learnable weights, while max pooling has none.',
+          'Max pooling preserves sharp, high-contrast salient features, whereas average pooling blurs and attenuates strong activations.',
+          'Max pooling guarantees the output matrix has odd dimensions.',
+          'Average pooling cannot be used with ReLU activations.'
+        ],
+        correctIndex: 1,
+        explanation: 'Max pooling acts as an existential check ("did this feature occur in this patch?"). Average pooling dilutes strong feature signals by averaging them with surrounding zero/background activations.'
+      },
+      {
+        id: 'q2',
+        question: 'What happens to the receptive field of subsequent convolutional layers when a 2×2 max pooling layer with stride 2 is inserted?',
+        options: [
+          'It stays constant at 1 pixel.',
+          'It shrinks by 50%.',
+          'It doubles the cumulative stride, causing all downstream filters to expand their receptive field twice as quickly.',
+          'It removes all positional information permanently.'
+        ],
+        correctIndex: 2,
+        explanation: 'Because cumulative stride multiplies by 2, every unit of step in downstream filters spans twice as many original pixels in the input space, rapidly broadening the neuron\'s contextual view.'
+      }
+    ],
+    summary: [
+      'Pooling reduces spatial dimensions while providing local translation tolerance.',
+      'Max pooling retains dominant features without introducing learnable parameters.',
+      'Stacked pooling layers expand the effective receptive field exponentially across depth.'
+    ]
+  },
+  'regularization-dropout': {
+    slug: 'regularization-dropout',
+    intuition: [
+      'A neural network with millions of parameters has sufficient expressive power to memorize individual training samples, including idiosyncratic noise.',
+      'When a model fits training noise, its training loss reaches near-zero while test loss explodes—a state termed Overfitting or High Variance.',
+      'L2 Regularization (Weight Decay) discourages large weights by penalizing their squared magnitudes, ensuring individual neurons cannot develop overly brittle sensitivities.',
+      'Dropout temporarily disables random subsets of neurons during each training step, breaking co-dependencies and acting like an ensemble of exponentially many thinned networks.'
+    ],
+    mathFormulas: [
+      {
+        name: 'L2 Regularized Loss Objective',
+        latex: 'L_{reg}(\\mathbf{w}) = L_0(\\mathbf{w}) + \\frac{\\lambda}{2} \\sum_{j} w_j^2 = L_0(\\mathbf{w}) + \\frac{\\lambda}{2} \\|\\mathbf{w}\\|^2_2',
+        explanation: 'The standard data loss L_0 is penalized by the sum of squared weights scaled by hyperparameter λ.'
+      },
+      {
+        name: 'Weight Decay Gradient Update',
+        latex: '\\mathbf{w}_{t+1} = \\mathbf{w}_t - \\eta \\left( \\nabla L_0(\\mathbf{w}_t) + \\lambda \\mathbf{w}_t \\right) = (1 - \\eta \\lambda) \\mathbf{w}_t - \\eta \\nabla L_0(\\mathbf{w}_t)',
+        explanation: 'At each update, the weight is multiplied by a decay factor (1 - ηλ) < 1 before subtracting the ordinary data gradient.'
+      },
+      {
+        name: 'Inverted Dropout Scaling',
+        latex: '\\tilde{a}_i = \\frac{m_i}{1 - p} a_i, \\quad m_i \\sim \\text{Bernoulli}(1 - p)',
+        explanation: 'During training, surviving activations are scaled by 1/(1-p) so expected activation values match between training and inference.'
+      }
+    ],
+    workedExample: {
+      scenario: 'A weight w = 2.0 with data gradient ∂L_0/∂w = 0.4, learning rate η = 0.1, and L2 regularization strength λ = 0.05.',
+      steps: [
+        { label: 'Step 1: Compute weight decay penalty', math: '\\lambda w = 0.05 \\times 2.0 = 0.10', note: 'Directly proportional to current weight magnitude.' },
+        { label: 'Step 2: Total gradient', math: 'g_{total} = \\nabla L_0 + \\lambda w = 0.40 + 0.10 = 0.50', note: 'Regularization pushes weight toward zero.' },
+        { label: 'Step 3: Update weight', math: 'w_{new} = 2.0 - (0.10 \\times 0.50) = 2.0 - 0.05 = 1.95', note: 'Without regularization, w would have been 2.0 - 0.04 = 1.96.' },
+        { label: 'Step 4: Long-term shrinkage', math: '(1 - \\eta \\lambda) = (1 - 0.005) = 0.995', note: 'In the absence of data signal, the parameter decays exponentially to zero.' }
+      ],
+      result: 'Updated weight w = 1.95 (regularization restrained parameter growth)',
+      params: {
+        weight: 2.0,
+        lr: 0.1,
+        lambda: 0.05
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'Why does "Inverted Dropout" scale surviving activations by 1 / (1 - p) during the training phase?',
+        options: [
+          'To ensure the gradients do not vanish at the output layer.',
+          'So that the expected value of the activation remains identical, requiring no modification or scaling during evaluation/test time.',
+          'To turn all negative activations into positive activations.',
+          'To force half the weights to strictly equal zero.'
+        ],
+        correctIndex: 1,
+        explanation: 'If 50% of neurons are zeroed (p=0.5), the total forward signal would drop by half. Scaling surviving nodes by 1/(1-0.5) = 2x preserves the expected sum E[a] = a. At inference time, dropout is simply disabled and no scaling operations are needed.'
+      },
+      {
+        id: 'q2',
+        question: 'In terms of model parameter distributions, what is the primary visual difference between L1 (Lasso) and L2 (Ridge) regularization?',
+        options: [
+          'L1 forces many parameter weights to become strictly zero (sparsity), while L2 shrinks weights smoothly toward zero without exact sparsity.',
+          'L2 causes weights to grow exponentially large.',
+          'L1 can only be applied to convolutional layers.',
+          'L2 is incompatible with backpropagation.'
+        ],
+        correctIndex: 0,
+        explanation: 'L1 penalty |w| has a constant gradient ±λ everywhere except zero, driving uninformative weights strictly to 0 (feature selection). L2 penalty (λ/2)w² has gradient λw, which becomes infinitesimally small as w approaches 0, producing small diffuse non-zero weights.'
+      }
+    ],
+    summary: [
+      'Overfitting is diagnosed when training loss continues decreasing while out-of-sample test error increases.',
+      'L2 weight decay penalizes large weights, suppressing high-frequency function oscillations.',
+      'Inverted dropout prevents co-adaptation by randomly masking activations and scaling survivors by 1/(1-p).'
+    ]
+  },
+  'adaptive-optimizers': {
+    slug: 'adaptive-optimizers',
+    intuition: [
+      'Standard gradient descent uses a single uniform learning rate for all parameters, which fails catastrophically when error surfaces have uneven curvature.',
+      'In anisotropic ravines (valleys steep in one direction and gentle in another), SGD bounces back and forth across the steep canyon walls while making minimal progress along the valley floor.',
+      'Momentum builds physical velocity along consistent gradient directions, averaging out orthogonal oscillations like a heavy ball rolling downhill.',
+      'RMSprop and Adam compute per-parameter adaptive learning rates by tracking moving averages of squared gradients, taking larger strides along gentle slopes and cautious steps along steep cliffs.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Momentum Vector Update',
+        latex: '\\mathbf{v}_t = \\beta \\mathbf{v}_{t-1} + (1 - \\beta) \\mathbf{g}_t, \\quad \\boldsymbol{\\theta}_{t+1} = \\boldsymbol{\\theta}_t - \\eta \\mathbf{v}_t',
+        explanation: 'Velocity vector v_t accumulates past gradients with momentum discount coefficient β (typically 0.9).'
+      },
+      {
+        name: 'RMSprop Moving Second Moment',
+        latex: '\\mathbf{s}_t = \\beta \\mathbf{s}_{t-1} + (1 - \\beta) \\mathbf{g}_t^2, \\quad \\boldsymbol{\\theta}_{t+1} = \\boldsymbol{\\theta}_t - \\frac{\\eta}{\\sqrt{\\mathbf{s}_t} + \\epsilon} \\odot \\mathbf{g}_t',
+        explanation: 'Maintains an exponential average of squared gradients s_t and divides step sizes by its root.'
+      },
+      {
+        name: 'Adam (Adaptive Moment Estimation)',
+        latex: '\\hat{\\mathbf{m}}_t = \\frac{\\mathbf{m}_t}{1 - \\beta_1^t}, \\quad \\hat{\\mathbf{v}}_t = \\frac{\\mathbf{v}_t}{1 - \\beta_2^t}, \\quad \\boldsymbol{\\theta}_{t+1} = \\boldsymbol{\\theta}_t - \\frac{\\eta}{\\sqrt{\\hat{\\mathbf{v}}_t} + \\epsilon} \\hat{\\mathbf{m}}_t',
+        explanation: 'Combines first moments (momentum) with second moments (RMSprop), corrected for zero-initialization bias via (1 - β^t).'
+      }
+    ],
+    workedExample: {
+      scenario: 'In an anisotropic ravine L(x, y) = 0.5x² + 8y² at point (-3, 1), gradient is gx = -3, gy = 16. Compare the step for SGD vs RMSprop (with running second moment sx=9, sy=256, lr=0.1).',
+      steps: [
+        { label: 'Step 1: Standard SGD step', math: '\\Delta x = -0.1 \\times (-3) = +0.30, \\quad \\Delta y = -0.1 \\times 16 = -1.60', note: 'SGD takes a huge leap in y (-1.6), overshooting the valley floor to y = -0.6.' },
+        { label: 'Step 2: RMSprop scaling factors', math: '\\sqrt{s_x} = \\sqrt{9} = 3.0, \\quad \\sqrt{s_y} = \\sqrt{256} = 16.0', note: 'Quantifies magnitude of recent variations per axis.' },
+        { label: 'Step 3: RMSprop normalized update', math: '\\Delta x = -0.1 \\times \\frac{-3}{3} = +0.10, \\quad \\Delta y = -0.1 \\times \\frac{16}{16} = -0.10', note: 'Both axes receive balanced, stable unit updates.' },
+        { label: 'Step 4: Convergence trajectory', math: 'y_{new} = 1.0 - 0.10 = 0.90', note: 'RMSprop avoids destructive oscillations and navigates cleanly down the ravine.' }
+      ],
+      result: 'RMSprop auto-scales the steep coordinate to prevent oscillation, ensuring steady progress.',
+      params: {
+        x: -3,
+        y: 1,
+        lr: 0.1
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'Why does Adam include the bias correction terms (1 - β₁ᵗ) and (1 - β₂ᵗ) in its formulation?',
+        options: [
+          'To prevent the learning rate from ever reaching zero.',
+          'Because the moment vectors m₀ and v₀ are initialized at zero, causing early estimates to be severely biased toward zero during the initial training steps.',
+          'To ensure the gradients satisfy the Cauchy-Schwarz inequality.',
+          'To replace the need for backpropagation.'
+        ],
+        correctIndex: 1,
+        explanation: 'Because m₀ = 0 and v₀ = 0, at step t=1, m₁ = (1 - β₁)g₁. When β₁ = 0.9, m₁ would be only 0.10 · g₁, artificially tiny. Dividing by (1 - 0.9¹) = 0.10 un-biases the estimate back to g₁.'
+      },
+      {
+        id: 'q2',
+        question: 'What happens to standard SGD in a narrow ravine with high condition number (eigenvalues of Hessian differ by orders of magnitude)?',
+        options: [
+          'It converges exponentially fast.',
+          'It is forced to take tiny learning rates to avoid exploding in the steep direction, resulting in agonizingly slow progress along the flat direction.',
+          'It automatically computes second derivatives like Newton\'s method.',
+          'It immediately finds the global optimum.'
+        ],
+        correctIndex: 1,
+        explanation: 'In ill-conditioned ravines, the maximum stable learning rate is limited by the maximum curvature η < 2/λ_max. Because λ_max is huge, η must be tiny, so updates along the gentle direction (small λ_min) stall almost completely.'
+      }
+    ],
+    summary: [
+      'Momentum dampens oscillations in high-curvature directions while building velocity along shallow slopes.',
+      'RMSprop normalizes gradient steps by the running root-mean-square of past gradients.',
+      'Adam combines momentum and RMSprop with bias correction, making it the industry standard default optimizer for deep learning.'
+    ]
   }
 };
