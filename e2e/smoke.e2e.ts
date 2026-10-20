@@ -9,6 +9,7 @@ const LESSONS = [
   'backpropagation-fundamentals',
   'convolutional-filters',
   'pooling-and-receptive-fields',
+  'cnn-inference-pipeline',
   'regularization-dropout',
   'adaptive-optimizers',
 ];

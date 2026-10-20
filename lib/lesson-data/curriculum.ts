@@ -217,6 +217,25 @@ export const CURRICULUM: ModuleMeta[] = [
           'Receptive field (RF) measures the pixel region in the raw input image that directly influences a given deep neuron',
           'Successive convolutions and strided poolings expand receptive fields hierarchically, enabling deep neurons to perceive global context'
         ]
+      },
+      {
+        id: 'lesson-9',
+        slug: 'cnn-inference-pipeline',
+        title: 'Full CNN Inference: Pixels to Predictions',
+        subtitle: 'How multi-channel filters, pooling, flattening, and dense softmax layers produce real-time predictions.',
+        moduleId: 'module-5',
+        moduleName: 'Convolutional Neural Networks',
+        moduleNumber: 5,
+        lessonNumber: 9,
+        duration: '25 min',
+        prerequisites: ['pooling-and-receptive-fields'],
+        status: 'available',
+        keyTakeaways: [
+          'CNN inference is a deterministic forward cascade: Conv2D → ReLU → Pooling → Flattening → Dense → Softmax',
+          'Multiple kernels produce a multi-channel 3D feature volume where each channel specializes in detecting distinct spatial motifs',
+          'Flattening vectorizes spatial feature maps into a 1D column vector suitable for dense matrix multiplication',
+          'The Softmax activation normalizes final unconstrained logits into an interpretable categorical probability distribution'
+        ]
       }
     ]
   },
@@ -228,14 +247,14 @@ export const CURRICULUM: ModuleMeta[] = [
     status: 'available',
     lessons: [
       {
-        id: 'lesson-9',
+        id: 'lesson-10',
         slug: 'regularization-dropout',
         title: 'Overfitting, L2 Weight Decay & Dropout',
         subtitle: 'Techniques to improve out-of-sample generalization and network robustness.',
         moduleId: 'module-6',
         moduleName: 'Training and Generalization',
         moduleNumber: 6,
-        lessonNumber: 9,
+        lessonNumber: 10,
         duration: '20 min',
         prerequisites: ['backpropagation-fundamentals'],
         status: 'available',
@@ -247,14 +266,14 @@ export const CURRICULUM: ModuleMeta[] = [
         ]
       },
       {
-        id: 'lesson-10',
+        id: 'lesson-11',
         slug: 'adaptive-optimizers',
         title: 'Momentum, RMSprop, and Adam',
         subtitle: 'Adaptive learning rate algorithms and second-moment estimation.',
         moduleId: 'module-6',
         moduleName: 'Training and Generalization',
         moduleNumber: 6,
-        lessonNumber: 10,
+        lessonNumber: 11,
         duration: '25 min',
         prerequisites: ['gradient-descent'],
         status: 'available',

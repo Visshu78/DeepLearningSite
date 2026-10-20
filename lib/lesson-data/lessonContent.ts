@@ -678,5 +678,109 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'RMSprop normalizes gradient steps by the running root-mean-square of past gradients.',
       'Adam combines momentum and RMSprop with bias correction, making it the industry standard default optimizer for deep learning.'
     ]
+  },
+  'cnn-inference-pipeline': {
+    slug: 'cnn-inference-pipeline',
+    intuition: [
+      'Inference in a convolutional neural network is a deterministic, purely feed-forward numerical pipeline: raw pixel matrices are progressively transformed into semantic feature maps, compressed through pooling, flattened into high-level concept vectors, and projected into a categorical probability distribution.',
+      'Unlike training mode—which computes loss, creates backward computational graphs, and updates parameters via gradient descent—inference mode freezes all weights and biases. Dropout layers are disabled, and Batch Normalization uses fixed running population statistics.',
+      'Feature extraction begins when multi-channel filter banks slide across the input image. Each kernel acts as an analytical pattern detector: when the input patch aligns with the filter template (such as an edge, corner, or curve), the Frobenius inner product yields a large positive activation.',
+      'Element-wise ReLU non-linearities zero out negative pre-activations, preserving sparse, highly selective representations of visual features while eliminating non-responsive areas.',
+      'Spatial pooling downsamples feature map dimensions by selecting the most dominant activation in each local neighborhood. This provides local translation invariance: an edge or loop detected in the top-left will still be registered even if the object shifts slightly.',
+      'Finally, flattening unrolls the multi-channel 3D volume into a 1D feature vector, allowing dense fully-connected layers to compute class logits z = W · f + b, which Softmax normalizes into interpretable probabilities that sum to 100%.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Multi-Channel Convolution (3D Kernel Inner Product)',
+        latex: 'Y_k(r, c) = \\sum_{ch=1}^{C_{in}} \\sum_{i=0}^{K-1} \\sum_{j=0}^{K-1} X_{ch}(r+i, c+j) \\cdot W_{k, ch}(i, j) + b_k',
+        explanation: 'Each output channel k slides a 3D kernel of depth C_in across spatial positions (r, c), aggregating local dot products with bias b_k.'
+      },
+      {
+        name: 'Element-Wise Non-Linear Rectification',
+        latex: 'A_k(r, c) = \\max(0, Y_k(r, c))',
+        explanation: 'Suppresses negative values to zero, enforcing sparsity and ensuring that absent features do not contribute negative signals to downstream layers.'
+      },
+      {
+        name: 'Spatial Max Pooling Downsampling',
+        latex: 'P_k(pr, pc) = \\max_{i, j \\in \\{0, 1\\}} A_k(2pr + i, 2pc + j)',
+        explanation: 'A 2×2 window with stride 2 extracts the maximum activation in each quad, halving spatial dimensions from H×W to (H/2)×(W/2).'
+      },
+      {
+        name: 'Tensor Vectorization (Flattening)',
+        latex: '\\mathbf{f} = \\text{vec}(\\mathbf{P}) \\in \\mathbb{R}^{C_{out} \\cdot H_{pool} \\cdot W_{pool}}',
+        explanation: 'Reshapes the 3D tensor volume of pooled activations into a 1D column vector without modifying any underlying numerical values.'
+      },
+      {
+        name: 'Softmax Categorical Normalization',
+        latex: 'P(y = c \\mid \\mathbf{x}) = \\frac{e^{z_c}}{\\sum_{k=1}^{K} e^{z_k}}, \\quad \\text{where } \\mathbf{z} = \\mathbf{W}_{fc} \\mathbf{f} + \\mathbf{b}_{fc}',
+        explanation: 'Converts unconstrained real-valued dense logits z into a valid probability distribution where each probability is in (0, 1) and their sum equals 1.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Tracing the complete inference lifecycle of an 8×8 digit image through 3 filters (3×3), ReLU, 2×2 Max Pooling, Flattening (27 features), Dense projection, and Softmax to 4 classes (0, 1, 4, 7).',
+      steps: [
+        { label: 'Step 1: Input Tensor Ingestion', math: '\\mathbf{X} \\in \\mathbb{R}^{1 \\times 8 \\times 8} \\implies 64 \\text{ grayscale pixels}', note: 'Pixel brightness values scaled between 0.0 (background) and 1.0 (ink).' },
+        { label: 'Step 2: 3D Convolution Feature Extraction', math: '\\mathbf{Y} = \\text{Conv2D}(\\mathbf{X}, \\mathbf{W}_{conv}) \\in \\mathbb{R}^{3 \\times 6 \\times 6}', note: '3 filters (Vertical edge, Horizontal bar, Enclosed loop) produce 3 spatial maps of size (8 - 3 + 1) = 6×6.' },
+        { label: 'Step 3: ReLU Rectification', math: '\\mathbf{A} = \\max(0, \\mathbf{Y}) \\in \\mathbb{R}^{3 \\times 6 \\times 6}', note: 'Negative pre-activations are zeroed out; positive edge matches pass uninhibited.' },
+        { label: 'Step 4: Max Pooling Downsampling', math: '\\mathbf{P} = \\text{MaxPool}_{2\\times2}(\\mathbf{A}) \\in \\mathbb{R}^{3 \\times 3 \\times 3}', note: 'Reduces each 6×6 map to 3×3 by taking local quad maxima (total 27 activations).' },
+        { label: 'Step 5: Vector Flattening', math: '\\mathbf{f} = \\text{vec}(\\mathbf{P}) \\in \\mathbb{R}^{27}', note: 'Unrolls 3D feature volume into a 1D column vector suitable for matrix multiplication.' },
+        { label: 'Step 6: Dense Layer Logits', math: '\\mathbf{z} = \\mathbf{W}_{fc} \\mathbf{f} + \\mathbf{b}_{fc} \\in \\mathbb{R}^{4}', note: 'Evaluates linear compatibility scores for digits 0, 1, 4, and 7.' },
+        { label: 'Step 7: Softmax Probability Distribution', math: 'P(y=c) = \\frac{e^{z_c}}{\\sum_{k} e^{z_k}} \\implies [0.964, 0.012, 0.015, 0.009]', note: 'Exponentiation and normalization yield final classification confidence (e.g. 96.4% Digit 0).' }
+      ],
+      result: 'The network deterministically classifies the digit as "0" with 96.4% confidence in a single forward pass.',
+      params: {
+        inputSize: '1x8x8',
+        convFilters: 3,
+        kernelSize: '3x3',
+        poolSize: '2x2',
+        denseClasses: 4
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'What is the key difference between CNN inference mode and CNN training mode?',
+        options: [
+          'Inference uses smaller convolutional kernels than training.',
+          'Inference only performs the forward pass with frozen weights; no loss gradient computation or backpropagation graph is stored, and dropout is disabled.',
+          'Inference requires calculating second-order Hessian matrices.',
+          'Inference reverses the order of layers, computing Softmax first.'
+        ],
+        correctIndex: 1,
+        explanation: 'During inference, the model weights are static and evaluation is purely feed-forward. Because no parameter updates occur, gradient histories are not retained, reducing memory and computation dramatically.'
+      },
+      {
+        id: 'q2',
+        question: 'In a CNN for image classification, what is the exact function of the "Flatten" layer?',
+        options: [
+          'To average all pixel values into a single scalar brightness.',
+          'To unroll a multi-dimensional spatial tensor [Channels, Height, Width] into a 1D vector so standard fully-connected matrix multiplication W · x + b can be performed.',
+          'To remove all zero activations created by ReLU.',
+          'To normalize the gradient magnitudes during backpropagation.'
+        ],
+        correctIndex: 1,
+        explanation: 'Dense (fully-connected) layers expect a 1D vector of features. The Flatten layer reshapes the 3D volume (e.g. 3 × 3 × 3 = 27) into a 1D column vector without changing any numerical values.'
+      },
+      {
+        id: 'q3',
+        question: 'If a convolutional layer has 16 filters of size 5×5 operating on an RGB image (3 channels), how many learnable weight parameters (excluding biases) are in this layer?',
+        options: [
+          '400 weights (16 × 5 × 5)',
+          '1,200 weights (16 filters × 5 × 5 × 3 channels)',
+          '75 weights (5 × 5 × 3)',
+          '16 weights'
+        ],
+        correctIndex: 1,
+        explanation: 'Each filter must span the entire depth of the input volume (3 channels for RGB). Thus, one filter has 5 × 5 × 3 = 75 weights. With 16 parallel filters, the layer contains 16 × 75 = 1,200 weights.'
+      }
+    ],
+    summary: [
+      'CNN inference processes images through sequential stages: Conv2D → ReLU → Pooling → Flatten → Dense → Softmax.',
+      'Convolutional filters extract spatial visual motifs with translational equivariance.',
+      'Pooling achieves local translation invariance and reduces spatial dimensions.',
+      'Flattening transitions spatial tensor representations into vector space for categorical classification.',
+      'Inference is purely feed-forward with frozen weights and no computational graph overhead.'
+    ]
   }
 };
+

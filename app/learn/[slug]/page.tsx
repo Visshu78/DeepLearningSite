@@ -13,6 +13,7 @@ import { ConvolutionVisualizer } from '@/components/visualizers/ConvolutionVisua
 import { PoolingVisualizer } from '@/components/visualizers/PoolingVisualizer';
 import { RegularizationVisualizer } from '@/components/visualizers/RegularizationVisualizer';
 import { AdaptiveOptimizersVisualizer } from '@/components/visualizers/AdaptiveOptimizersVisualizer';
+import { CNNInferencePipelineVisualizer } from '@/components/visualizers/CNNInferencePipelineVisualizer';
 import type { Metadata } from 'next';
 
 export async function generateStaticParams() {
@@ -70,6 +71,9 @@ export default async function LessonPage({ params }: PageProps) {
       break;
     case 'pooling-and-receptive-fields':
       visualizer = <PoolingVisualizer />;
+      break;
+    case 'cnn-inference-pipeline':
+      visualizer = <CNNInferencePipelineVisualizer />;
       break;
     case 'regularization-dropout':
       visualizer = <RegularizationVisualizer />;
