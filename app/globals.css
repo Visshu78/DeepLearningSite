@@ -2,29 +2,49 @@
 @import "katex/dist/katex.min.css";
 
 :root {
-  --bg-page: #FBFBFA;
+  /* Rich Cream & Warm Ivory Base */
+  --bg-page: #FDFBF7;
   --bg-surface: #FFFFFF;
-  --bg-subtle: #F4F4F1;
-  --border-light: #E6E6E0;
-  --border-strong: #D1D1C7;
-  --text-main: #18191B;
-  --text-muted: #4A525D;
-  --text-tertiary: #6E7682;
-  
-  --accent-teal: #0D6E6E;
-  --accent-teal-hover: #085252;
-  --accent-teal-light: #EEF7F7;
-  --accent-teal-border: #B7E2E2;
+  --bg-subtle: #FAF5EE;
+  --bg-cream-gold: #FAF2E6;
+  --border-light: #EAE2D5;
+  --border-strong: #DFCDB6;
+  --border-gold: #D4AF37;
 
-  --accent-amber: #B45309;
-  --accent-amber-light: #FEF3C7;
-  --accent-amber-border: #FCD34D;
+  /* Deep Velvet Charcoal & Espresso Typography */
+  --text-main: #1F191B;
+  --text-muted: #54484E;
+  --text-tertiary: #786970;
 
-  --accent-crimson: #B91C1C;
-  --accent-crimson-light: #FEE2E2;
+  /* Imperial Burgundy Family */
+  --accent-burgundy: #7A1C30;
+  --accent-burgundy-hover: #5F1424;
+  --accent-burgundy-deep: #480E1B;
+  --accent-burgundy-light: #FDF2F4;
+  --accent-burgundy-border: #F5CBD3;
 
-  --accent-forest: #15803D;
-  --accent-forest-light: #DCFCE7;
+  /* Antique & Radiant Gold Family */
+  --accent-gold: #B8860B;
+  --accent-gold-radiant: #D4AF37;
+  --accent-gold-deep: #996515;
+  --accent-gold-light: #FEF9EE;
+  --accent-gold-border: #EEDAA2;
+
+  /* Legacy variable mapping to seamlessly preserve components */
+  --accent-teal: #7A1C30;
+  --accent-teal-hover: #5F1424;
+  --accent-teal-light: #FDF2F4;
+  --accent-teal-border: #F5CBD3;
+
+  --accent-amber: #B8860B;
+  --accent-amber-light: #FEF9EE;
+  --accent-amber-border: #EEDAA2;
+
+  --accent-crimson: #991B1B;
+  --accent-crimson-light: #FEF2F2;
+
+  --accent-forest: #166534;
+  --accent-forest-light: #F0FDF4;
 }
 
 body {
@@ -37,7 +57,7 @@ body {
 
 /* Accessible focus ring for keyboard navigation */
 :focus-visible {
-  outline: 2px solid var(--accent-teal);
+  outline: 2px solid var(--accent-burgundy);
   outline-offset: 2px;
 }
 
@@ -45,14 +65,14 @@ body {
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: var(--border-light);
+  background: var(--border-strong);
   border-radius: 9999px;
   height: 6px;
   cursor: pointer;
 }
 
 input[type="range"]:focus-visible {
-  outline: 2px solid var(--accent-teal);
+  outline: 2px solid var(--accent-burgundy);
   outline-offset: 3px;
 }
 
@@ -62,27 +82,28 @@ input[type="range"]::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--accent-teal);
-  border: 2px solid #FFFFFF;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  background: var(--accent-burgundy);
+  border: 2px solid var(--accent-gold-radiant);
+  box-shadow: 0 1px 4px rgba(122, 28, 48, 0.35);
   cursor: pointer;
   transition: transform 0.1s ease, background 0.15s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  background: var(--accent-teal-hover);
+  background: var(--accent-burgundy-hover);
 }
 
 input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--accent-teal);
-  border: 2px solid #FFFFFF;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  background: var(--accent-burgundy);
+  border: 2px solid var(--accent-gold-radiant);
+  box-shadow: 0 1px 4px rgba(122, 28, 48, 0.35);
   cursor: pointer;
 }
+
 
 /* Tabular figures for numbers */
 .font-mono-num {

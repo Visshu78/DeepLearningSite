@@ -58,7 +58,7 @@ export function ConvolutionVisualizer() {
     return `rgb(${intensity}, ${intensity}, ${intensity})`;
   };
 
-  const getTextColor = (val: number) => (val > 50 ? '#FFFFFF' : '#18191B');
+  const getTextColor = (val: number) => (val > 50 ? '#FFFFFF' : '#1F191B');
 
   const handleKernelPresetChange = (presetId: string) => {
     setSelectedKernelId(presetId);
@@ -82,12 +82,12 @@ export function ConvolutionVisualizer() {
   return (
     <div className="space-y-6">
       {/* Top Banner & Context */}
-      <div className="p-4 bg-[#EEF7F7] border border-[#B7E2E2] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="p-4 bg-[#FAF2E6] border border-[#EEDAA2] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="space-y-1">
-          <div className="text-xs font-mono-num font-bold text-[#0D6E6E] uppercase tracking-wider">
+          <div className="text-xs font-mono-num font-bold text-[#7A1C30] uppercase tracking-wider">
             Spatial Feature Extraction Workbench
           </div>
-          <p className="text-xs text-[#5C626B]">
+          <p className="text-xs text-[#54484E]">
             Observe how sliding a 3×3 kernel across an input matrix computes localized spatial dot-products to construct high-level feature maps.
           </p>
         </div>
@@ -102,7 +102,7 @@ export function ConvolutionVisualizer() {
               setActivation('none');
               setCurrentStepIndex(0);
             }}
-            className="px-3 py-1.5 text-xs font-semibold rounded border border-[#0D6E6E] text-[#0D6E6E] bg-white hover:bg-[#EEF7F7] transition-colors"
+            className="px-3 py-1.5 text-xs font-semibold rounded border border-[#7A1C30] text-[#7A1C30] bg-white hover:bg-[#FAF2E6] transition-colors"
           >
             Load Edge Preset
           </button>
@@ -110,17 +110,17 @@ export function ConvolutionVisualizer() {
       </div>
 
       {/* Control Configuration Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-white border border-[#E6E6E0] rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-white border border-[#EAE2D5] rounded-lg">
         {/* Input pattern */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-[#18191B] block">Input Image Pattern</label>
+          <label className="text-xs font-semibold text-[#1F191B] block">Input Image Pattern</label>
           <select
             value={selectedInputId}
             onChange={e => {
               setSelectedInputId(e.target.value);
               setCurrentStepIndex(0);
             }}
-            className="w-full text-xs p-2 rounded border border-[#E6E6E0] bg-[#FAF8F5] text-[#18191B] focus:border-[#0D6E6E] outline-none"
+            className="w-full text-xs p-2 rounded border border-[#EAE2D5] bg-[#FAF5EE] text-[#1F191B] focus:border-[#7A1C30] outline-none"
           >
             {INPUT_PRESETS.map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
@@ -130,11 +130,11 @@ export function ConvolutionVisualizer() {
 
         {/* Filter selection */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-[#18191B] block">Convolution Filter / Kernel</label>
+          <label className="text-xs font-semibold text-[#1F191B] block">Convolution Filter / Kernel</label>
           <select
             value={selectedKernelId}
             onChange={e => handleKernelPresetChange(e.target.value)}
-            className="w-full text-xs p-2 rounded border border-[#E6E6E0] bg-[#FAF8F5] text-[#18191B] focus:border-[#0D6E6E] outline-none"
+            className="w-full text-xs p-2 rounded border border-[#EAE2D5] bg-[#FAF5EE] text-[#1F191B] focus:border-[#7A1C30] outline-none"
           >
             {KERNEL_PRESETS.map(k => (
               <option key={k.id} value={k.id}>{k.name}</option>
@@ -146,7 +146,7 @@ export function ConvolutionVisualizer() {
         {/* Padding & Stride */}
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#18191B] block">Padding (P)</label>
+            <label className="text-xs font-semibold text-[#1F191B] block">Padding (P)</label>
             <div className="flex gap-1">
               {[0, 1].map(p => (
                 <button
@@ -154,8 +154,8 @@ export function ConvolutionVisualizer() {
                   onClick={() => { setPadding(p); setCurrentStepIndex(0); }}
                   className={`flex-1 py-1.5 text-xs font-mono-num font-semibold rounded border transition-colors ${
                     padding === p
-                      ? 'bg-[#0D6E6E] text-white border-[#0D6E6E]'
-                      : 'bg-[#FAF8F5] text-[#4A525D] border-[#E6E6E0] hover:bg-[#F0EEEB]'
+                      ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
+                      : 'bg-[#FAF5EE] text-[#54484E] border-[#EAE2D5] hover:bg-[#F0EEEB]'
                   }`}
                 >
                   {p === 0 ? 'Valid (0)' : 'Same (1)'}
@@ -165,7 +165,7 @@ export function ConvolutionVisualizer() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#18191B] block">Stride (S)</label>
+            <label className="text-xs font-semibold text-[#1F191B] block">Stride (S)</label>
             <div className="flex gap-1">
               {[1, 2].map(s => (
                 <button
@@ -173,8 +173,8 @@ export function ConvolutionVisualizer() {
                   onClick={() => { setStride(s); setCurrentStepIndex(0); }}
                   className={`flex-1 py-1.5 text-xs font-mono-num font-semibold rounded border transition-colors ${
                     stride === s
-                      ? 'bg-[#0D6E6E] text-white border-[#0D6E6E]'
-                      : 'bg-[#FAF8F5] text-[#4A525D] border-[#E6E6E0] hover:bg-[#F0EEEB]'
+                      ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
+                      : 'bg-[#FAF5EE] text-[#54484E] border-[#EAE2D5] hover:bg-[#F0EEEB]'
                   }`}
                 >
                   {s}
@@ -186,14 +186,14 @@ export function ConvolutionVisualizer() {
 
         {/* Activation */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-[#18191B] block">Non-Linear Activation</label>
+          <label className="text-xs font-semibold text-[#1F191B] block">Non-Linear Activation</label>
           <div className="flex gap-1">
             <button
               onClick={() => setActivation('none')}
               className={`flex-1 py-1.5 text-xs font-semibold rounded border transition-colors ${
                 activation === 'none'
-                  ? 'bg-[#0D6E6E] text-white border-[#0D6E6E]'
-                  : 'bg-[#FAF8F5] text-[#4A525D] border-[#E6E6E0] hover:bg-[#F0EEEB]'
+                  ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
+                  : 'bg-[#FAF5EE] text-[#54484E] border-[#EAE2D5] hover:bg-[#F0EEEB]'
               }`}
             >
               Linear
@@ -202,8 +202,8 @@ export function ConvolutionVisualizer() {
               onClick={() => setActivation('relu')}
               className={`flex-1 py-1.5 text-xs font-semibold rounded border transition-colors ${
                 activation === 'relu'
-                  ? 'bg-[#0D6E6E] text-white border-[#0D6E6E]'
-                  : 'bg-[#FAF8F5] text-[#4A525D] border-[#E6E6E0] hover:bg-[#F0EEEB]'
+                  ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
+                  : 'bg-[#FAF5EE] text-[#54484E] border-[#EAE2D5] hover:bg-[#F0EEEB]'
               }`}
             >
               ReLU
@@ -215,18 +215,18 @@ export function ConvolutionVisualizer() {
       {/* Main Interactive Grid Visualization */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Input Image Grid with Kernel Overlay */}
-        <div className="lg:col-span-5 bg-white border border-[#E6E6E0] rounded-lg p-5 space-y-4">
+        <div className="lg:col-span-5 bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <h3 className="text-sm font-bold text-[#18191B]">Padded Input Image</h3>
-              <p className="text-[11px] text-[#5C626B]">
+              <h3 className="text-sm font-bold text-[#1F191B]">Padded Input Image</h3>
+              <p className="text-[11px] text-[#54484E]">
                 Shape: {convResult.paddedInput.length} × {convResult.paddedInput[0].length} (Cyan box: current receptive field)
               </p>
             </div>
           </div>
 
           {/* Grid display */}
-          <div className="flex justify-center p-2 bg-[#FAF8F5] border border-[#E6E6E0] rounded-md overflow-x-auto">
+          <div className="flex justify-center p-2 bg-[#FAF5EE] border border-[#EAE2D5] rounded-md overflow-x-auto">
             <div
               className="grid gap-1"
               style={{
@@ -251,7 +251,7 @@ export function ConvolutionVisualizer() {
                       }}
                       className={`h-9 flex items-center justify-center font-mono-num text-[11px] font-bold rounded transition-all ${
                         isInField
-                          ? 'ring-2 ring-[#0D6E6E] ring-offset-1 scale-105 z-10'
+                          ? 'ring-2 ring-[#7A1C30] ring-offset-1 scale-105 z-10'
                           : 'opacity-90'
                       }`}
                     >
@@ -264,13 +264,13 @@ export function ConvolutionVisualizer() {
           </div>
 
           {/* 3x3 Kernel Editor */}
-          <div className="space-y-2 pt-2 border-t border-[#E6E6E0]">
+          <div className="space-y-2 pt-2 border-t border-[#EAE2D5]">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#18191B]">Filter Kernel (3×3)</span>
-              <span className="text-[11px] text-[#5C626B]">Editable synapse weights</span>
+              <span className="text-xs font-bold text-[#1F191B]">Filter Kernel (3×3)</span>
+              <span className="text-[11px] text-[#54484E]">Editable synapse weights</span>
             </div>
             <div className="flex justify-center">
-              <div className="grid grid-cols-3 gap-1.5 p-2 bg-[#FAF8F5] border border-[#E6E6E0] rounded-md">
+              <div className="grid grid-cols-3 gap-1.5 p-2 bg-[#FAF5EE] border border-[#EAE2D5] rounded-md">
                 {customKernel.map((row, r) =>
                   row.map((val, c) => (
                     <input
@@ -279,7 +279,7 @@ export function ConvolutionVisualizer() {
                       step="0.5"
                       value={val}
                       onChange={e => handleCustomKernelCellChange(r, c, e.target.value)}
-                      className="w-12 h-8 text-center font-mono-num text-xs font-semibold bg-white border border-[#E6E6E0] rounded text-[#0D6E6E] focus:border-[#0D6E6E] outline-none"
+                      className="w-12 h-8 text-center font-mono-num text-xs font-semibold bg-white border border-[#EAE2D5] rounded text-[#7A1C30] focus:border-[#7A1C30] outline-none"
                     />
                   ))
                 )}
@@ -289,52 +289,52 @@ export function ConvolutionVisualizer() {
         </div>
 
         {/* Center: Computation / Math Decomposition */}
-        <div className="lg:col-span-4 bg-[#FAF8F5] border border-[#E6E6E0] rounded-lg p-5 flex flex-col justify-between space-y-4">
+        <div className="lg:col-span-4 bg-[#FAF5EE] border border-[#EAE2D5] rounded-lg p-5 flex flex-col justify-between space-y-4">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-[#0D6E6E]" />
-              <h3 className="text-xs font-bold text-[#18191B] uppercase tracking-wider">
+              <Info className="w-4 h-4 text-[#7A1C30]" />
+              <h3 className="text-xs font-bold text-[#1F191B] uppercase tracking-wider">
                 Step-by-Step Dot Product
               </h3>
             </div>
 
             {activeStep ? (
               <div className="space-y-3 text-xs">
-                <div className="p-2.5 bg-white border border-[#E6E6E0] rounded space-y-1">
-                  <div className="text-[11px] text-[#5C626B]">
+                <div className="p-2.5 bg-white border border-[#EAE2D5] rounded space-y-1">
+                  <div className="text-[11px] text-[#54484E]">
                     Output Position: Cell ({activeStep.outRow}, {activeStep.outCol})
                   </div>
-                  <div className="font-mono-num text-[11px] text-[#18191B]">
+                  <div className="font-mono-num text-[11px] text-[#1F191B]">
                     Input Window: [{activeStep.inRowStart}:{activeStep.inRowStart + 3}, {activeStep.inColStart}:{activeStep.inColStart + 3}]
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="text-[11px] font-semibold text-[#5C626B] block">Element-wise Multiplications:</span>
+                  <span className="text-[11px] font-semibold text-[#54484E] block">Element-wise Multiplications:</span>
                   <div className="max-h-36 overflow-y-auto space-y-1 pr-1 font-mono-num text-[11px]">
                     {activeStep.terms.map((term, tIdx) => (
                       <div key={tIdx} className="flex items-center justify-between py-0.5 px-2 bg-white rounded border border-[#EFEFEA]">
                         <span>{term.inputVal} × {term.kernelVal}</span>
-                        <span className="font-bold text-[#0D6E6E]">= {term.product}</span>
+                        <span className="font-bold text-[#7A1C30]">= {term.product}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="p-3 bg-white border border-[#B7E2E2] rounded space-y-1.5">
+                <div className="p-3 bg-white border border-[#EEDAA2] rounded space-y-1.5">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-[#5C626B]">Sum of Products:</span>
-                    <span className="font-mono-num font-bold text-[#18191B]">{activeStep.sum}</span>
+                    <span className="text-[#54484E]">Sum of Products:</span>
+                    <span className="font-mono-num font-bold text-[#1F191B]">{activeStep.sum}</span>
                   </div>
                   {bias !== 0 && (
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#5C626B]">Bias offset (+b):</span>
-                      <span className="font-mono-num text-[#0D6E6E]">+{bias}</span>
+                      <span className="text-[#54484E]">Bias offset (+b):</span>
+                      <span className="font-mono-num text-[#7A1C30]">+{bias}</span>
                     </div>
                   )}
-                  <div className="pt-1.5 border-t border-[#E6E6E0] flex justify-between items-center text-xs">
-                    <span className="font-bold text-[#18191B]">Output Value:</span>
-                    <span className="font-mono-num font-extrabold text-sm text-[#0D6E6E]">
+                  <div className="pt-1.5 border-t border-[#EAE2D5] flex justify-between items-center text-xs">
+                    <span className="font-bold text-[#1F191B]">Output Value:</span>
+                    <span className="font-mono-num font-extrabold text-sm text-[#7A1C30]">
                       {activeStep.postActivation}
                     </span>
                   </div>
@@ -344,15 +344,15 @@ export function ConvolutionVisualizer() {
           </div>
 
           {/* Stepper Controls */}
-          <div className="space-y-2 pt-3 border-t border-[#E6E6E0]">
-            <div className="flex items-center justify-between text-xs text-[#5C626B]">
+          <div className="space-y-2 pt-3 border-t border-[#EAE2D5]">
+            <div className="flex items-center justify-between text-xs text-[#54484E]">
               <span>Window {currentStepIndex + 1} of {convResult.steps.length}</span>
               <span>{(convResult.outHeight)} × {(convResult.outWidth)} Map</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded bg-[#0D6E6E] text-white text-xs font-semibold hover:bg-[#085252] transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded bg-[#7A1C30] text-white text-xs font-semibold hover:bg-[#5F1424] transition-colors"
               >
                 {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                 <span>{isPlaying ? 'Pause' : 'Auto Slide'}</span>
@@ -362,7 +362,7 @@ export function ConvolutionVisualizer() {
                   setIsPlaying(false);
                   setCurrentStepIndex(prev => (prev + 1) % convResult.steps.length);
                 }}
-                className="p-2 rounded border border-[#E6E6E0] bg-white text-[#18191B] hover:border-[#0D6E6E] transition-colors"
+                className="p-2 rounded border border-[#EAE2D5] bg-white text-[#1F191B] hover:border-[#7A1C30] transition-colors"
                 title="Next Step"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -372,7 +372,7 @@ export function ConvolutionVisualizer() {
                   setIsPlaying(false);
                   setCurrentStepIndex(0);
                 }}
-                className="p-2 rounded border border-[#E6E6E0] bg-white text-[#18191B] hover:border-[#0D6E6E] transition-colors"
+                className="p-2 rounded border border-[#EAE2D5] bg-white text-[#1F191B] hover:border-[#7A1C30] transition-colors"
                 title="Reset"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -382,15 +382,15 @@ export function ConvolutionVisualizer() {
         </div>
 
         {/* Right: Output Feature Map */}
-        <div className="lg:col-span-3 bg-white border border-[#E6E6E0] rounded-lg p-5 space-y-4">
+        <div className="lg:col-span-3 bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-4">
           <div className="space-y-0.5">
-            <h3 className="text-sm font-bold text-[#18191B]">Output Feature Map</h3>
-            <p className="text-[11px] text-[#5C626B]">
+            <h3 className="text-sm font-bold text-[#1F191B]">Output Feature Map</h3>
+            <p className="text-[11px] text-[#54484E]">
               Shape: {convResult.outHeight} × {convResult.outWidth} (Click any cell to inspect)
             </p>
           </div>
 
-          <div className="flex justify-center p-2 bg-[#FAF8F5] border border-[#E6E6E0] rounded-md">
+          <div className="flex justify-center p-2 bg-[#FAF5EE] border border-[#EAE2D5] rounded-md">
             <div
               className="grid gap-1.5"
               style={{
@@ -418,8 +418,8 @@ export function ConvolutionVisualizer() {
                       }}
                       className={`h-11 flex flex-col items-center justify-center font-mono-num rounded border text-xs font-bold transition-all ${
                         isCurrent
-                          ? 'bg-[#0D6E6E] text-white border-[#0D6E6E] shadow-sm scale-105'
-                          : 'bg-white text-[#18191B] border-[#E6E6E0] hover:border-[#0D6E6E]'
+                          ? 'bg-[#7A1C30] text-white border-[#7A1C30] shadow-sm scale-105'
+                          : 'bg-white text-[#1F191B] border-[#EAE2D5] hover:border-[#7A1C30]'
                       }`}
                     >
                       <span className="text-[11px]">{val}</span>
@@ -433,13 +433,13 @@ export function ConvolutionVisualizer() {
             </div>
           </div>
 
-          <div className="p-3 bg-[#FAF8F5] border border-[#E6E6E0] rounded text-[11px] text-[#5C626B] leading-relaxed">
-            <span className="font-bold text-[#18191B]">Dimension Formula:</span>
-            <div className="font-mono-num mt-1 text-[#0D6E6E] font-semibold">
+          <div className="p-3 bg-[#FAF5EE] border border-[#EAE2D5] rounded text-[11px] text-[#54484E] leading-relaxed">
+            <span className="font-bold text-[#1F191B]">Dimension Formula:</span>
+            <div className="font-mono-num mt-1 text-[#7A1C30] font-semibold">
               W_out = ⌊(W_in - K + 2P) / S⌋ + 1
             </div>
             <div className="mt-1">
-              ⌊({inputData[0].length} - 3 + {2 * padding}) / {stride}⌋ + 1 = <strong className="text-[#18191B]">{convResult.outWidth}</strong>
+              ⌊({inputData[0].length} - 3 + {2 * padding}) / {stride}⌋ + 1 = <strong className="text-[#1F191B]">{convResult.outWidth}</strong>
             </div>
           </div>
         </div>

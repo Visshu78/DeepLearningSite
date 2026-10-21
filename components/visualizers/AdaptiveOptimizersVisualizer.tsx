@@ -29,7 +29,7 @@ const OPTIMIZER_METAS: OptimizerMeta[] = [
   {
     id: 'momentum',
     name: 'SGD + Momentum',
-    color: '#B45309', // Amber
+    color: '#B8860B', // Amber
     formula: 'v_t = \\beta v_{t-1} + (1-\\beta) g_t, \\quad \\theta_{t+1} = \\theta_t - \\eta v_t',
     description: 'Accumulates velocity in consistent directions, dampening high-frequency orthogonal oscillations.'
   },
@@ -43,7 +43,7 @@ const OPTIMIZER_METAS: OptimizerMeta[] = [
   {
     id: 'adam',
     name: 'Adam (Adaptive Moments)',
-    color: '#0D6E6E', // Teal
+    color: '#7A1C30', // Teal
     formula: '\\hat{m}_t, \\hat{v}_t \\text{ with bias correction}, \\quad \\theta_{t+1} = \\theta_t - \\frac{\\eta}{\\sqrt{\\hat{v}_t} + \\epsilon} \\hat{m}_t',
     description: 'Combines momentum with adaptive per-parameter learning rate scaling and initialization bias correction.'
   }
@@ -140,12 +140,12 @@ export function AdaptiveOptimizersVisualizer() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="p-4 bg-[#EEF7F7] border border-[#B7E2E2] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="p-4 bg-[#FAF2E6] border border-[#EEDAA2] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="space-y-1">
-          <div className="text-xs font-mono-num font-bold text-[#0D6E6E] uppercase tracking-wider">
+          <div className="text-xs font-mono-num font-bold text-[#7A1C30] uppercase tracking-wider">
             Adaptive Optimizers Benchmark Arena
           </div>
-          <p className="text-xs text-[#5C626B]">
+          <p className="text-xs text-[#54484E]">
             Race SGD, Momentum, RMSprop, and Adam simultaneously across an anisotropic ravine valley to observe oscillation dampening and adaptive per-parameter scaling.
           </p>
         </div>
@@ -155,17 +155,17 @@ export function AdaptiveOptimizersVisualizer() {
             setLearningRate(0.15);
             setBeta1(0.9);
           }}
-          className="px-3 py-1.5 text-xs font-semibold rounded border border-[#0D6E6E] text-[#0D6E6E] bg-white hover:bg-[#EEF7F7] transition-colors shrink-0"
+          className="px-3 py-1.5 text-xs font-semibold rounded border border-[#7A1C30] text-[#7A1C30] bg-white hover:bg-[#FAF2E6] transition-colors shrink-0"
         >
           Reset Arena
         </button>
       </div>
 
       {/* Control Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white border border-[#E6E6E0] rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white border border-[#EAE2D5] rounded-lg">
         {/* Active Optimizers Toggle */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-[#18191B] block">Active Contenders</label>
+          <label className="text-xs font-semibold text-[#1F191B] block">Active Contenders</label>
           <div className="grid grid-cols-2 gap-1.5">
             {OPTIMIZER_METAS.map(opt => {
               const active = activeAlgorithms[opt.id];
@@ -175,8 +175,8 @@ export function AdaptiveOptimizersVisualizer() {
                   onClick={() => toggleAlgorithm(opt.id)}
                   className={`flex items-center gap-2 p-1.5 rounded border text-xs font-semibold transition-colors ${
                     active
-                      ? 'bg-[#FAF8F5] border-[#D1D1C7]'
-                      : 'bg-[#F4F4F1] border-[#E6E6E0] opacity-50'
+                      ? 'bg-[#FAF5EE] border-[#D1D1C7]'
+                      : 'bg-[#F4F4F1] border-[#EAE2D5] opacity-50'
                   }`}
                 >
                   <span
@@ -193,8 +193,8 @@ export function AdaptiveOptimizersVisualizer() {
         {/* Learning rate */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-[#18191B]">Learning Rate (η)</span>
-            <span className="font-mono-num font-bold text-[#0D6E6E]">{learningRate.toFixed(2)}</span>
+            <span className="font-semibold text-[#1F191B]">Learning Rate (η)</span>
+            <span className="font-mono-num font-bold text-[#7A1C30]">{learningRate.toFixed(2)}</span>
           </div>
           <input
             type="range"
@@ -203,7 +203,7 @@ export function AdaptiveOptimizersVisualizer() {
             step="0.01"
             value={learningRate}
             onChange={e => setLearningRate(parseFloat(e.target.value))}
-            className="w-full accent-[#0D6E6E]"
+            className="w-full accent-[#7A1C30]"
           />
           <div className="flex justify-between text-[10px] text-[#878E99]">
             <span>0.02 (Slow)</span>
@@ -215,8 +215,8 @@ export function AdaptiveOptimizersVisualizer() {
         {/* Momentum Beta */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-[#18191B]">Momentum Beta (β₁)</span>
-            <span className="font-mono-num font-bold text-[#0D6E6E]">{beta1.toFixed(2)}</span>
+            <span className="font-semibold text-[#1F191B]">Momentum Beta (β₁)</span>
+            <span className="font-mono-num font-bold text-[#7A1C30]">{beta1.toFixed(2)}</span>
           </div>
           <input
             type="range"
@@ -225,7 +225,7 @@ export function AdaptiveOptimizersVisualizer() {
             step="0.02"
             value={beta1}
             onChange={e => setBeta1(parseFloat(e.target.value))}
-            className="w-full accent-[#0D6E6E]"
+            className="w-full accent-[#7A1C30]"
           />
           <div className="flex justify-between text-[10px] text-[#878E99]">
             <span>0.50 (Low Inertia)</span>
@@ -238,15 +238,15 @@ export function AdaptiveOptimizersVisualizer() {
       {/* Main Contour Arena & Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: 2D Contour Plot */}
-        <div className="lg:col-span-8 bg-white border border-[#E6E6E0] rounded-lg p-5 space-y-4">
+        <div className="lg:col-span-8 bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#18191B]">2D Ravine Trajectory: L(x, y) = 0.5x² + 8y²</h3>
-            <span className="text-xs font-mono-num text-[#5C626B]">
-              Step: <strong className="text-[#18191B]">{stepCount}</strong> / 70
+            <h3 className="text-sm font-bold text-[#1F191B]">2D Ravine Trajectory: L(x, y) = 0.5x² + 8y²</h3>
+            <span className="text-xs font-mono-num text-[#54484E]">
+              Step: <strong className="text-[#1F191B]">{stepCount}</strong> / 70
             </span>
           </div>
 
-          <div className="border border-[#E6E6E0] rounded-md bg-[#FAF8F5] p-2 flex justify-center">
+          <div className="border border-[#EAE2D5] rounded-md bg-[#FAF5EE] p-2 flex justify-center">
             <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-80 overflow-visible">
               {/* Elliptical Contours */}
               {contourEllipses.map((ell, i) => (
@@ -333,21 +333,21 @@ export function AdaptiveOptimizersVisualizer() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded bg-[#0D6E6E] text-white text-xs font-semibold hover:bg-[#085252] transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded bg-[#7A1C30] text-white text-xs font-semibold hover:bg-[#5F1424] transition-colors"
             >
               {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
               <span>{isPlaying ? 'Pause Race' : 'Run Race'}</span>
             </button>
             <button
               onClick={handleStep}
-              className="p-2 px-3 flex items-center gap-1.5 rounded border border-[#E6E6E0] bg-white text-xs font-semibold text-[#18191B] hover:border-[#0D6E6E] transition-colors"
+              className="p-2 px-3 flex items-center gap-1.5 rounded border border-[#EAE2D5] bg-white text-xs font-semibold text-[#1F191B] hover:border-[#7A1C30] transition-colors"
             >
               <span>Step</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleReset}
-              className="p-2 rounded border border-[#E6E6E0] bg-white text-[#18191B] hover:border-[#0D6E6E] transition-colors"
+              className="p-2 rounded border border-[#EAE2D5] bg-white text-[#1F191B] hover:border-[#7A1C30] transition-colors"
               title="Reset"
             >
               <RotateCcw className="w-4 h-4" />
@@ -357,8 +357,8 @@ export function AdaptiveOptimizersVisualizer() {
 
         {/* Right: Convergence Leaderboard */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white border border-[#E6E6E0] rounded-lg p-5 space-y-4">
-            <h3 className="text-sm font-bold text-[#18191B]">Convergence Leaderboard</h3>
+          <div className="bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-4">
+            <h3 className="text-sm font-bold text-[#1F191B]">Convergence Leaderboard</h3>
 
             <div className="space-y-3">
               {OPTIMIZER_METAS.map(opt => {
@@ -372,7 +372,7 @@ export function AdaptiveOptimizersVisualizer() {
                     key={opt.id}
                     className={`p-3 rounded border space-y-2 transition-all ${
                       active
-                        ? 'bg-white border-[#E6E6E0]'
+                        ? 'bg-white border-[#EAE2D5]'
                         : 'bg-[#F9F9F7] border-[#EAEAE5] opacity-50'
                     }`}
                   >
@@ -382,7 +382,7 @@ export function AdaptiveOptimizersVisualizer() {
                           className="w-2.5 h-2.5 rounded-full"
                           style={{ backgroundColor: opt.color }}
                         />
-                        <span className="text-xs font-bold text-[#18191B]">{opt.name}</span>
+                        <span className="text-xs font-bold text-[#1F191B]">{opt.name}</span>
                       </div>
                       <span className="text-[10px] font-mono-num text-[#878E99]">
                         (x={state.x.toFixed(2)}, y={state.y.toFixed(2)})
@@ -392,11 +392,11 @@ export function AdaptiveOptimizersVisualizer() {
                     <div className="grid grid-cols-2 gap-2 text-xs font-mono-num pt-1 border-t border-[#F0EEEB]">
                       <div>
                         <span className="text-[10px] text-[#878E99] block font-sans">Loss:</span>
-                        <strong className="text-[#18191B]">{currentLoss.toFixed(4)}</strong>
+                        <strong className="text-[#1F191B]">{currentLoss.toFixed(4)}</strong>
                       </div>
                       <div>
                         <span className="text-[10px] text-[#878E99] block font-sans">Distance to (0,0):</span>
-                        <strong className="text-[#0D6E6E]">{distToMin.toFixed(3)}</strong>
+                        <strong className="text-[#7A1C30]">{distToMin.toFixed(3)}</strong>
                       </div>
                     </div>
                   </div>
@@ -405,8 +405,8 @@ export function AdaptiveOptimizersVisualizer() {
             </div>
           </div>
 
-          <div className="p-4 bg-[#FAF8F5] border border-[#E6E6E0] rounded-lg text-xs text-[#5C626B] space-y-2">
-            <span className="font-bold text-[#18191B] block">Why Adam Outperforms:</span>
+          <div className="p-4 bg-[#FAF5EE] border border-[#EAE2D5] rounded-lg text-xs text-[#54484E] space-y-2">
+            <span className="font-bold text-[#1F191B] block">Why Adam Outperforms:</span>
             <p className="text-[11px] leading-relaxed">
               In elongated ravines, the vertical gradient ∂L/∂y is 16× steeper than the horizontal gradient ∂L/∂x. Adam divides by the square root of second moments, automatically shrinking the step along steep axes while taking full strides along gentle slopes.
             </p>

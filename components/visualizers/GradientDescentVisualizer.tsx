@@ -136,37 +136,37 @@ export function GradientDescentVisualizer() {
   }, [currentTheta, currentStep, toSvgX, toSvgY]);
 
   return (
-    <div className="bg-white border border-[#E6E6E0] rounded-lg shadow-xs overflow-hidden">
+    <div className="bg-white border border-[#EAE2D5] rounded-lg shadow-xs overflow-hidden">
       {/* Visualizer Header */}
-      <div className="border-b border-[#E6E6E0] bg-[#FAF8F5] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="border-b border-[#EAE2D5] bg-[#FAF5EE] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#0D6E6E]" aria-hidden="true"></span>
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#18191B]">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#7A1C30]" aria-hidden="true"></span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#1F191B]">
             Gradient Descent Laboratory
           </span>
         </div>
 
         {/* Experiment Scenarios */}
         <div className="flex items-center gap-1.5 text-xs">
-          <span className="text-[#4A525D]">Behaviors:</span>
+          <span className="text-[#54484E]">Behaviors:</span>
           <button
             type="button"
             onClick={() => setScenario('optimal')}
-            className="px-2 py-0.5 rounded border border-[#E6E6E0] bg-white text-xs hover:border-[#0D6E6E] text-[#18191B]"
+            className="px-2 py-0.5 rounded border border-[#EAE2D5] bg-white text-xs hover:border-[#7A1C30] text-[#1F191B]"
           >
             Optimal Step
           </button>
           <button
             type="button"
             onClick={() => setScenario('small')}
-            className="px-2 py-0.5 rounded border border-[#E6E6E0] bg-white text-xs hover:border-[#4A525D] text-[#4A525D]"
+            className="px-2 py-0.5 rounded border border-[#EAE2D5] bg-white text-xs hover:border-[#54484E] text-[#54484E]"
           >
             Slow Crawling
           </button>
           <button
             type="button"
             onClick={() => setScenario('divergence')}
-            className="px-2 py-0.5 rounded border border-[#B45309] bg-[#FFFDF5] text-xs font-semibold text-[#B45309]"
+            className="px-2 py-0.5 rounded border border-[#B8860B] bg-[#FFFDF5] text-xs font-semibold text-[#B8860B]"
           >
             Divergence (η &gt; 2.0)
           </button>
@@ -174,7 +174,7 @@ export function GradientDescentVisualizer() {
           <button
             type="button"
             onClick={loadWorkedExample}
-            className="flex items-center gap-1 text-xs text-[#0D6E6E] hover:text-[#085252] px-2 py-1 rounded border border-[#B7E2E2] bg-[#EEF7F7] ml-2"
+            className="flex items-center gap-1 text-xs text-[#7A1C30] hover:text-[#5F1424] px-2 py-1 rounded border border-[#EEDAA2] bg-[#FAF2E6] ml-2"
           >
             <BookOpen className="w-3.5 h-3.5" />
             <span>Example</span>
@@ -182,13 +182,13 @@ export function GradientDescentVisualizer() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#E6E6E0]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#EAE2D5]">
         {/* Left: SVG Coordinate Plot */}
         <div className="lg:col-span-7 p-4 bg-[#FCFCFA] flex flex-col items-center justify-center">
           {/* Landscape Selector Tabs */}
           <div className="w-full max-w-[480px] flex items-center justify-between mb-2">
-            <span className="text-[11px] text-[#4A525D] font-medium">Error Landscape:</span>
-            <div className="inline-flex rounded border border-[#E6E6E0] bg-white p-0.5 text-[11px]">
+            <span className="text-[11px] text-[#54484E] font-medium">Error Landscape:</span>
+            <div className="inline-flex rounded border border-[#EAE2D5] bg-white p-0.5 text-[11px]">
               {(['convex_quadratic', 'double_well', 'sinusoidal'] as FunctionPreset[]).map(key => (
                 <button
                   key={key}
@@ -197,7 +197,7 @@ export function GradientDescentVisualizer() {
                     setSelectedPreset(key);
                     resetExperiment(key === 'convex_quadratic' ? 5.0 : (key === 'double_well' ? 1.8 : 2.5));
                   }}
-                  className={`px-2 py-0.5 rounded ${selectedPreset === key ? 'bg-[#0D6E6E] text-white' : 'text-[#4A525D]'}`}
+                  className={`px-2 py-0.5 rounded ${selectedPreset === key ? 'bg-[#7A1C30] text-white' : 'text-[#54484E]'}`}
                 >
                   {key === 'convex_quadratic' ? 'Convex Bowl' : (key === 'double_well' ? 'Double-Well' : 'Sinusoidal')}
                 </button>
@@ -221,11 +221,11 @@ export function GradientDescentVisualizer() {
             <line x1={toSvgX(0)} y1={padTop} x2={toSvgX(0)} y2={height - padBottom} stroke="#D1D1C7" strokeWidth="1" />
 
             {/* Objective Function Curve */}
-            <path d={curvePath} fill="none" stroke="#0D6E6E" strokeWidth="2.5" />
+            <path d={curvePath} fill="none" stroke="#7A1C30" strokeWidth="2.5" />
 
             {/* Tangent slope at current theta */}
             {!isDiverged && (
-              <line x1={tangentPoints.x1} y1={tangentPoints.y1} x2={tangentPoints.x2} y2={tangentPoints.y2} stroke="#B45309" strokeWidth="1.5" strokeDasharray="3,2" />
+              <line x1={tangentPoints.x1} y1={tangentPoints.y1} x2={tangentPoints.x2} y2={tangentPoints.y2} stroke="#B8860B" strokeWidth="1.5" strokeDasharray="3,2" />
             )}
 
             {/* Trajectory history breadcrumbs */}
@@ -235,7 +235,7 @@ export function GradientDescentVisualizer() {
                 cx={toSvgX(h.theta)}
                 cy={toSvgY(h.loss)}
                 r={Math.max(2, 4 - i * 0.2)}
-                fill="#4A525D"
+                fill="#54484E"
                 opacity={0.6 - i * 0.025}
               />
             ))}
@@ -247,7 +247,7 @@ export function GradientDescentVisualizer() {
                 y1={toSvgY(currentStep.loss)}
                 x2={toSvgX(currentStep.nextTheta)}
                 y2={toSvgY(landscape.evaluate(currentStep.nextTheta))}
-                stroke="#B45309"
+                stroke="#B8860B"
                 strokeWidth="2"
               />
             )}
@@ -258,7 +258,7 @@ export function GradientDescentVisualizer() {
                 cx={toSvgX(currentTheta)}
                 cy={toSvgY(currentStep.loss)}
                 r="6"
-                fill="#0D6E6E"
+                fill="#7A1C30"
                 stroke="#FFFFFF"
                 strokeWidth="2"
               />
@@ -293,7 +293,7 @@ export function GradientDescentVisualizer() {
               type="button"
               onClick={stepOnce}
               disabled={isDiverged}
-              className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded bg-[#0D6E6E] text-white hover:bg-[#085252] disabled:opacity-40"
+              className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded bg-[#7A1C30] text-white hover:bg-[#5F1424] disabled:opacity-40"
             >
               <span>Take 1 Step</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -303,22 +303,22 @@ export function GradientDescentVisualizer() {
               type="button"
               onClick={() => setIsRunning(!isRunning)}
               disabled={isDiverged}
-              className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded border border-[#E6E6E0] bg-white text-[#18191B] hover:bg-[#FAF8F5] disabled:opacity-40"
+              className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded border border-[#EAE2D5] bg-white text-[#1F191B] hover:bg-[#FAF5EE] disabled:opacity-40"
             >
-              {isRunning ? <Pause className="w-3.5 h-3.5 text-[#B45309]" /> : <Play className="w-3.5 h-3.5 text-[#0D6E6E]" />}
+              {isRunning ? <Pause className="w-3.5 h-3.5 text-[#B8860B]" /> : <Play className="w-3.5 h-3.5 text-[#7A1C30]" />}
               <span>{isRunning ? 'Pause' : 'Auto Run'}</span>
             </button>
 
             <button
               type="button"
               onClick={() => resetExperiment(selectedPreset === 'convex_quadratic' ? 5.0 : 1.8)}
-              className="flex items-center gap-1 text-xs text-[#5C626B] hover:text-[#18191B] px-2.5 py-1.5 rounded border border-[#E6E6E0] bg-white"
+              className="flex items-center gap-1 text-xs text-[#54484E] hover:text-[#1F191B] px-2.5 py-1.5 rounded border border-[#EAE2D5] bg-white"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset</span>
             </button>
 
-            <span className="text-xs font-mono-num text-[#4A525D] ml-2">
+            <span className="text-xs font-mono-num text-[#54484E] ml-2">
               Steps: <strong>{history.length}</strong>
             </span>
           </div>
@@ -328,10 +328,10 @@ export function GradientDescentVisualizer() {
         <div className="lg:col-span-5 p-4 space-y-4">
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label htmlFor="gd-lr-slider" className="text-xs font-semibold text-[#18191B]">
+              <label htmlFor="gd-lr-slider" className="text-xs font-semibold text-[#1F191B]">
                 Learning Rate (η)
               </label>
-              <span className="text-xs font-mono-num font-bold text-[#0D6E6E]">
+              <span className="text-xs font-mono-num font-bold text-[#7A1C30]">
                 η = {learningRate.toFixed(2)}
               </span>
             </div>
@@ -349,10 +349,10 @@ export function GradientDescentVisualizer() {
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label htmlFor="gd-theta-slider" className="text-xs font-semibold text-[#18191B]">
+              <label htmlFor="gd-theta-slider" className="text-xs font-semibold text-[#1F191B]">
                 Current Position (θ)
               </label>
-              <span className="text-xs font-mono-num font-bold text-[#18191B]">
+              <span className="text-xs font-mono-num font-bold text-[#1F191B]">
                 θ = {currentTheta.toFixed(3)}
               </span>
             </div>
@@ -372,47 +372,47 @@ export function GradientDescentVisualizer() {
           </div>
 
           {/* Current Step Math Breakdown */}
-          <div className="bg-[#FAF8F5] border border-[#E6E6E0] rounded p-3 text-xs space-y-1.5 font-mono-num">
+          <div className="bg-[#FAF5EE] border border-[#EAE2D5] rounded p-3 text-xs space-y-1.5 font-mono-num">
             <div className="flex justify-between">
-              <span className="text-[#4A525D]">Current Loss L(θ):</span>
-              <span className="font-semibold text-[#18191B]">
+              <span className="text-[#54484E]">Current Loss L(θ):</span>
+              <span className="font-semibold text-[#1F191B]">
                 {isDiverged ? 'Infinity' : currentStep.loss.toFixed(4)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#4A525D]">Gradient dL/dθ:</span>
-              <span className="font-bold text-[#B45309]">
+              <span className="text-[#54484E]">Gradient dL/dθ:</span>
+              <span className="font-bold text-[#B8860B]">
                 {isDiverged ? 'N/A' : currentStep.gradient.toFixed(4)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#4A525D]">Update (-η × grad):</span>
-              <span className="font-semibold text-[#0D6E6E]">
+              <span className="text-[#54484E]">Update (-η × grad):</span>
+              <span className="font-semibold text-[#7A1C30]">
                 {isDiverged ? 'N/A' : currentStep.update.toFixed(4)}
               </span>
             </div>
-            <div className="flex justify-between pt-1 border-t border-[#E6E6E0]">
-              <span className="text-[#4A525D]">Next Position θ_next:</span>
-              <span className="font-bold text-sm text-[#0D6E6E]">
+            <div className="flex justify-between pt-1 border-t border-[#EAE2D5]">
+              <span className="text-[#54484E]">Next Position θ_next:</span>
+              <span className="font-bold text-sm text-[#7A1C30]">
                 {isDiverged ? 'Diverged' : currentStep.nextTheta.toFixed(4)}
               </span>
             </div>
           </div>
 
           {/* Recent History Table */}
-          <div className="space-y-1 pt-1 border-t border-[#E6E6E0]">
-            <div className="text-[11px] font-semibold text-[#4A525D] uppercase tracking-wider">
+          <div className="space-y-1 pt-1 border-t border-[#EAE2D5]">
+            <div className="text-[11px] font-semibold text-[#54484E] uppercase tracking-wider">
               Optimization Trajectory
             </div>
             {history.length === 0 ? (
               <div className="text-xs text-[#6E7682] italic">Click &quot;Take 1 Step&quot; or &quot;Auto Run&quot; to begin optimization.</div>
             ) : (
-              <div className="max-h-24 overflow-y-auto border border-[#E6E6E0] rounded divide-y divide-[#E6E6E0] bg-white text-[11px] font-mono-num">
+              <div className="max-h-24 overflow-y-auto border border-[#EAE2D5] rounded divide-y divide-[#EAE2D5] bg-white text-[11px] font-mono-num">
                 {history.slice(0, 4).map((h, idx) => (
                   <div key={idx} className="flex justify-between px-2 py-1">
-                    <span className="text-[#4A525D]">Step #{h.step}</span>
+                    <span className="text-[#54484E]">Step #{h.step}</span>
                     <span>θ = {h.theta.toFixed(3)}</span>
-                    <span className="text-[#0D6E6E]">L = {h.loss.toFixed(3)}</span>
+                    <span className="text-[#7A1C30]">L = {h.loss.toFixed(3)}</span>
                   </div>
                 ))}
               </div>

@@ -35,7 +35,7 @@ export function RegularizationVisualizer() {
     if (degree <= 2) {
       return {
         label: 'Underfitting Regime (High Bias)',
-        color: 'text-[#B45309] bg-[#FEF3C7] border-[#FCD34D]',
+        color: 'text-[#B8860B] bg-[#FEF3C7] border-[#FCD34D]',
         desc: 'Model capacity is too rigid to capture the underlying sinusoidal curvature. Both training and testing losses are elevated.'
       };
     }
@@ -85,12 +85,12 @@ export function RegularizationVisualizer() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="p-4 bg-[#EEF7F7] border border-[#B7E2E2] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="p-4 bg-[#FAF2E6] border border-[#EEDAA2] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="space-y-1">
-          <div className="text-xs font-mono-num font-bold text-[#0D6E6E] uppercase tracking-wider">
+          <div className="text-xs font-mono-num font-bold text-[#7A1C30] uppercase tracking-wider">
             Generalization & Regularization Lab
           </div>
-          <p className="text-xs text-[#5C626B]">
+          <p className="text-xs text-[#54484E]">
             Control model capacity with polynomial degree, and observe how L2 weight decay shrinks weights to tame overfitting on unseen test data.
           </p>
         </div>
@@ -100,19 +100,19 @@ export function RegularizationVisualizer() {
             setLambdaL2(0.015);
             setDropoutRate(0.0);
           }}
-          className="px-3 py-1.5 text-xs font-semibold rounded border border-[#0D6E6E] text-[#0D6E6E] bg-white hover:bg-[#EEF7F7] transition-colors shrink-0"
+          className="px-3 py-1.5 text-xs font-semibold rounded border border-[#7A1C30] text-[#7A1C30] bg-white hover:bg-[#FAF2E6] transition-colors shrink-0"
         >
           Load Optimal L2 Preset
         </button>
       </div>
 
       {/* Control Sliders */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white border border-[#E6E6E0] rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white border border-[#EAE2D5] rounded-lg">
         {/* Model Capacity Slider */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-[#18191B]">Model Capacity (Polynomial Degree d)</span>
-            <span className="font-mono-num font-bold text-[#0D6E6E]">Degree {degree} ({degree + 1} params)</span>
+            <span className="font-semibold text-[#1F191B]">Model Capacity (Polynomial Degree d)</span>
+            <span className="font-mono-num font-bold text-[#7A1C30]">Degree {degree} ({degree + 1} params)</span>
           </div>
           <input
             type="range"
@@ -121,7 +121,7 @@ export function RegularizationVisualizer() {
             step="1"
             value={degree}
             onChange={e => setDegree(parseInt(e.target.value))}
-            className="w-full accent-[#0D6E6E]"
+            className="w-full accent-[#7A1C30]"
           />
           <div className="flex justify-between text-[10px] text-[#878E99]">
             <span>d=1 (Linear / Underfit)</span>
@@ -133,8 +133,8 @@ export function RegularizationVisualizer() {
         {/* L2 Weight Decay Slider */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-[#18191B]">L2 Regularization Penalty (λ)</span>
-            <span className="font-mono-num font-bold text-[#0D6E6E]">λ = {lambdaL2.toFixed(3)}</span>
+            <span className="font-semibold text-[#1F191B]">L2 Regularization Penalty (λ)</span>
+            <span className="font-mono-num font-bold text-[#7A1C30]">λ = {lambdaL2.toFixed(3)}</span>
           </div>
           <input
             type="range"
@@ -143,7 +143,7 @@ export function RegularizationVisualizer() {
             step="0.001"
             value={lambdaL2}
             onChange={e => setLambdaL2(parseFloat(e.target.value))}
-            className="w-full accent-[#0D6E6E]"
+            className="w-full accent-[#7A1C30]"
           />
           <div className="flex justify-between text-[10px] text-[#878E99]">
             <span>λ=0 (No Penalty)</span>
@@ -156,23 +156,23 @@ export function RegularizationVisualizer() {
       {/* Main Plot & Diagnostics */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: SVG Fitted Curve Plot */}
-        <div className="lg:col-span-8 bg-white border border-[#E6E6E0] rounded-lg p-5 space-y-4">
+        <div className="lg:col-span-8 bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#18191B]">Polynomial Fit vs Out-of-Sample Test Data</h3>
+            <h3 className="text-sm font-bold text-[#1F191B]">Polynomial Fit vs Out-of-Sample Test Data</h3>
             <div className="flex items-center gap-3 text-xs">
-              <span className="inline-flex items-center gap-1.5 text-[#18191B]">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#18191B]" />
+              <span className="inline-flex items-center gap-1.5 text-[#1F191B]">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#1F191B]" />
                 Train Points (N=9)
               </span>
-              <span className="inline-flex items-center gap-1.5 text-[#B45309]">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#B45309]" />
+              <span className="inline-flex items-center gap-1.5 text-[#B8860B]">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#B8860B]" />
                 Test Points (N=7)
               </span>
             </div>
           </div>
 
           {/* SVG Canvas */}
-          <div className="border border-[#E6E6E0] rounded-md bg-[#FAF8F5] p-2 flex justify-center">
+          <div className="border border-[#EAE2D5] rounded-md bg-[#FAF5EE] p-2 flex justify-center">
             <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-64 overflow-visible">
               {/* Grid axes */}
               <line
@@ -198,7 +198,7 @@ export function RegularizationVisualizer() {
               <path
                 d={curvePath}
                 fill="none"
-                stroke="#0D6E6E"
+                stroke="#7A1C30"
                 strokeWidth="2.5"
                 strokeLinecap="round"
               />
@@ -210,7 +210,7 @@ export function RegularizationVisualizer() {
                   cx={toSvgX(pt.x)}
                   cy={toSvgY(pt.y)}
                   r="4.5"
-                  fill="#18191B"
+                  fill="#1F191B"
                   stroke="#FFFFFF"
                   strokeWidth="1.5"
                 />
@@ -223,7 +223,7 @@ export function RegularizationVisualizer() {
                   cx={toSvgX(pt.x)}
                   cy={toSvgY(pt.y)}
                   r="4.5"
-                  fill="#B45309"
+                  fill="#B8860B"
                   stroke="#FFFFFF"
                   strokeWidth="1.5"
                 />
@@ -241,20 +241,20 @@ export function RegularizationVisualizer() {
         {/* Right: Metrics & Weight Coefficients */}
         <div className="lg:col-span-4 space-y-6">
           {/* Loss Metrics Panel */}
-          <div className="bg-white border border-[#E6E6E0] rounded-lg p-5 space-y-4">
-            <h3 className="text-sm font-bold text-[#18191B]">Generalization Metrics</h3>
+          <div className="bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-4">
+            <h3 className="text-sm font-bold text-[#1F191B]">Generalization Metrics</h3>
             <div className="space-y-3">
-              <div className="p-3 bg-[#FAF8F5] border border-[#E6E6E0] rounded flex justify-between items-center">
-                <span className="text-xs text-[#5C626B]">Training Loss (MSE):</span>
-                <span className="font-mono-num font-bold text-sm text-[#18191B]">{trainMSE.toFixed(4)}</span>
+              <div className="p-3 bg-[#FAF5EE] border border-[#EAE2D5] rounded flex justify-between items-center">
+                <span className="text-xs text-[#54484E]">Training Loss (MSE):</span>
+                <span className="font-mono-num font-bold text-sm text-[#1F191B]">{trainMSE.toFixed(4)}</span>
               </div>
-              <div className="p-3 bg-[#FAF8F5] border border-[#E6E6E0] rounded flex justify-between items-center">
-                <span className="text-xs text-[#5C626B]">Test Loss (MSE):</span>
-                <span className="font-mono-num font-bold text-sm text-[#B45309]">{testMSE.toFixed(4)}</span>
+              <div className="p-3 bg-[#FAF5EE] border border-[#EAE2D5] rounded flex justify-between items-center">
+                <span className="text-xs text-[#54484E]">Test Loss (MSE):</span>
+                <span className="font-mono-num font-bold text-sm text-[#B8860B]">{testMSE.toFixed(4)}</span>
               </div>
-              <div className="p-3 bg-white border border-[#B7E2E2] rounded flex justify-between items-center">
-                <span className="text-xs text-[#5C626B]">Generalization Gap:</span>
-                <span className={`font-mono-num font-extrabold text-sm ${testMSE - trainMSE > 0.4 ? 'text-[#B91C1C]' : 'text-[#0D6E6E]'}`}>
+              <div className="p-3 bg-white border border-[#EEDAA2] rounded flex justify-between items-center">
+                <span className="text-xs text-[#54484E]">Generalization Gap:</span>
+                <span className={`font-mono-num font-extrabold text-sm ${testMSE - trainMSE > 0.4 ? 'text-[#B91C1C]' : 'text-[#7A1C30]'}`}>
                   {(testMSE - trainMSE).toFixed(4)}
                 </span>
               </div>
@@ -262,18 +262,18 @@ export function RegularizationVisualizer() {
           </div>
 
           {/* Inverted Dropout Simulator */}
-          <div className="bg-white border border-[#E6E6E0] rounded-lg p-5 space-y-4">
+          <div className="bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-4">
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-[#18191B]">Inverted Dropout Simulator</h3>
-              <p className="text-[11px] text-[#5C626B]">
+              <h3 className="text-sm font-bold text-[#1F191B]">Inverted Dropout Simulator</h3>
+              <p className="text-[11px] text-[#54484E]">
                 Randomly deactivates neurons during training to prevent co-adaptation.
               </p>
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-[#18191B]">Dropout Rate (p)</span>
-                <span className="font-mono-num font-bold text-[#0D6E6E]">{(dropoutRate * 100).toFixed(0)}%</span>
+                <span className="font-semibold text-[#1F191B]">Dropout Rate (p)</span>
+                <span className="font-mono-num font-bold text-[#7A1C30]">{(dropoutRate * 100).toFixed(0)}%</span>
               </div>
               <input
                 type="range"
@@ -282,13 +282,13 @@ export function RegularizationVisualizer() {
                 step="0.1"
                 value={dropoutRate}
                 onChange={e => setDropoutRate(parseFloat(e.target.value))}
-                className="w-full accent-[#0D6E6E]"
+                className="w-full accent-[#7A1C30]"
               />
-              <div className="flex justify-between items-center text-[11px] text-[#5C626B]">
-                <span>Scaling factor 1/(1-p): <strong className="text-[#0D6E6E] font-mono-num">{dropoutResult.scaleFactor}x</strong></span>
+              <div className="flex justify-between items-center text-[11px] text-[#54484E]">
+                <span>Scaling factor 1/(1-p): <strong className="text-[#7A1C30] font-mono-num">{dropoutResult.scaleFactor}x</strong></span>
                 <button
                   onClick={() => setDropoutSeed(s => s + 1)}
-                  className="text-[10px] text-[#0D6E6E] hover:underline"
+                  className="text-[10px] text-[#7A1C30] hover:underline"
                 >
                   Resample Mask
                 </button>
@@ -296,7 +296,7 @@ export function RegularizationVisualizer() {
             </div>
 
             {/* Neuron Mask Grid */}
-            <div className="grid grid-cols-4 gap-1.5 p-2 bg-[#FAF8F5] border border-[#E6E6E0] rounded-md">
+            <div className="grid grid-cols-4 gap-1.5 p-2 bg-[#FAF5EE] border border-[#EAE2D5] rounded-md">
               {dropoutResult.scaledActivations.map((val, idx) => {
                 const isActive = dropoutResult.mask[idx] === 1;
                 return (
@@ -304,7 +304,7 @@ export function RegularizationVisualizer() {
                     key={idx}
                     className={`h-11 flex flex-col items-center justify-center font-mono-num text-[10px] rounded border transition-all ${
                       isActive
-                        ? 'bg-white text-[#0D6E6E] border-[#0D6E6E] font-bold'
+                        ? 'bg-white text-[#7A1C30] border-[#7A1C30] font-bold'
                         : 'bg-[#F4F4F1] text-[#A0A096] border-[#D1D1C7] border-dashed line-through opacity-60'
                     }`}
                   >

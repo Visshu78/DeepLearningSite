@@ -114,11 +114,11 @@ export function LossLandscapeVisualizer() {
   };
 
   return (
-    <div className="bg-white border border-[#E6E6E0] rounded-lg shadow-xs overflow-hidden">
-      <div className="border-b border-[#E6E6E0] bg-[#FAF8F5] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="bg-white border border-[#EAE2D5] rounded-lg shadow-xs overflow-hidden">
+      <div className="border-b border-[#EAE2D5] bg-[#FAF5EE] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#0D6E6E]" aria-hidden="true"></span>
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#18191B]">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#7A1C30]" aria-hidden="true"></span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#1F191B]">
             Mean Squared Error & Residual Surface
           </span>
         </div>
@@ -127,7 +127,7 @@ export function LossLandscapeVisualizer() {
           <button
             type="button"
             onClick={loadWorkedExample}
-            className="flex items-center gap-1 text-xs text-[#0D6E6E] hover:text-[#085252] px-2 py-1 rounded border border-[#B7E2E2] bg-[#EEF7F7] transition-colors"
+            className="flex items-center gap-1 text-xs text-[#7A1C30] hover:text-[#5F1424] px-2 py-1 rounded border border-[#EEDAA2] bg-[#FAF2E6] transition-colors"
           >
             <BookOpen className="w-3.5 h-3.5" />
             <span>Load Example</span>
@@ -135,7 +135,7 @@ export function LossLandscapeVisualizer() {
           <button
             type="button"
             onClick={loadWorkedExample}
-            className="text-xs text-[#5C626B] hover:text-[#18191B] p-1.5 rounded border border-[#E6E6E0] bg-white"
+            className="text-xs text-[#54484E] hover:text-[#1F191B] p-1.5 rounded border border-[#EAE2D5] bg-white"
             title="Reset"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -143,7 +143,7 @@ export function LossLandscapeVisualizer() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#E6E6E0]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#EAE2D5]">
         {/* Left: 1D Parabolic Loss Curve */}
         <div className="lg:col-span-6 p-4 bg-[#FCFCFA] flex flex-col items-center justify-center">
           <svg
@@ -181,7 +181,7 @@ export function LossLandscapeVisualizer() {
             <line x1={toSvgX(0)} y1={padTop} x2={toSvgX(0)} y2={height - padBottom} stroke="#D1D1C7" strokeWidth="1.5" />
 
             {/* Parabola curve */}
-            <path d={parabolaPath} fill="none" stroke="#0D6E6E" strokeWidth="2.5" />
+            <path d={parabolaPath} fill="none" stroke="#7A1C30" strokeWidth="2.5" />
 
             {/* Target indicator */}
             <line x1={toSvgX(target)} y1={padTop} x2={toSvgX(target)} y2={height - padBottom} stroke="#15803D" strokeWidth="1.5" strokeDasharray="3,3" />
@@ -190,7 +190,7 @@ export function LossLandscapeVisualizer() {
             </text>
 
             {/* Tangent line at current point */}
-            <line x1={tangentPoints.x1} y1={tangentPoints.y1} x2={tangentPoints.x2} y2={tangentPoints.y2} stroke="#B45309" strokeWidth="1.5" strokeDasharray="3,2" />
+            <line x1={tangentPoints.x1} y1={tangentPoints.y1} x2={tangentPoints.x2} y2={tangentPoints.y2} stroke="#B8860B" strokeWidth="1.5" strokeDasharray="3,2" />
 
             {/* Current operating point */}
             {singleResult.loss <= rangeMax && (
@@ -198,20 +198,20 @@ export function LossLandscapeVisualizer() {
                 cx={toSvgX(prediction)}
                 cy={toSvgY(singleResult.loss)}
                 r="6"
-                fill="#0D6E6E"
+                fill="#7A1C30"
                 stroke="#FFFFFF"
                 strokeWidth="2"
               />
             )}
           </svg>
 
-          <div className="flex items-center gap-4 mt-2 text-xs text-[#4A525D]">
+          <div className="flex items-center gap-4 mt-2 text-xs text-[#54484E]">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-1 bg-[#0D6E6E] rounded-full inline-block"></span>
+              <span className="w-2.5 h-1 bg-[#7A1C30] rounded-full inline-block"></span>
               L = ½(ŷ - y)²
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-1 border-t border-dashed border-[#B45309] inline-block"></span>
+              <span className="w-2.5 h-1 border-t border-dashed border-[#B8860B] inline-block"></span>
               Gradient ∂L/∂ŷ = ŷ - y
             </span>
           </div>
@@ -222,10 +222,10 @@ export function LossLandscapeVisualizer() {
           <div className="space-y-3">
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label htmlFor="loss-pred-slider" className="text-xs font-semibold text-[#18191B]">
+                <label htmlFor="loss-pred-slider" className="text-xs font-semibold text-[#1F191B]">
                   Model Prediction (ŷ)
                 </label>
-                <span className="text-xs font-mono-num font-bold text-[#0D6E6E]">
+                <span className="text-xs font-mono-num font-bold text-[#7A1C30]">
                   ŷ = {prediction.toFixed(2)}
                 </span>
               </div>
@@ -243,7 +243,7 @@ export function LossLandscapeVisualizer() {
 
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label htmlFor="loss-target-slider" className="text-xs font-semibold text-[#18191B]">
+                <label htmlFor="loss-target-slider" className="text-xs font-semibold text-[#1F191B]">
                   Ground Truth Target (y)
                 </label>
                 <span className="text-xs font-mono-num font-bold text-[#15803D]">
@@ -264,42 +264,42 @@ export function LossLandscapeVisualizer() {
           </div>
 
           {/* Current single-sample calculation */}
-          <div className="bg-[#FAF8F5] border border-[#E6E6E0] rounded p-2.5 text-xs space-y-1 font-mono-num">
+          <div className="bg-[#FAF5EE] border border-[#EAE2D5] rounded p-2.5 text-xs space-y-1 font-mono-num">
             <div className="flex justify-between">
-              <span className="text-[#4A525D]">Error Residual (ŷ - y):</span>
-              <span className="font-semibold text-[#18191B]">
+              <span className="text-[#54484E]">Error Residual (ŷ - y):</span>
+              <span className="font-semibold text-[#1F191B]">
                 {prediction.toFixed(2)} - {target.toFixed(2)} = {(prediction - target).toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#4A525D]">Loss L = ½(ŷ - y)²:</span>
-              <span className="font-bold text-[#0D6E6E]">
+              <span className="text-[#54484E]">Loss L = ½(ŷ - y)²:</span>
+              <span className="font-bold text-[#7A1C30]">
                 {singleResult.loss.toFixed(4)}
               </span>
             </div>
-            <div className="flex justify-between pt-1 border-t border-[#E6E6E0]">
-              <span className="text-[#4A525D]">Gradient Signal ∂L/∂ŷ:</span>
-              <span className="font-bold text-[#B45309]">
+            <div className="flex justify-between pt-1 border-t border-[#EAE2D5]">
+              <span className="text-[#54484E]">Gradient Signal ∂L/∂ŷ:</span>
+              <span className="font-bold text-[#B8860B]">
                 {singleResult.derivative.toFixed(4)}
               </span>
             </div>
           </div>
 
           {/* Real Interactive Dataset Residual Table */}
-          <div className="space-y-2 pt-2 border-t border-[#E6E6E0]">
+          <div className="space-y-2 pt-2 border-t border-[#EAE2D5]">
             <div className="flex justify-between items-center text-xs">
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-[#18191B]">Dataset Residuals Table</span>
+                <span className="font-semibold text-[#1F191B]">Dataset Residuals Table</span>
                 <span className="text-[10px] text-[#6E7682]">(N={dataset.length})</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono-num font-bold text-xs bg-[#EEF7F7] text-[#0D6E6E] px-2 py-0.5 rounded">
+                <span className="font-mono-num font-bold text-xs bg-[#FAF2E6] text-[#7A1C30] px-2 py-0.5 rounded">
                   Avg MSE = {dsMseResult.totalMse.toFixed(4)}
                 </span>
                 <button
                   type="button"
                   onClick={addDatasetItem}
-                  className="p-1 rounded border border-[#E6E6E0] text-[#0D6E6E] hover:bg-[#FAF8F5]"
+                  className="p-1 rounded border border-[#EAE2D5] text-[#7A1C30] hover:bg-[#FAF5EE]"
                   title="Add sample"
                   aria-label="Add dataset sample"
                 >
@@ -308,9 +308,9 @@ export function LossLandscapeVisualizer() {
               </div>
             </div>
 
-            <div className="max-h-36 overflow-y-auto border border-[#E6E6E0] rounded text-xs font-mono-num bg-white">
+            <div className="max-h-36 overflow-y-auto border border-[#EAE2D5] rounded text-xs font-mono-num bg-white">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-[#FAF8F5] text-[10px] text-[#4A525D] uppercase tracking-wider border-b border-[#E6E6E0]">
+                <thead className="bg-[#FAF5EE] text-[10px] text-[#54484E] uppercase tracking-wider border-b border-[#EAE2D5]">
                   <tr>
                     <th className="p-1.5">Sample</th>
                     <th className="p-1.5">Target y</th>
@@ -319,7 +319,7 @@ export function LossLandscapeVisualizer() {
                     <th className="p-1.5"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E6E6E0]">
+                <tbody className="divide-y divide-[#EAE2D5]">
                   {dataset.map((row, idx) => (
                     <tr key={row.id} className="hover:bg-[#FCFCFA]">
                       <td className="p-1.5 text-[#6E7682]">#{idx + 1}</td>
@@ -330,7 +330,7 @@ export function LossLandscapeVisualizer() {
                           aria-label={`Target for sample ${idx + 1}`}
                           value={row.target}
                           onChange={e => updateDatasetItem(row.id, 'target', parseFloat(e.target.value) || 0)}
-                          className="w-14 px-1 py-0.5 border border-[#E6E6E0] rounded text-xs"
+                          className="w-14 px-1 py-0.5 border border-[#EAE2D5] rounded text-xs"
                         />
                       </td>
                       <td className="p-1.5">
@@ -340,10 +340,10 @@ export function LossLandscapeVisualizer() {
                           aria-label={`Prediction for sample ${idx + 1}`}
                           value={row.prediction}
                           onChange={e => updateDatasetItem(row.id, 'prediction', parseFloat(e.target.value) || 0)}
-                          className="w-14 px-1 py-0.5 border border-[#E6E6E0] rounded text-xs"
+                          className="w-14 px-1 py-0.5 border border-[#EAE2D5] rounded text-xs"
                         />
                       </td>
-                      <td className="p-1.5 font-bold text-[#0D6E6E]">
+                      <td className="p-1.5 font-bold text-[#7A1C30]">
                         {Math.pow(row.prediction - row.target, 2).toFixed(3)}
                       </td>
                       <td className="p-1.5 text-right">

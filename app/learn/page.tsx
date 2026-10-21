@@ -12,22 +12,22 @@ export default function LearnRoadmapPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-10">
       {/* Header */}
-      <div className="border-b border-[#E6E6E0] pb-8 space-y-4">
+      <div className="border-b border-[#EAE2D5] pb-8 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#EEF7F7] text-[#0D6E6E] text-xs font-mono-num font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#FAF2E6] text-[#7A1C30] text-xs font-mono-num font-semibold">
             <Layers className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Structured Deep Learning Curriculum</span>
           </div>
 
-          <div className="text-xs font-mono-num text-[#4A525D] bg-[#FAF8F5] border border-[#E6E6E0] px-3 py-1.5 rounded">
-            Overall Progress: <strong className="text-[#0D6E6E]">{mounted ? `${totalCompleted} / 6` : '0 / 6'} Completed</strong>
+          <div className="text-xs font-mono-num text-[#54484E] bg-[#FAF5EE] border border-[#EAE2D5] px-3 py-1.5 rounded">
+            Overall Progress: <strong className="text-[#7A1C30]">{mounted ? `${totalCompleted} / 6` : '0 / 6'} Completed</strong>
           </div>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#18191B] tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1F191B] tracking-tight">
           Learning Roadmap
         </h1>
-        <p className="text-base text-[#4A525D] max-w-2xl leading-relaxed">
+        <p className="text-base text-[#54484E] max-w-2xl leading-relaxed">
           Master deep learning from first principles through a step-by-step visual progression. Every module connects intuition directly to live mathematical simulations.
         </p>
       </div>
@@ -44,19 +44,19 @@ export default function LearnRoadmapPage() {
               key={module.id}
               className={`border rounded-lg overflow-hidden transition-all ${
                 isAvailable
-                  ? 'border-[#E6E6E0] bg-white shadow-xs'
-                  : 'border-[#E6E6E0] bg-[#FAF8F5]/60 opacity-80'
+                  ? 'border-[#EAE2D5] bg-white shadow-xs'
+                  : 'border-[#EAE2D5] bg-[#FAF5EE]/60 opacity-80'
               }`}
             >
               {/* Module Header */}
-              <div className="p-5 border-b border-[#E6E6E0] bg-[#FAF8F5] flex flex-wrap items-center justify-between gap-3">
+              <div className="p-5 border-b border-[#EAE2D5] bg-[#FAF5EE] flex flex-wrap items-center justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono-num font-bold uppercase tracking-wider text-[#0D6E6E]">
+                    <span className="text-[11px] font-mono-num font-bold uppercase tracking-wider text-[#7A1C30]">
                       Module {module.number}
                     </span>
                     {!isAvailable && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono-num px-2 py-0.5 rounded bg-[#F4F4F1] border border-[#D1D1C7] text-[#4A525D]">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono-num px-2 py-0.5 rounded bg-[#F4F4F1] border border-[#D1D1C7] text-[#54484E]">
                         <Lock className="w-2.5 h-2.5" />
                         Upcoming Curriculum
                       </span>
@@ -68,12 +68,12 @@ export default function LearnRoadmapPage() {
                       </span>
                     )}
                   </div>
-                  <h2 className="text-lg font-bold text-[#18191B]">
+                  <h2 className="text-lg font-bold text-[#1F191B]">
                     {module.title}
                   </h2>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs text-[#4A525D] font-mono-num">
+                <div className="flex items-center gap-3 text-xs text-[#54484E] font-mono-num">
                   {isAvailable && (
                     <span>Completed: <strong>{mounted ? moduleCompletedCount : 0}/{module.lessons.length}</strong></span>
                   )}
@@ -82,12 +82,12 @@ export default function LearnRoadmapPage() {
               </div>
 
               {/* Module Description */}
-              <div className="px-5 py-3 text-xs text-[#4A525D] border-b border-[#E6E6E0] bg-[#FCFCFA]">
+              <div className="px-5 py-3 text-xs text-[#54484E] border-b border-[#EAE2D5] bg-[#FCFCFA]">
                 {module.description}
               </div>
 
               {/* Lessons List */}
-              <div className="divide-y divide-[#E6E6E0]">
+              <div className="divide-y divide-[#EAE2D5]">
                 {module.lessons.map((lesson) => {
                   const completed = mounted && isCompleted(lesson.slug);
                   const isLessonAvailable = lesson.status === 'available';
@@ -95,14 +95,14 @@ export default function LearnRoadmapPage() {
                   return (
                     <div
                       key={lesson.id}
-                      className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#FAF8F5]/50 transition-colors"
+                      className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#FAF5EE]/50 transition-colors"
                     >
                       <div className="space-y-1.5 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-mono-num text-[#6E7682]">
                             {module.number}.{lesson.lessonNumber}
                           </span>
-                          <h3 className="text-sm font-bold text-[#18191B]">
+                          <h3 className="text-sm font-bold text-[#1F191B]">
                             {lesson.title}
                           </h3>
                           {completed && (
@@ -113,7 +113,7 @@ export default function LearnRoadmapPage() {
                           )}
                         </div>
 
-                        <p className="text-xs text-[#4A525D] leading-relaxed max-w-2xl">
+                        <p className="text-xs text-[#54484E] leading-relaxed max-w-2xl">
                           {lesson.subtitle}
                         </p>
 
@@ -131,7 +131,7 @@ export default function LearnRoadmapPage() {
                                 return (
                                   <span key={p}>
                                     {idx > 0 && ', '}
-                                    <Link href={`/learn/${p}`} className="text-[#0D6E6E] hover:underline">
+                                    <Link href={`/learn/${p}`} className="text-[#7A1C30] hover:underline">
                                       {title}
                                     </Link>
                                   </span>
@@ -147,13 +147,13 @@ export default function LearnRoadmapPage() {
                         {isLessonAvailable ? (
                           <Link
                             href={`/learn/${lesson.slug}`}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#0D6E6E] text-white hover:bg-[#085252] transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#7A1C30] text-white hover:bg-[#5F1424] transition-colors"
                           >
                             <span>{completed ? 'Review Lesson' : 'Start Lesson'}</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </Link>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-xs text-[#6E7682] px-3 py-1.5 rounded border border-[#E6E6E0] bg-[#FAF8F5]">
+                          <span className="inline-flex items-center gap-1 text-xs text-[#6E7682] px-3 py-1.5 rounded border border-[#EAE2D5] bg-[#FAF5EE]">
                             <Lock className="w-3 h-3" />
                             <span>In Development</span>
                           </span>

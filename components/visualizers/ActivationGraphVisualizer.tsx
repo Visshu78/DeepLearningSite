@@ -138,18 +138,18 @@ export function ActivationGraphVisualizer() {
   const DiagIcon = diagnostic.icon;
 
   return (
-    <div className="bg-white border border-[#E6E6E0] rounded-lg shadow-xs overflow-hidden">
+    <div className="bg-white border border-[#EAE2D5] rounded-lg shadow-xs overflow-hidden">
       {/* Top Header / Activation Selector Tabs */}
-      <div className="border-b border-[#E6E6E0] bg-[#FAF8F5] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="border-b border-[#EAE2D5] bg-[#FAF5EE] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#0D6E6E]" aria-hidden="true"></span>
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#18191B]">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#7A1C30]" aria-hidden="true"></span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#1F191B]">
             Activation & Derivative Plotter
           </span>
         </div>
 
         {/* Tab options */}
-        <div className="inline-flex rounded border border-[#E6E6E0] bg-white p-0.5 text-xs">
+        <div className="inline-flex rounded border border-[#EAE2D5] bg-white p-0.5 text-xs">
           {(['sigmoid', 'tanh', 'relu', 'leaky_relu'] as ActivationType[]).map(act => (
             <button
               key={act}
@@ -157,8 +157,8 @@ export function ActivationGraphVisualizer() {
               onClick={() => setSelectedActivation(act)}
               className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                 selectedActivation === act
-                  ? 'bg-[#0D6E6E] text-white'
-                  : 'text-[#4A525D] hover:text-[#18191B]'
+                  ? 'bg-[#7A1C30] text-[#FAF2E6]'
+                  : 'text-[#54484E] hover:text-[#1F191B]'
               }`}
             >
               {act === 'sigmoid' ? 'Sigmoid' : act === 'tanh' ? 'Tanh' : act === 'relu' ? 'ReLU' : 'Leaky ReLU'}
@@ -167,9 +167,9 @@ export function ActivationGraphVisualizer() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#E6E6E0]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#EAE2D5]">
         {/* SVG Coordinate Plane */}
-        <div className="lg:col-span-7 p-4 bg-[#FCFCFA] flex flex-col items-center justify-center">
+        <div className="lg:col-span-7 p-4 bg-[#FDFBF7] flex flex-col items-center justify-center">
           <svg
             viewBox={`0 0 ${width} ${height}`}
             className="w-full max-w-[480px] h-auto select-none"
@@ -189,7 +189,7 @@ export function ActivationGraphVisualizer() {
                   y1={padTop}
                   x2={toSvgX(x)}
                   y2={height - padBottom}
-                  stroke="#EFEFEA"
+                  stroke="#EAE2D5"
                   strokeWidth="1"
                 />
                 <text
@@ -197,7 +197,7 @@ export function ActivationGraphVisualizer() {
                   y={height - padBottom + 16}
                   textAnchor="middle"
                   fontSize="10"
-                  fill="#6E7682"
+                  fill="#786970"
                   className="font-mono-num"
                 >
                   {x}
@@ -213,7 +213,7 @@ export function ActivationGraphVisualizer() {
                   y1={toSvgY(y)}
                   x2={width - padRight}
                   y2={toSvgY(y)}
-                  stroke="#EFEFEA"
+                  stroke="#EAE2D5"
                   strokeWidth="1"
                 />
                 <text
@@ -221,7 +221,7 @@ export function ActivationGraphVisualizer() {
                   y={toSvgY(y) + 3}
                   textAnchor="end"
                   fontSize="10"
-                  fill="#6E7682"
+                  fill="#786970"
                   className="font-mono-num"
                 >
                   {y.toFixed(1)}
@@ -236,7 +236,7 @@ export function ActivationGraphVisualizer() {
                 y1={toSvgY(0)}
                 x2={width - padRight}
                 y2={toSvgY(0)}
-                stroke="#D1D1C7"
+                stroke="#DFCDB6"
                 strokeWidth="1.5"
               />
             )}
@@ -245,25 +245,25 @@ export function ActivationGraphVisualizer() {
               y1={padTop}
               x2={toSvgX(0)}
               y2={height - padBottom}
-              stroke="#D1D1C7"
+              stroke="#DFCDB6"
               strokeWidth="1.5"
             />
 
-            {/* Derivative Curve (dashed amber) */}
+            {/* Derivative Curve (dashed gold) */}
             <path
               d={derivPath}
               fill="none"
-              stroke="#B45309"
+              stroke="#B8860B"
               strokeWidth="1.75"
               strokeDasharray="4,3"
-              opacity="0.85"
+              opacity="0.9"
             />
 
-            {/* Activation Function Curve (solid teal) */}
+            {/* Activation Function Curve (solid burgundy) */}
             <path
               d={curvePath}
               fill="none"
-              stroke="#0D6E6E"
+              stroke="#7A1C30"
               strokeWidth="2.5"
             />
 
@@ -273,7 +273,7 @@ export function ActivationGraphVisualizer() {
               y1={tangentPoints.y1}
               x2={tangentPoints.x2}
               y2={tangentPoints.y2}
-              stroke="#18191B"
+              stroke="#1F191B"
               strokeWidth="1.5"
               strokeDasharray="2,2"
               opacity="0.6"
@@ -285,7 +285,7 @@ export function ActivationGraphVisualizer() {
               y1={padTop}
               x2={toSvgX(zProbe)}
               y2={height - padBottom}
-              stroke="#4A525D"
+              stroke="#54484E"
               strokeWidth="1"
               strokeDasharray="3,3"
               opacity="0.5"
@@ -296,7 +296,7 @@ export function ActivationGraphVisualizer() {
               cx={toSvgX(zProbe)}
               cy={toSvgY(currentY)}
               r="5.5"
-              fill="#0D6E6E"
+              fill="#7A1C30"
               stroke="#FFFFFF"
               strokeWidth="2"
             />
@@ -306,7 +306,7 @@ export function ActivationGraphVisualizer() {
               cx={toSvgX(zProbe)}
               cy={toSvgY(currentDeriv)}
               r="4.5"
-              fill="#B45309"
+              fill="#B8860B"
               stroke="#FFFFFF"
               strokeWidth="1.5"
             />
@@ -315,16 +315,16 @@ export function ActivationGraphVisualizer() {
           {/* Graph Legend */}
           <div className="flex items-center gap-5 mt-2 text-xs">
             <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-0.5 bg-[#0D6E6E] inline-block"></span>
-              <span className="text-[#18191B] font-medium">φ(z) Activation</span>
+              <span className="w-3.5 h-0.5 bg-[#7A1C30] inline-block"></span>
+              <span className="text-[#1F191B] font-medium">φ(z) Activation</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-0.5 border-t border-dashed border-[#B45309] inline-block"></span>
-              <span className="text-[#B45309] font-medium">φ&apos;(z) Derivative</span>
+              <span className="w-3.5 h-0.5 border-t border-dashed border-[#B8860B] inline-block"></span>
+              <span className="text-[#B8860B] font-medium">φ&apos;(z) Derivative</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-0.5 border-t border-dotted border-[#18191B] inline-block"></span>
-              <span className="text-[#4A525D]">Tangent Slope</span>
+              <span className="w-3.5 h-0.5 border-t border-dotted border-[#1F191B] inline-block"></span>
+              <span className="text-[#54484E]">Tangent Slope</span>
             </span>
           </div>
         </div>
@@ -333,10 +333,10 @@ export function ActivationGraphVisualizer() {
         <div className="lg:col-span-5 p-4 space-y-4">
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label htmlFor="act-probe-slider" className="text-xs font-semibold text-[#18191B] uppercase tracking-wider">
+              <label htmlFor="act-probe-slider" className="text-xs font-semibold text-[#1F191B] uppercase tracking-wider">
                 Probe Pre-Activation (z)
               </label>
-              <span className="text-sm font-mono-num font-bold text-[#0D6E6E]">
+              <span className="text-sm font-mono-num font-bold text-[#7A1C30]">
                 z = {zProbe.toFixed(2)}
               </span>
             </div>
@@ -350,7 +350,7 @@ export function ActivationGraphVisualizer() {
               onChange={e => setZProbe(parseFloat(e.target.value))}
               className="w-full"
             />
-            <div className="flex justify-between text-[10px] text-[#6E7682] font-mono-num mt-1">
+            <div className="flex justify-between text-[10px] text-[#786970] font-mono-num mt-1">
               <span>-5.0 (Negative)</span>
               <span>0.0 (Origin)</span>
               <span>+5.0 (Positive)</span>
@@ -358,21 +358,21 @@ export function ActivationGraphVisualizer() {
           </div>
 
           {/* Numerical readout card */}
-          <div className="bg-[#FAF8F5] border border-[#E6E6E0] rounded p-3 space-y-2">
+          <div className="bg-[#FAF5EE] border border-[#EAE2D5] rounded p-3 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-[#4A525D]">Activation Output φ({zProbe.toFixed(2)}):</span>
-              <span className="text-sm font-mono-num font-bold text-[#0D6E6E]">
+              <span className="text-xs text-[#54484E]">Activation Output φ({zProbe.toFixed(2)}):</span>
+              <span className="text-sm font-mono-num font-bold text-[#7A1C30]">
                 {currentY.toFixed(4)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-[#4A525D]">Derivative φ&apos;({zProbe.toFixed(2)}):</span>
-              <span className="text-sm font-mono-num font-bold text-[#B45309]">
+              <span className="text-xs text-[#54484E]">Derivative φ&apos;({zProbe.toFixed(2)}):</span>
+              <span className="text-sm font-mono-num font-bold text-[#B8860B]">
                 {currentDeriv.toFixed(4)}
               </span>
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[#4A525D]">Output Range:</span>
+              <span className="text-[#54484E]">Output Range:</span>
               <span className="font-mono-num text-[#18191B]">{meta.outputRange}</span>
             </div>
           </div>

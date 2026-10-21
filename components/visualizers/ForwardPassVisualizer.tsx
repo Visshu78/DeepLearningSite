@@ -57,12 +57,12 @@ export function ForwardPassVisualizer() {
   };
 
   return (
-    <div className="bg-white border border-[#E6E6E0] rounded-lg shadow-xs overflow-hidden">
+    <div className="bg-white border border-[#EAE2D5] rounded-lg shadow-xs overflow-hidden">
       {/* Visualizer Header */}
-      <div className="border-b border-[#E6E6E0] bg-[#FAF8F5] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="border-b border-[#EAE2D5] bg-[#FAF5EE] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#0D6E6E]" aria-hidden="true"></span>
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#18191B]">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#7A1C30]" aria-hidden="true"></span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#1F191B]">
             2-2-1 Forward Propagation Engine
           </span>
         </div>
@@ -73,13 +73,13 @@ export function ForwardPassVisualizer() {
             type="button"
             onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
             disabled={currentStep === 0}
-            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-[#E6E6E0] bg-white text-[#18191B] disabled:opacity-40"
+            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-[#EAE2D5] bg-white text-[#1F191B] disabled:opacity-40"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             <span>Prev</span>
           </button>
 
-          <span className="text-xs font-mono-num font-semibold px-2 py-1 bg-[#EEF7F7] text-[#0D6E6E] rounded">
+          <span className="text-xs font-mono-num font-semibold px-2 py-1 bg-[#FAF2E6] text-[#7A1C30] rounded">
             Step {currentStep} / 4
           </span>
 
@@ -87,7 +87,7 @@ export function ForwardPassVisualizer() {
             type="button"
             onClick={() => setCurrentStep(prev => Math.min(4, prev + 1))}
             disabled={currentStep === 4}
-            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded bg-[#0D6E6E] text-white hover:bg-[#085252] disabled:opacity-40"
+            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded bg-[#7A1C30] text-white hover:bg-[#5F1424] disabled:opacity-40"
           >
             <span>Next</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -96,7 +96,7 @@ export function ForwardPassVisualizer() {
           <button
             type="button"
             onClick={loadWorkedExample}
-            className="flex items-center gap-1 text-xs text-[#0D6E6E] hover:text-[#085252] px-2 py-1 rounded border border-[#B7E2E2] bg-[#EEF7F7] transition-colors"
+            className="flex items-center gap-1 text-xs text-[#7A1C30] hover:text-[#5F1424] px-2 py-1 rounded border border-[#EEDAA2] bg-[#FAF2E6] transition-colors"
             title="Load worked example numbers"
           >
             <BookOpen className="w-3.5 h-3.5" />
@@ -106,7 +106,7 @@ export function ForwardPassVisualizer() {
           <button
             type="button"
             onClick={loadWorkedExample}
-            className="text-xs text-[#5C626B] hover:text-[#18191B] p-1.5 rounded border border-[#E6E6E0] bg-white"
+            className="text-xs text-[#54484E] hover:text-[#1F191B] p-1.5 rounded border border-[#EAE2D5] bg-white"
             title="Reset"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -114,7 +114,7 @@ export function ForwardPassVisualizer() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#E6E6E0]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#EAE2D5]">
         {/* Network Diagram View (SVG) */}
         <div className="lg:col-span-7 p-4 bg-[#FCFCFA] flex flex-col items-center justify-center min-h-[380px]">
           <svg
@@ -129,21 +129,21 @@ export function ForwardPassVisualizer() {
             </desc>
 
             {/* Stage Column Labels */}
-            <text x="70" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#4A525D">INPUTS</text>
-            <text x="270" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#4A525D">HIDDEN LAYER (l=1)</text>
-            <text x="470" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#4A525D">OUTPUT (l=2)</text>
+            <text x="70" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#54484E">INPUTS</text>
+            <text x="270" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#54484E">HIDDEN LAYER (l=1)</text>
+            <text x="470" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#54484E">OUTPUT (l=2)</text>
 
             {/* Connections: Input to Hidden 0 */}
             <path
               d="M 95 100 L 245 100"
-              stroke={currentStep >= 1 ? (wHidden[0][0] >= 0 ? '#0D6E6E' : '#B45309') : '#D1D1C7'}
+              stroke={currentStep >= 1 ? (wHidden[0][0] >= 0 ? '#7A1C30' : '#B8860B') : '#D1D1C7'}
               strokeWidth={Math.max(1.5, Math.abs(wHidden[0][0]) * 3)}
               strokeDasharray={wHidden[0][0] >= 0 ? undefined : '5,3'}
               opacity={currentStep >= 1 ? '1' : '0.4'}
             />
             <path
               d="M 95 200 L 245 100"
-              stroke={currentStep >= 1 ? (wHidden[0][1] >= 0 ? '#0D6E6E' : '#B45309') : '#D1D1C7'}
+              stroke={currentStep >= 1 ? (wHidden[0][1] >= 0 ? '#7A1C30' : '#B8860B') : '#D1D1C7'}
               strokeWidth={Math.max(1.5, Math.abs(wHidden[0][1]) * 3)}
               strokeDasharray={wHidden[0][1] >= 0 ? undefined : '5,3'}
               opacity={currentStep >= 1 ? '1' : '0.4'}
@@ -152,14 +152,14 @@ export function ForwardPassVisualizer() {
             {/* Connections: Input to Hidden 1 */}
             <path
               d="M 95 100 L 245 200"
-              stroke={currentStep >= 1 ? (wHidden[1][0] >= 0 ? '#0D6E6E' : '#B45309') : '#D1D1C7'}
+              stroke={currentStep >= 1 ? (wHidden[1][0] >= 0 ? '#7A1C30' : '#B8860B') : '#D1D1C7'}
               strokeWidth={Math.max(1.5, Math.abs(wHidden[1][0]) * 3)}
               strokeDasharray={wHidden[1][0] >= 0 ? undefined : '5,3'}
               opacity={currentStep >= 1 ? '1' : '0.4'}
             />
             <path
               d="M 95 200 L 245 200"
-              stroke={currentStep >= 1 ? (wHidden[1][1] >= 0 ? '#0D6E6E' : '#B45309') : '#D1D1C7'}
+              stroke={currentStep >= 1 ? (wHidden[1][1] >= 0 ? '#7A1C30' : '#B8860B') : '#D1D1C7'}
               strokeWidth={Math.max(1.5, Math.abs(wHidden[1][1]) * 3)}
               strokeDasharray={wHidden[1][1] >= 0 ? undefined : '5,3'}
               opacity={currentStep >= 1 ? '1' : '0.4'}
@@ -168,14 +168,14 @@ export function ForwardPassVisualizer() {
             {/* Connections: Hidden to Output */}
             <path
               d="M 295 100 L 445 150"
-              stroke={currentStep >= 3 ? (wOutput[0] >= 0 ? '#0D6E6E' : '#B45309') : '#D1D1C7'}
+              stroke={currentStep >= 3 ? (wOutput[0] >= 0 ? '#7A1C30' : '#B8860B') : '#D1D1C7'}
               strokeWidth={Math.max(1.5, Math.abs(wOutput[0]) * 3)}
               strokeDasharray={wOutput[0] >= 0 ? undefined : '5,3'}
               opacity={currentStep >= 3 ? '1' : '0.4'}
             />
             <path
               d="M 295 200 L 445 150"
-              stroke={currentStep >= 3 ? (wOutput[1] >= 0 ? '#0D6E6E' : '#B45309') : '#D1D1C7'}
+              stroke={currentStep >= 3 ? (wOutput[1] >= 0 ? '#7A1C30' : '#B8860B') : '#D1D1C7'}
               strokeWidth={Math.max(1.5, Math.abs(wOutput[1]) * 3)}
               strokeDasharray={wOutput[1] >= 0 ? undefined : '5,3'}
               opacity={currentStep >= 3 ? '1' : '0.4'}
@@ -183,27 +183,27 @@ export function ForwardPassVisualizer() {
 
             {/* Input Neurons */}
             <g transform="translate(70, 100)">
-              <circle r="25" fill="#FFFFFF" stroke="#0D6E6E" strokeWidth={currentStep === 0 ? 3 : 1.5} />
-              <text x="0" y="-3" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#18191B">x₁</text>
-              <text x="0" y="11" textAnchor="middle" fontSize="10" className="font-mono-num" fill="#4A525D">{inputs[0].toFixed(2)}</text>
+              <circle r="25" fill="#FFFFFF" stroke="#7A1C30" strokeWidth={currentStep === 0 ? 3 : 1.5} />
+              <text x="0" y="-3" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1F191B">x₁</text>
+              <text x="0" y="11" textAnchor="middle" fontSize="10" className="font-mono-num" fill="#54484E">{inputs[0].toFixed(2)}</text>
             </g>
 
             <g transform="translate(70, 200)">
-              <circle r="25" fill="#FFFFFF" stroke="#0D6E6E" strokeWidth={currentStep === 0 ? 3 : 1.5} />
-              <text x="0" y="-3" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#18191B">x₂</text>
-              <text x="0" y="11" textAnchor="middle" fontSize="10" className="font-mono-num" fill="#4A525D">{inputs[1].toFixed(2)}</text>
+              <circle r="25" fill="#FFFFFF" stroke="#7A1C30" strokeWidth={currentStep === 0 ? 3 : 1.5} />
+              <text x="0" y="-3" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1F191B">x₂</text>
+              <text x="0" y="11" textAnchor="middle" fontSize="10" className="font-mono-num" fill="#54484E">{inputs[1].toFixed(2)}</text>
             </g>
 
             {/* Hidden Neuron 0 */}
             <g transform="translate(270, 100)">
               <circle
                 r="26"
-                fill={currentStep >= 2 ? '#EEF7F7' : '#FFFFFF'}
-                stroke={currentStep === 1 || currentStep === 2 ? '#0D6E6E' : '#D1D1C7'}
+                fill={currentStep >= 2 ? '#FAF2E6' : '#FFFFFF'}
+                stroke={currentStep === 1 || currentStep === 2 ? '#7A1C30' : '#D1D1C7'}
                 strokeWidth={currentStep === 1 || currentStep === 2 ? 3 : 1.5}
               />
-              <text x="0" y="-5" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#18191B">h₁</text>
-              <text x="0" y="8" textAnchor="middle" fontSize="9" className="font-mono-num font-semibold" fill="#0D6E6E">
+              <text x="0" y="-5" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1F191B">h₁</text>
+              <text x="0" y="8" textAnchor="middle" fontSize="9" className="font-mono-num font-semibold" fill="#7A1C30">
                 {currentStep >= 2 ? `a=${fwdResult.aHidden[0].toFixed(2)}` : (currentStep >= 1 ? `z=${fwdResult.zHidden[0].toFixed(2)}` : '?')}
               </text>
               <text x="0" y="38" textAnchor="middle" fontSize="9" fill="#6E7682">b={bHidden[0].toFixed(2)}</text>
@@ -213,12 +213,12 @@ export function ForwardPassVisualizer() {
             <g transform="translate(270, 200)">
               <circle
                 r="26"
-                fill={currentStep >= 2 ? '#EEF7F7' : '#FFFFFF'}
-                stroke={currentStep === 1 || currentStep === 2 ? '#0D6E6E' : '#D1D1C7'}
+                fill={currentStep >= 2 ? '#FAF2E6' : '#FFFFFF'}
+                stroke={currentStep === 1 || currentStep === 2 ? '#7A1C30' : '#D1D1C7'}
                 strokeWidth={currentStep === 1 || currentStep === 2 ? 3 : 1.5}
               />
-              <text x="0" y="-5" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#18191B">h₂</text>
-              <text x="0" y="8" textAnchor="middle" fontSize="9" className="font-mono-num font-semibold" fill="#0D6E6E">
+              <text x="0" y="-5" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1F191B">h₂</text>
+              <text x="0" y="8" textAnchor="middle" fontSize="9" className="font-mono-num font-semibold" fill="#7A1C30">
                 {currentStep >= 2 ? `a=${fwdResult.aHidden[1].toFixed(2)}` : (currentStep >= 1 ? `z=${fwdResult.zHidden[1].toFixed(2)}` : '?')}
               </text>
               <text x="0" y="38" textAnchor="middle" fontSize="9" fill="#6E7682">b={bHidden[1].toFixed(2)}</text>
@@ -228,12 +228,12 @@ export function ForwardPassVisualizer() {
             <g transform="translate(470, 150)">
               <circle
                 r="28"
-                fill={currentStep >= 4 ? '#EEF7F7' : '#FFFFFF'}
-                stroke={currentStep === 3 || currentStep === 4 ? '#0D6E6E' : '#D1D1C7'}
+                fill={currentStep >= 4 ? '#FAF2E6' : '#FFFFFF'}
+                stroke={currentStep === 3 || currentStep === 4 ? '#7A1C30' : '#D1D1C7'}
                 strokeWidth={currentStep === 3 || currentStep === 4 ? 3 : 1.5}
               />
-              <text x="0" y="-6" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#18191B">Output</text>
-              <text x="0" y="9" textAnchor="middle" fontSize="11" className="font-mono-num font-bold" fill="#0D6E6E">
+              <text x="0" y="-6" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1F191B">Output</text>
+              <text x="0" y="9" textAnchor="middle" fontSize="11" className="font-mono-num font-bold" fill="#7A1C30">
                 {currentStep >= 4 ? fwdResult.prediction.toFixed(3) : (currentStep >= 3 ? `z=${fwdResult.zOutput.toFixed(2)}` : '?')}
               </text>
               <text x="0" y="40" textAnchor="middle" fontSize="9" fill="#6E7682">b={bOutput.toFixed(2)}</text>
@@ -249,8 +249,8 @@ export function ForwardPassVisualizer() {
                 onClick={() => setCurrentStep(idx)}
                 className={`h-2 rounded-full transition-all ${
                   currentStep === idx
-                    ? 'w-6 bg-[#0D6E6E]'
-                    : (currentStep > idx ? 'w-2 bg-[#4A525D]' : 'w-2 bg-[#D1D1C7]')
+                    ? 'w-6 bg-[#7A1C30]'
+                    : (currentStep > idx ? 'w-2 bg-[#54484E]' : 'w-2 bg-[#D1D1C7]')
                 }`}
                 title={stepNames[idx]}
                 aria-label={stepNames[idx]}
@@ -262,20 +262,20 @@ export function ForwardPassVisualizer() {
         {/* Step Calculation Breakdown & Comprehensive Parameter Controls */}
         <div className="lg:col-span-5 p-4 space-y-4">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#0D6E6E] mb-0.5">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#7A1C30] mb-0.5">
               Current Calculation Stage
             </div>
-            <h4 className="text-sm font-bold text-[#18191B]">
+            <h4 className="text-sm font-bold text-[#1F191B]">
               {stepNames[currentStep]}
             </h4>
           </div>
 
           {/* Contextual math breakdown for the current step */}
-          <div className="bg-[#FAF8F5] border border-[#E6E6E0] rounded p-3 text-xs space-y-2">
+          <div className="bg-[#FAF5EE] border border-[#EAE2D5] rounded p-3 text-xs space-y-2">
             {currentStep === 0 && (
               <div>
-                <p className="text-[#4A525D] mb-2">
-                  The network receives raw input vector <span className="font-mono-num font-medium text-[#18191B]">x = [{inputs[0].toFixed(2)}, {inputs[1].toFixed(2)}]</span>.
+                <p className="text-[#54484E] mb-2">
+                  The network receives raw input vector <span className="font-mono-num font-medium text-[#1F191B]">x = [{inputs[0].toFixed(2)}, {inputs[1].toFixed(2)}]</span>.
                 </p>
                 <div className="text-[11px] text-[#6E7682]">
                   No computation has occurred yet. These values feed into the incoming synapses of hidden layer 1.
@@ -285,14 +285,14 @@ export function ForwardPassVisualizer() {
 
             {currentStep === 1 && (
               <div className="space-y-2">
-                <div className="font-medium text-[#18191B]">Computing Hidden Linear Pre-activations:</div>
-                <div className="font-mono-num text-[11px] bg-white p-2 rounded border border-[#E6E6E0] space-y-1">
+                <div className="font-medium text-[#1F191B]">Computing Hidden Linear Pre-activations:</div>
+                <div className="font-mono-num text-[11px] bg-white p-2 rounded border border-[#EAE2D5] space-y-1">
                   <div>z_h1 = (x₁·w₁₁) + (x₂·w₁₂) + b_h1</div>
-                  <div className="text-[#0D6E6E]">
+                  <div className="text-[#7A1C30]">
                     = ({inputs[0]}×{wHidden[0][0]}) + ({inputs[1]}×{wHidden[0][1]}) + {bHidden[0]} = <strong>{fwdResult.zHidden[0].toFixed(3)}</strong>
                   </div>
-                  <div className="pt-1 border-t border-[#E6E6E0]">z_h2 = (x₁·w₂₁) + (x₂·w₂₂) + b_h2</div>
-                  <div className="text-[#0D6E6E]">
+                  <div className="pt-1 border-t border-[#EAE2D5]">z_h2 = (x₁·w₂₁) + (x₂·w₂₂) + b_h2</div>
+                  <div className="text-[#7A1C30]">
                     = ({inputs[0]}×{wHidden[1][0]}) + ({inputs[1]}×{wHidden[1][1]}) + {bHidden[1]} = <strong>{fwdResult.zHidden[1].toFixed(3)}</strong>
                   </div>
                 </div>
@@ -301,23 +301,23 @@ export function ForwardPassVisualizer() {
 
             {currentStep === 2 && (
               <div className="space-y-2">
-                <div className="font-medium text-[#18191B]">Applying Non-Linear Activation φ:</div>
-                <div className="font-mono-num text-[11px] bg-white p-2 rounded border border-[#E6E6E0] space-y-1">
-                  <div>a_h1 = φ({fwdResult.zHidden[0].toFixed(3)}) = <strong className="text-[#0D6E6E]">{fwdResult.aHidden[0].toFixed(4)}</strong></div>
-                  <div>a_h2 = φ({fwdResult.zHidden[1].toFixed(3)}) = <strong className="text-[#0D6E6E]">{fwdResult.aHidden[1].toFixed(4)}</strong></div>
+                <div className="font-medium text-[#1F191B]">Applying Non-Linear Activation φ:</div>
+                <div className="font-mono-num text-[11px] bg-white p-2 rounded border border-[#EAE2D5] space-y-1">
+                  <div>a_h1 = φ({fwdResult.zHidden[0].toFixed(3)}) = <strong className="text-[#7A1C30]">{fwdResult.aHidden[0].toFixed(4)}</strong></div>
+                  <div>a_h2 = φ({fwdResult.zHidden[1].toFixed(3)}) = <strong className="text-[#7A1C30]">{fwdResult.aHidden[1].toFixed(4)}</strong></div>
                 </div>
-                <p className="text-[11px] text-[#4A525D]">
-                  These post-activations form the hidden representation vector <span className="font-mono-num text-[#18191B]">a^[1]</span>.
+                <p className="text-[11px] text-[#54484E]">
+                  These post-activations form the hidden representation vector <span className="font-mono-num text-[#1F191B]">a^[1]</span>.
                 </p>
               </div>
             )}
 
             {currentStep === 3 && (
               <div className="space-y-2">
-                <div className="font-medium text-[#18191B]">Computing Output Pre-activation:</div>
-                <div className="font-mono-num text-[11px] bg-white p-2 rounded border border-[#E6E6E0] space-y-1">
+                <div className="font-medium text-[#1F191B]">Computing Output Pre-activation:</div>
+                <div className="font-mono-num text-[11px] bg-white p-2 rounded border border-[#EAE2D5] space-y-1">
                   <div>z_out = (a_h1 · w_out1) + (a_h2 · w_out2) + b_out</div>
-                  <div className="text-[#0D6E6E]">
+                  <div className="text-[#7A1C30]">
                     = ({fwdResult.aHidden[0].toFixed(3)} × {wOutput[0]}) + ({fwdResult.aHidden[1].toFixed(3)} × {wOutput[1]}) + {bOutput} = <strong>{fwdResult.zOutput.toFixed(3)}</strong>
                   </div>
                 </div>
@@ -326,11 +326,11 @@ export function ForwardPassVisualizer() {
 
             {currentStep === 4 && (
               <div className="space-y-2">
-                <div className="font-medium text-[#18191B]">Final Prediction Inference:</div>
-                <div className="font-mono-num text-[11px] bg-white p-2 rounded border border-[#E6E6E0] space-y-1">
-                  <div>ŷ = φ(z_out) = φ({fwdResult.zOutput.toFixed(3)}) = <strong className="text-base text-[#0D6E6E]">{fwdResult.prediction.toFixed(4)}</strong></div>
+                <div className="font-medium text-[#1F191B]">Final Prediction Inference:</div>
+                <div className="font-mono-num text-[11px] bg-white p-2 rounded border border-[#EAE2D5] space-y-1">
+                  <div>ŷ = φ(z_out) = φ({fwdResult.zOutput.toFixed(3)}) = <strong className="text-base text-[#7A1C30]">{fwdResult.prediction.toFixed(4)}</strong></div>
                 </div>
-                <p className="text-[11px] text-[#4A525D]">
+                <p className="text-[11px] text-[#54484E]">
                   Forward propagation is complete! The network converted 2 input dimensions into a single continuous scalar prediction.
                 </p>
               </div>
@@ -338,28 +338,28 @@ export function ForwardPassVisualizer() {
           </div>
 
           {/* Full Parameter Adjustment Tabs */}
-          <div className="pt-2 border-t border-[#E6E6E0] space-y-2">
+          <div className="pt-2 border-t border-[#EAE2D5] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#18191B]">Full Parameter Controls:</span>
-              <div className="inline-flex rounded border border-[#E6E6E0] bg-white p-0.5 text-[11px]">
+              <span className="text-xs font-semibold text-[#1F191B]">Full Parameter Controls:</span>
+              <div className="inline-flex rounded border border-[#EAE2D5] bg-white p-0.5 text-[11px]">
                 <button
                   type="button"
                   onClick={() => setParamTab('inputs')}
-                  className={`px-2 py-0.5 rounded ${paramTab === 'inputs' ? 'bg-[#0D6E6E] text-white' : 'text-[#4A525D]'}`}
+                  className={`px-2 py-0.5 rounded ${paramTab === 'inputs' ? 'bg-[#7A1C30] text-white' : 'text-[#54484E]'}`}
                 >
                   Inputs & Act
                 </button>
                 <button
                   type="button"
                   onClick={() => setParamTab('hidden')}
-                  className={`px-2 py-0.5 rounded ${paramTab === 'hidden' ? 'bg-[#0D6E6E] text-white' : 'text-[#4A525D]'}`}
+                  className={`px-2 py-0.5 rounded ${paramTab === 'hidden' ? 'bg-[#7A1C30] text-white' : 'text-[#54484E]'}`}
                 >
                   Hidden Layer
                 </button>
                 <button
                   type="button"
                   onClick={() => setParamTab('output')}
-                  className={`px-2 py-0.5 rounded ${paramTab === 'output' ? 'bg-[#0D6E6E] text-white' : 'text-[#4A525D]'}`}
+                  className={`px-2 py-0.5 rounded ${paramTab === 'output' ? 'bg-[#7A1C30] text-white' : 'text-[#54484E]'}`}
                 >
                   Output Layer
                 </button>
@@ -369,10 +369,10 @@ export function ForwardPassVisualizer() {
             {paramTab === 'inputs' && (
               <div className="space-y-2 text-xs">
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-[#FAF8F5] p-2 rounded border border-[#E6E6E0]">
+                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
                     <div className="flex justify-between mb-1">
-                      <label htmlFor="fwd-in-x1" className="text-[#4A525D]">Input x₁</label>
-                      <span className="font-mono-num font-semibold text-[#0D6E6E]">{inputs[0].toFixed(2)}</span>
+                      <label htmlFor="fwd-in-x1" className="text-[#54484E]">Input x₁</label>
+                      <span className="font-mono-num font-semibold text-[#7A1C30]">{inputs[0].toFixed(2)}</span>
                     </div>
                     <input
                       id="fwd-in-x1"
@@ -385,10 +385,10 @@ export function ForwardPassVisualizer() {
                       className="w-full"
                     />
                   </div>
-                  <div className="bg-[#FAF8F5] p-2 rounded border border-[#E6E6E0]">
+                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
                     <div className="flex justify-between mb-1">
-                      <label htmlFor="fwd-in-x2" className="text-[#4A525D]">Input x₂</label>
-                      <span className="font-mono-num font-semibold text-[#0D6E6E]">{inputs[1].toFixed(2)}</span>
+                      <label htmlFor="fwd-in-x2" className="text-[#54484E]">Input x₂</label>
+                      <span className="font-mono-num font-semibold text-[#7A1C30]">{inputs[1].toFixed(2)}</span>
                     </div>
                     <input
                       id="fwd-in-x2"
@@ -403,13 +403,13 @@ export function ForwardPassVisualizer() {
                   </div>
                 </div>
 
-                <div className="bg-[#FAF8F5] p-2 rounded border border-[#E6E6E0] flex justify-between items-center">
-                  <label htmlFor="fwd-activation" className="text-[#18191B] font-medium">Network Activation φ</label>
+                <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5] flex justify-between items-center">
+                  <label htmlFor="fwd-activation" className="text-[#1F191B] font-medium">Network Activation φ</label>
                   <select
                     id="fwd-activation"
                     value={activation}
                     onChange={e => setActivation(e.target.value as ActivationType)}
-                    className="text-xs bg-white border border-[#D1D1C7] rounded px-2 py-1 text-[#18191B]"
+                    className="text-xs bg-white border border-[#D1D1C7] rounded px-2 py-1 text-[#1F191B]"
                   >
                     <option value="sigmoid">Sigmoid (σ)</option>
                     <option value="relu">ReLU</option>
@@ -423,9 +423,9 @@ export function ForwardPassVisualizer() {
             {paramTab === 'hidden' && (
               <div className="space-y-2 text-xs">
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-[#FAF8F5] p-2 rounded border border-[#E6E6E0]">
+                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
                     <div className="flex justify-between mb-0.5">
-                      <label htmlFor="fwd-w00" className="text-[11px] text-[#4A525D]">w₁₁ ({wHidden[0][0]})</label>
+                      <label htmlFor="fwd-w00" className="text-[11px] text-[#54484E]">w₁₁ ({wHidden[0][0]})</label>
                     </div>
                     <input
                       id="fwd-w00"
@@ -438,9 +438,9 @@ export function ForwardPassVisualizer() {
                       className="w-full"
                     />
                   </div>
-                  <div className="bg-[#FAF8F5] p-2 rounded border border-[#E6E6E0]">
+                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
                     <div className="flex justify-between mb-0.5">
-                      <label htmlFor="fwd-w01" className="text-[11px] text-[#4A525D]">w₁₂ ({wHidden[0][1]})</label>
+                      <label htmlFor="fwd-w01" className="text-[11px] text-[#54484E]">w₁₂ ({wHidden[0][1]})</label>
                     </div>
                     <input
                       id="fwd-w01"
@@ -453,9 +453,9 @@ export function ForwardPassVisualizer() {
                       className="w-full"
                     />
                   </div>
-                  <div className="bg-[#FAF8F5] p-2 rounded border border-[#E6E6E0]">
+                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
                     <div className="flex justify-between mb-0.5">
-                      <label htmlFor="fwd-w10" className="text-[11px] text-[#4A525D]">w₂₁ ({wHidden[1][0]})</label>
+                      <label htmlFor="fwd-w10" className="text-[11px] text-[#54484E]">w₂₁ ({wHidden[1][0]})</label>
                     </div>
                     <input
                       id="fwd-w10"
@@ -468,9 +468,9 @@ export function ForwardPassVisualizer() {
                       className="w-full"
                     />
                   </div>
-                  <div className="bg-[#FAF8F5] p-2 rounded border border-[#E6E6E0]">
+                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
                     <div className="flex justify-between mb-0.5">
-                      <label htmlFor="fwd-w11" className="text-[11px] text-[#4A525D]">w₂₂ ({wHidden[1][1]})</label>
+                      <label htmlFor="fwd-w11" className="text-[11px] text-[#54484E]">w₂₂ ({wHidden[1][1]})</label>
                     </div>
                     <input
                       id="fwd-w11"
@@ -485,7 +485,7 @@ export function ForwardPassVisualizer() {
                   </div>
                   <div className="bg-[#FFFDF5] p-2 rounded border border-[#FCD34D]">
                     <div className="flex justify-between mb-0.5">
-                      <label htmlFor="fwd-bh0" className="text-[11px] text-[#B45309]">b_h1 ({bHidden[0]})</label>
+                      <label htmlFor="fwd-bh0" className="text-[11px] text-[#B8860B]">b_h1 ({bHidden[0]})</label>
                     </div>
                     <input
                       id="fwd-bh0"
@@ -500,7 +500,7 @@ export function ForwardPassVisualizer() {
                   </div>
                   <div className="bg-[#FFFDF5] p-2 rounded border border-[#FCD34D]">
                     <div className="flex justify-between mb-0.5">
-                      <label htmlFor="fwd-bh1" className="text-[11px] text-[#B45309]">b_h2 ({bHidden[1]})</label>
+                      <label htmlFor="fwd-bh1" className="text-[11px] text-[#B8860B]">b_h2 ({bHidden[1]})</label>
                     </div>
                     <input
                       id="fwd-bh1"
@@ -520,9 +520,9 @@ export function ForwardPassVisualizer() {
             {paramTab === 'output' && (
               <div className="space-y-2 text-xs">
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-[#FAF8F5] p-2 rounded border border-[#E6E6E0]">
+                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
                     <div className="flex justify-between mb-0.5">
-                      <label htmlFor="fwd-wout0" className="text-[11px] text-[#4A525D]">w_out1 ({wOutput[0]})</label>
+                      <label htmlFor="fwd-wout0" className="text-[11px] text-[#54484E]">w_out1 ({wOutput[0]})</label>
                     </div>
                     <input
                       id="fwd-wout0"
@@ -535,9 +535,9 @@ export function ForwardPassVisualizer() {
                       className="w-full"
                     />
                   </div>
-                  <div className="bg-[#FAF8F5] p-2 rounded border border-[#E6E6E0]">
+                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
                     <div className="flex justify-between mb-0.5">
-                      <label htmlFor="fwd-wout1" className="text-[11px] text-[#4A525D]">w_out2 ({wOutput[1]})</label>
+                      <label htmlFor="fwd-wout1" className="text-[11px] text-[#54484E]">w_out2 ({wOutput[1]})</label>
                     </div>
                     <input
                       id="fwd-wout1"
@@ -553,7 +553,7 @@ export function ForwardPassVisualizer() {
                 </div>
                 <div className="bg-[#FFFDF5] p-2 rounded border border-[#FCD34D]">
                   <div className="flex justify-between mb-0.5">
-                    <label htmlFor="fwd-bout" className="text-[11px] text-[#B45309]">b_output ({bOutput})</label>
+                    <label htmlFor="fwd-bout" className="text-[11px] text-[#B8860B]">b_output ({bOutput})</label>
                   </div>
                   <input
                     id="fwd-bout"

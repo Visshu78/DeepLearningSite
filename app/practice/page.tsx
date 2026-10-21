@@ -126,23 +126,23 @@ export default function PracticePage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-10">
       {/* Header */}
-      <div className="border-b border-[#E6E6E0] pb-6 space-y-3">
+      <div className="border-b border-[#EAE2D5] pb-6 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs font-mono-num font-semibold uppercase tracking-wider text-[#0D6E6E]">
+          <div className="text-xs font-mono-num font-semibold uppercase tracking-wider text-[#7A1C30]">
             Interactive Concept Verification
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-[#E6E6E0] bg-[#FAF8F5] text-xs font-mono-num">
-            <Award className="w-4 h-4 text-[#0D6E6E]" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-[#EAE2D5] bg-[#FAF5EE] text-xs font-mono-num">
+            <Award className="w-4 h-4 text-[#7A1C30]" />
             <span>Score:</span>
-            <strong className="text-[#0D6E6E]">{totalScore} / {CHALLENGES.length} Correct</strong>
+            <strong className="text-[#7A1C30]">{totalScore} / {CHALLENGES.length} Correct</strong>
           </div>
         </div>
 
-        <h1 className="text-3xl font-extrabold text-[#18191B] tracking-tight">
+        <h1 className="text-3xl font-extrabold text-[#1F191B] tracking-tight">
           Concept Challenges & Diagnostic Tests
         </h1>
-        <p className="text-sm text-[#5C626B] max-w-2xl leading-relaxed">
+        <p className="text-sm text-[#54484E] max-w-2xl leading-relaxed">
           Put your deep learning intuition to the test with real mathematical situations. Evaluate forward outputs, diagnose optimization pathologies, and compute parameter updates.
         </p>
       </div>
@@ -157,32 +157,32 @@ export default function PracticePage() {
           return (
             <div
               key={challenge.id}
-              className="bg-white border border-[#E6E6E0] rounded-lg p-5 sm:p-6 space-y-4 shadow-xs"
+              className="bg-white border border-[#EAE2D5] rounded-lg p-5 sm:p-6 space-y-4 shadow-xs"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E6E6E0] pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#EAE2D5] pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#FAF8F5] border border-[#E6E6E0] text-[11px] font-mono-num font-bold text-[#5C626B] flex items-center justify-center">
+                  <span className="w-5 h-5 rounded-full bg-[#FAF5EE] border border-[#EAE2D5] text-[11px] font-mono-num font-bold text-[#54484E] flex items-center justify-center">
                     {idx + 1}
                   </span>
-                  <span className="text-xs font-mono-num text-[#0D6E6E] font-semibold uppercase tracking-wider">
+                  <span className="text-xs font-mono-num text-[#7A1C30] font-semibold uppercase tracking-wider">
                     {challenge.category}
                   </span>
                 </div>
-                <h3 className="text-sm font-bold text-[#18191B]">
+                <h3 className="text-sm font-bold text-[#1F191B]">
                   {challenge.title}
                 </h3>
               </div>
 
               {/* Scenario */}
-              <div className="bg-[#FAF8F5] border border-[#E6E6E0] rounded p-3 text-xs text-[#18191B] font-mono-num leading-relaxed">
-                <span className="font-sans font-semibold text-[#5C626B] uppercase text-[10px] tracking-wider block mb-1">
+              <div className="bg-[#FAF5EE] border border-[#EAE2D5] rounded p-3 text-xs text-[#1F191B] font-mono-num leading-relaxed">
+                <span className="font-sans font-semibold text-[#54484E] uppercase text-[10px] tracking-wider block mb-1">
                   Scenario:
                 </span>
                 {challenge.scenario}
               </div>
 
               {/* Question */}
-              <p className="text-sm font-semibold text-[#18191B]">
+              <p className="text-sm font-semibold text-[#1F191B]">
                 {challenge.question}
               </p>
 
@@ -190,7 +190,7 @@ export default function PracticePage() {
               <div className="space-y-2">
                 {challenge.options.map((option, optIdx) => {
                   const selectedThis = selectedAnswers[challenge.id] === optIdx;
-                  let optStyle = 'border-[#E6E6E0] bg-[#FCFCFA] text-[#18191B] hover:border-[#D1D1C7]';
+                  let optStyle = 'border-[#EAE2D5] bg-[#FCFCFA] text-[#1F191B] hover:border-[#D1D1C7]';
 
                   if (isSub) {
                     if (optIdx === challenge.correctIndex) {
@@ -198,10 +198,10 @@ export default function PracticePage() {
                     } else if (selectedThis && optIdx !== challenge.correctIndex) {
                       optStyle = 'border-[#FCA5A5] bg-[#FEF2F2] text-[#991B1B]';
                     } else {
-                      optStyle = 'border-[#E6E6E0] bg-white text-[#878E99] opacity-60';
+                      optStyle = 'border-[#EAE2D5] bg-white text-[#878E99] opacity-60';
                     }
                   } else if (selectedThis) {
-                    optStyle = 'border-[#0D6E6E] bg-[#EEF7F7] text-[#0D6E6E] font-medium';
+                    optStyle = 'border-[#7A1C30] bg-[#FAF2E6] text-[#7A1C30] font-medium';
                   }
 
                   return (
@@ -231,7 +231,7 @@ export default function PracticePage() {
                     type="button"
                     disabled={!isSelected}
                     onClick={() => handleSubmit(challenge.id)}
-                    className="text-xs font-semibold px-4 py-2 rounded bg-[#0D6E6E] text-white hover:bg-[#085252] disabled:opacity-40 transition-colors"
+                    className="text-xs font-semibold px-4 py-2 rounded bg-[#7A1C30] text-white hover:bg-[#5F1424] disabled:opacity-40 transition-colors"
                   >
                     Submit Answer
                   </button>
@@ -241,7 +241,7 @@ export default function PracticePage() {
                       className={`p-3 rounded text-xs leading-relaxed border ${
                         isCorrect
                           ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
-                          : 'bg-[#FFFDF5] border-[#FCD34D] text-[#B45309]'
+                          : 'bg-[#FFFDF5] border-[#FCD34D] text-[#B8860B]'
                       }`}
                     >
                       <div className="font-bold mb-1">
@@ -253,7 +253,7 @@ export default function PracticePage() {
                     <button
                       type="button"
                       onClick={() => handleReset(challenge.id)}
-                      className="text-xs text-[#5C626B] hover:text-[#18191B] underline"
+                      className="text-xs text-[#54484E] hover:text-[#1F191B] underline"
                     >
                       Try Again
                     </button>
