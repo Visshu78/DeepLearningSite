@@ -49,8 +49,8 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-xs text-[#54484E]">
-              <Clock className="w-3.5 h-3.5 text-[#B8860B]" />
+            <span className="flex items-center gap-1 text-xs text-[#625956]">
+              <Clock className="w-3.5 h-3.5 text-[#C28E38]" />
               <span>{meta.duration}</span>
             </span>
 
@@ -60,30 +60,30 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-colors border ${
                 completed
                   ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
-                  : 'bg-white border-[#EAE2D5] text-[#1F191B] hover:border-[#7A1C30] hover:text-[#7A1C30]'
+                  : 'bg-white border-[#E8E2D9] text-[#1D1819] hover:border-[#6E1A2B] hover:text-[#6E1A2B]'
               }`}
             >
-              <CheckCircle2 className={`w-3.5 h-3.5 ${completed ? 'text-[#166534]' : 'text-[#786970]'}`} />
+              <CheckCircle2 className={`w-3.5 h-3.5 ${completed ? 'text-[#166534]' : 'text-[#968A86]'}`} />
               <span>{completed ? 'Completed' : 'Mark as Complete'}</span>
             </button>
           </div>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1F191B] tracking-tight">
+        <h1 className="font-serif-editorial text-3xl sm:text-4xl lg:text-[42px] font-bold text-[#1D1819] tracking-tight leading-[1.12]">
           {meta.title}
         </h1>
-        <p className="text-base text-[#54484E] leading-relaxed max-w-3xl">
+        <p className="text-base text-[#625956] leading-relaxed max-w-3xl">
           {meta.subtitle}
         </p>
 
         {meta.prerequisites.length > 0 && (
-          <div className="text-xs text-[#54484E] flex items-center gap-1.5 pt-1">
-            <span className="font-semibold text-[#1F191B]">Prerequisites:</span>
+          <div className="text-xs text-[#625956] flex items-center gap-1.5 pt-1">
+            <span className="font-semibold text-[#1D1819]">Prerequisites:</span>
             {meta.prerequisites.map(prereq => (
               <Link
                 key={prereq}
                 href={`/learn/${prereq}`}
-                className="text-[#7A1C30] hover:underline bg-[#FAF5EE] px-2 py-0.5 rounded border border-[#EAE2D5] hover:border-[#D4AF37]"
+                className="text-[#6E1A2B] hover:underline bg-[#F4EFEB] px-2 py-0.5 rounded border border-[#E8E2D9] hover:border-[#C28E38]"
               >
                 {prereq.replace(/-/g, ' ')}
               </Link>
@@ -94,13 +94,13 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
 
       {/* 1. Intuition Section */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-[#1F191B] flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#7A1C30]"></span>
+        <h2 className="font-serif-editorial text-xl sm:text-2xl font-bold text-[#1D1819] flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#6E1A2B]"></span>
           <span>1. Conceptual Intuition</span>
         </h2>
-        <div className="space-y-3 text-sm text-[#1F191B] leading-relaxed max-w-4xl">
+        <div className="space-y-3.5 text-[15px] text-[#1D1819] leading-relaxed max-w-4xl">
           {content.intuition.map((p, i) => (
-            <p key={i}>{p}</p>
+            <p key={i} className={i === 0 ? 'text-base sm:text-[17px] text-[#2C2426] leading-relaxed font-normal' : ''}>{p}</p>
           ))}
         </div>
       </section>
@@ -108,35 +108,35 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
       {/* 2. Interactive Visualization Section */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[#1F191B] flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#B8860B]"></span>
+          <h2 className="font-serif-editorial text-xl sm:text-2xl font-bold text-[#1D1819] flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C28E38]"></span>
             <span>2. Interactive Visualization & Experimentation</span>
           </h2>
-          <span className="text-xs text-[#786970] font-mono-num">Live Parameter Workbench</span>
+          <span className="text-xs text-[#968A86] font-mono-num">Live Parameter Workbench</span>
         </div>
 
         <div>{visualizer}</div>
       </section>
 
       {/* 3. Mathematical Formulations (KaTeX Rendered) */}
-      <section className="space-y-4 pt-4 border-t border-[#EAE2D5]">
-        <h2 className="text-lg font-bold text-[#1F191B] flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#7A1C30]"></span>
+      <section className="space-y-4 pt-4 border-t border-[#E8E2D9]">
+        <h2 className="font-serif-editorial text-xl sm:text-2xl font-bold text-[#1D1819] flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#6E1A2B]"></span>
           <span>3. Mathematical Formulations</span>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {content.mathFormulas.map((f, i) => (
             <div
               key={i}
-              className="bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-3 shadow-2xs hover:border-[#DFCDB6] transition-colors"
+              className="bg-white border border-[#E8E2D9] border-t-2 border-t-[#6E1A2B] rounded-lg p-5 space-y-3 shadow-2xs hover:shadow-xs hover:border-[#D6CCC0] transition-all"
             >
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#7A1C30]">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#6E1A2B]">
                 {f.name}
               </h3>
-              <div className="bg-[#FAF5EE] border-l-3 border-[#7A1C30] p-3 rounded-r text-[#1F191B] overflow-x-auto">
+              <div className="bg-[#FAF8F5] border-l-3 border-[#6E1A2B] p-3 rounded-r text-[#1D1819] overflow-x-auto">
                 <MathEquation math={f.latex} block />
               </div>
-              <p className="text-xs text-[#54484E] leading-relaxed">
+              <p className="text-xs text-[#625956] leading-relaxed">
                 {f.explanation}
               </p>
             </div>
@@ -145,13 +145,13 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
       </section>
 
       {/* 4. Worked Numerical Example (KaTeX Rendered) */}
-      <section className="space-y-4 pt-4 border-t border-[#EAE2D5]">
-        <h2 className="text-lg font-bold text-[#1F191B] flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#B8860B]"></span>
+      <section className="space-y-4 pt-4 border-t border-[#E8E2D9]">
+        <h2 className="font-serif-editorial text-xl sm:text-2xl font-bold text-[#1D1819] flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#C28E38]"></span>
           <span>4. Step-by-Step Worked Numerical Example</span>
         </h2>
-        <div className="bg-[#FAF5EE] border border-[#DFCDB6] rounded-lg p-5 space-y-4 shadow-2xs">
-          <div className="text-xs font-medium text-[#1F191B] italic">
+        <div className="bg-white border border-[#E8E2D9] rounded-lg p-5 space-y-4 shadow-2xs">
+          <div className="text-xs font-medium text-[#625956] italic">
             Scenario: {content.workedExample.scenario}
           </div>
 
@@ -159,25 +159,25 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
             {content.workedExample.steps.map((st, i) => (
               <div
                 key={i}
-                className="bg-white border border-[#EAE2D5] rounded p-3 text-xs space-y-1.5"
+                className="bg-[#FAF8F5] border border-[#E8E2D9] rounded p-3 text-xs space-y-1.5"
               >
-                <div className="font-semibold text-[#1F191B]">{st.label}</div>
-                <div className="bg-[#FDFBF7] p-2 rounded border border-[#EAE2D5] overflow-x-auto text-[#7A1C30]">
+                <div className="font-semibold text-[#1D1819]">{st.label}</div>
+                <div className="bg-white p-2 rounded border border-[#E8E2D9] overflow-x-auto text-[#6E1A2B]">
                   <MathEquation math={st.math} block />
                 </div>
-                <div className="text-[11px] text-[#54484E]">{st.note}</div>
+                <div className="text-[11px] text-[#625956]">{st.note}</div>
               </div>
             ))}
           </div>
 
-          <div className="p-3 bg-[#FAF2E6] border border-[#EEDAA2] rounded text-xs font-semibold text-[#7A1C30]">
+          <div className="p-3 bg-[#FBF6EB] border border-[#E8D3A8] rounded text-xs font-semibold text-[#6E1A2B]">
             {content.workedExample.result}
           </div>
         </div>
       </section>
 
       {/* 5. Interactive Knowledge Check Quiz */}
-      <section className="pt-4 border-t border-[#EAE2D5]">
+      <section className="pt-4 border-t border-[#E8E2D9]">
         <KnowledgeCheck
           questions={content.quiz}
           onAllCorrect={() => {

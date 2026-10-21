@@ -22,17 +22,17 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#EAE2D5]">
+    <header className="sticky top-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#E8E2D9]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-6 h-6 rounded bg-[#7A1C30] border border-[#D4AF37]/60 flex items-center justify-center text-[#FEF9EE] text-xs font-mono-num font-bold shadow-xs group-hover:bg-[#5F1424] transition-colors">
+          <div className="w-6 h-6 rounded bg-[#6E1A2B] border border-[#C28E38]/60 flex items-center justify-center text-white text-xs font-mono-num font-bold shadow-xs group-hover:bg-[#54111F] transition-colors">
             N
           </div>
-          <span className="font-semibold text-base tracking-tight text-[#1F191B] group-hover:text-[#7A1C30] transition-colors">
+          <span className="font-semibold text-base tracking-tight text-[#1D1819] group-hover:text-[#6E1A2B] transition-colors">
             NeuroPlay
           </span>
-          <span className="hidden md:inline-block text-[11px] font-mono-num uppercase px-1.5 py-0.5 rounded bg-[#FAF2E6] border border-[#EEDAA2] text-[#7A1C30] font-semibold">
+          <span className="hidden md:inline-block text-[11px] font-mono-num uppercase px-1.5 py-0.5 rounded bg-[#FBF6EB] border border-[#E8D3A8] text-[#6E1A2B] font-semibold">
             Deep Learning Lab
           </span>
         </Link>
@@ -48,11 +48,11 @@ export function Navbar() {
                 href={link.href}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
                   isActive
-                    ? 'bg-[#FDF2F4] text-[#7A1C30] font-semibold border border-[#F5CBD3]'
-                    : 'text-[#54484E] hover:text-[#7A1C30] hover:bg-[#FAF5EE]'
+                    ? 'bg-[#F9EFF1] text-[#6E1A2B] font-semibold border border-[#F5CBD3]'
+                    : 'text-[#625956] hover:text-[#6E1A2B] hover:bg-[#F4EFEB]'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#7A1C30]' : 'text-[#786970]'}`} aria-hidden="true" />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#6E1A2B]' : 'text-[#968A86]'}`} aria-hidden="true" />
                 <span>{link.label}</span>
               </Link>
             );
@@ -63,12 +63,12 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <Link
             href="/learn"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[#EAE2D5] bg-white text-[11px] font-mono-num text-[#1F191B] hover:border-[#D4AF37] transition-colors shadow-2xs"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[#E8E2D9] bg-white text-[11px] font-mono-num text-[#1D1819] hover:border-[#C28E38] transition-colors shadow-2xs"
             title="Completed lessons out of available foundational modules"
           >
-            <span className="w-2 h-2 rounded-full bg-[#B8860B]" aria-hidden="true"></span>
+            <span className="w-2 h-2 rounded-full bg-[#C28E38]" aria-hidden="true"></span>
             <span>Progress:</span>
-            <strong className="text-[#7A1C30]">
+            <strong className="text-[#6E1A2B]">
               {mounted ? `${totalCompleted}/${availableCount}` : `0/${availableCount}`}
             </strong>
           </Link>

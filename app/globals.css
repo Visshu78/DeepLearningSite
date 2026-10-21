@@ -1,44 +1,69 @@
 @import "tailwindcss";
 @import "katex/dist/katex.min.css";
 
+/* ==========================================================================
+NEUROPLAY: REFINED EDITORIAL DESIGN SYSTEM
+Theme: Bordeaux & Warm Editorial Cream with Precise Micro-Contrast
+========================================================================== */
+
 :root {
-  /* Rich Cream & Warm Ivory Base */
-  --bg-page: #FDFBF7;
-  --bg-surface: #FFFFFF;
-  --bg-subtle: #FAF5EE;
-  --bg-cream-gold: #FAF2E6;
-  --border-light: #EAE2D5;
-  --border-strong: #DFCDB6;
-  --border-gold: #D4AF37;
+  /* Surface Layers */
+  --bg-canvas: #FAF8F5;          /* Softer, cleaner cream canvas (less yellowed) */
+  --bg-card: #FFFFFF;            /* Pure white elevated cards for high crispness */
+  --bg-subtle: #F4EFEB;          /* Warm panel/code block tint */
+  --bg-inset: #ECE5DC;           /* Inset tracks & input field backgrounds */
 
-  /* Deep Velvet Charcoal & Espresso Typography */
-  --text-main: #1F191B;
-  --text-muted: #54484E;
-  --text-tertiary: #786970;
+  /* Borders & Hairlines */
+  --border-subtle: #E8E2D9;      /* Delicate card border */
+  --border-strong: #D6CCC0;      /* Control borders and active state outlines */
 
-  /* Imperial Burgundy Family */
-  --accent-burgundy: #7A1C30;
-  --accent-burgundy-hover: #5F1424;
-  --accent-burgundy-deep: #480E1B;
-  --accent-burgundy-light: #FDF2F4;
+  /* Typography */
+  --text-primary: #1D1819;       /* Deep rich espresso-charcoal (avoids harsh pure black) */
+  --text-secondary: #625956;     /* Warm muted slate for descriptive paragraphs */
+  --text-tertiary: #968A86;      /* Low-contrast captions and hints */
+
+  /* Primary Brand Accent (Burgundy / Bordeaux) */
+  --primary-accent: #6E1A2B;     /* Deep wine */
+  --primary-accent-hover: #54111F;
+  --primary-accent-surface: #F9EFF1; /* Very light tinted pill badge */
+
+  /* Data & Technical Accents */
+  --accent-gold: #C28E38;        /* Refined ochre/gold for bias & parameters */
+  --accent-gold-bg: #FBF6EB;     /* Soft gold fill for arithmetic panel */
+  --accent-gold-border: #E8D3A8; /* Clean border for gold panels */
+
+  /* Shadows for Rich Tactile Depth */
+  --shadow-elevation: 0 1px 3px rgba(35, 20, 20, 0.04), 0 12px 32px -6px rgba(35, 20, 20, 0.07);
+  --shadow-subtle: 0 1px 2px rgba(35, 20, 20, 0.05);
+
+  /* Legacy & Semantic Variable Mapping for Complete Interoperability */
+  --bg-page: var(--bg-canvas);
+  --bg-surface: var(--bg-card);
+  --bg-cream-gold: var(--accent-gold-bg);
+  --border-light: var(--border-subtle);
+  --border-gold: var(--accent-gold);
+
+  --text-main: var(--text-primary);
+  --text-muted: var(--text-secondary);
+
+  --accent-burgundy: var(--primary-accent);
+  --accent-burgundy-hover: var(--primary-accent-hover);
+  --accent-burgundy-deep: #3B0A15;
+  --accent-burgundy-light: var(--primary-accent-surface);
   --accent-burgundy-border: #F5CBD3;
 
-  /* Antique & Radiant Gold Family */
-  --accent-gold: #B8860B;
-  --accent-gold-radiant: #D4AF37;
-  --accent-gold-deep: #996515;
-  --accent-gold-light: #FEF9EE;
-  --accent-gold-border: #EEDAA2;
+  --accent-gold-radiant: #C28E38;
+  --accent-gold-deep: #8E6523;
+  --accent-gold-light: var(--accent-gold-bg);
 
-  /* Legacy variable mapping to seamlessly preserve components */
-  --accent-teal: #7A1C30;
-  --accent-teal-hover: #5F1424;
-  --accent-teal-light: #FDF2F4;
+  --accent-teal: var(--primary-accent);
+  --accent-teal-hover: var(--primary-accent-hover);
+  --accent-teal-light: var(--primary-accent-surface);
   --accent-teal-border: #F5CBD3;
 
-  --accent-amber: #B8860B;
-  --accent-amber-light: #FEF9EE;
-  --accent-amber-border: #EEDAA2;
+  --accent-amber: var(--accent-gold);
+  --accent-amber-light: var(--accent-gold-bg);
+  --accent-amber-border: var(--accent-gold-border);
 
   --accent-crimson: #991B1B;
   --accent-crimson-light: #FEF2F2;
@@ -48,16 +73,23 @@
 }
 
 body {
-  background-color: var(--bg-page);
-  color: var(--text-main);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+  margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Top Navigation Bar: faint, warm baseline */
+header, nav {
+  background-color: var(--bg-canvas);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
 /* Accessible focus ring for keyboard navigation */
 :focus-visible {
-  outline: 2px solid var(--accent-burgundy);
+  outline: 2px solid var(--primary-accent);
   outline-offset: 2px;
 }
 
@@ -65,14 +97,15 @@ body {
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: var(--border-strong);
+  accent-color: var(--primary-accent);
+  height: 5px;
+  background-color: var(--bg-inset);
   border-radius: 9999px;
-  height: 6px;
   cursor: pointer;
 }
 
 input[type="range"]:focus-visible {
-  outline: 2px solid var(--accent-burgundy);
+  outline: 2px solid var(--primary-accent);
   outline-offset: 3px;
 }
 
@@ -82,36 +115,218 @@ input[type="range"]::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--accent-burgundy);
-  border: 2px solid var(--accent-gold-radiant);
-  box-shadow: 0 1px 4px rgba(122, 28, 48, 0.35);
+  background: var(--primary-accent);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 1px 4px rgba(110, 26, 43, 0.35);
   cursor: pointer;
   transition: transform 0.1s ease, background 0.15s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  background: var(--accent-burgundy-hover);
+  background: var(--primary-accent-hover);
 }
 
 input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--accent-burgundy);
-  border: 2px solid var(--accent-gold-radiant);
-  box-shadow: 0 1px 4px rgba(122, 28, 48, 0.35);
+  background: var(--primary-accent);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 1px 4px rgba(110, 26, 43, 0.35);
   cursor: pointer;
 }
 
+/* --------------------------------------------------------------------------
+   Main Interactive Workbench Card
+-------------------------------------------------------------------------- */
+.neuron-workbench-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: var(--shadow-elevation);
+  overflow: hidden;
+}
+
+.workbench-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: #FDFAF7;
+}
+
+.badge-live {
+  background-color: var(--primary-accent);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Parameter Control Cards (Sliders & Inputs)
+-------------------------------------------------------------------------- */
+.param-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.param-card.is-bias {
+  background-color: #FDFBF7;
+  border: 1.5px solid var(--accent-gold);
+}
+
+.param-card .label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.param-card .value {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-accent);
+}
+
+/* --------------------------------------------------------------------------
+   Arithmetic Trace Block (Code / Terminal Feel)
+-------------------------------------------------------------------------- */
+.arithmetic-trace-box {
+  background-color: var(--accent-gold-bg);
+  border: 1px solid var(--accent-gold-border);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #4D3C1F;
+}
+
+.arithmetic-trace-box .highlight {
+  font-weight: 700;
+  color: var(--primary-accent);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons & Interactive Controls
+-------------------------------------------------------------------------- */
+.btn-primary {
+  background-color: var(--primary-accent);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(110, 26, 43, 0.2);
+  transition: all 0.15s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-accent-hover);
+  box-shadow: 0 4px 12px rgba(110, 26, 43, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   Editorial Serif Typography Calibration
+-------------------------------------------------------------------------- */
+.font-serif-editorial {
+  font-family: var(--font-newsreader), Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+.hero-title {
+  font-family: var(--font-newsreader), Georgia, Cambria, "Times New Roman", Times, serif;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  font-weight: 700;
+}
+
+.hero-description {
+  color: var(--text-secondary);
+  line-height: 1.65;
+  font-size: 17px;
+  max-width: 530px;
+}
 
 /* Tabular figures for numbers */
 .font-mono-num {
   font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-feature-settings: "tnum" 1, "cv01" 1;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* Reduced motion preference */
+/* --------------------------------------------------------------------------
+   Micro-Interactions & Electrical Flow Animations
+-------------------------------------------------------------------------- */
+@keyframes signalFlow {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-signal-flow {
+  animation: signalFlow 2.8s linear infinite;
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+}
+
+.animate-gentle-pulse {
+  animation: gentlePulse 3s ease-in-out infinite;
+}
+
+/* Elevated Editorial Card hover effects */
+.editorial-card-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.editorial-card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px -2px rgba(35, 20, 20, 0.08), 0 1px 3px rgba(35, 20, 20, 0.04);
+}
+
+/* Reduced motion accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
