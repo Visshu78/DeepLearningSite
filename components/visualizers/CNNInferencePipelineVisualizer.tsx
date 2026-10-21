@@ -22,8 +22,10 @@ import {
   Info,
   CheckCircle2,
   Layers,
-  ChevronRight
+  ChevronRight,
+  Box
 } from 'lucide-react';
+import { IsometricTensorView } from './IsometricTensorView';
 
 export function CNNInferencePipelineVisualizer() {
   const [selectedPresetId, setSelectedPresetId] = useState<string>('digit-0');
@@ -31,6 +33,7 @@ export function CNNInferencePipelineVisualizer() {
     DIGIT_PRESETS.find(d => d.id === 'digit-0')!.grid.map(r => [...r])
   );
   const [activeStage, setActiveStage] = useState<number>(1); // Start at Conv2D to show action
+  const [viewMode, setViewMode] = useState<'3d-isometric' | '2d-planar'>('3d-isometric');
   const [selectedFilterIdx, setSelectedFilterIdx] = useState<number>(0);
   const [selectedConvCoord, setSelectedConvCoord] = useState<[number, number]>([1, 1]);
   const [selectedPoolCoord, setSelectedPoolCoord] = useState<[number, number]>([0, 0]);
@@ -315,14 +318,41 @@ export function CNNInferencePipelineVisualizer() {
 
         {/* Center: Stage Tensor Inspector & Live Numerical Arithmetic */}
         <div className="lg:col-span-5 bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-4 shadow-2xs">
-          <div className="flex items-center justify-between border-b border-[#EAE2D5] pb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#EAE2D5] pb-2 gap-2">
             <div>
               <h3 className="text-sm font-bold text-[#1F191B]">{STAGES[activeStage].name}</h3>
               <p className="text-[11px] text-[#54484E]">{STAGES[activeStage].summary}</p>
             </div>
-            <span className="px-2 py-0.5 text-[10px] font-mono-num font-bold rounded bg-[#FAF2E6] text-[#7A1C30] border border-[#EEDAA2]">
-              {STAGES[activeStage].badge}
-            </span>
+            <div className="flex items-center gap-2">
+              {(activeStage === 1 || activeStage === 2 || activeStage === 3) && (
+                <div className="flex items-center bg-[#FAF5EE] p-0.5 rounded border border-[#EAE2D5]">
+                  <button
+                    onClick={() => setViewMode('3d-isometric')}
+                    className={`px-2 py-0.5 text-[10px] font-semibold rounded transition-colors flex items-center gap-1 ${
+                      viewMode === '3d-isometric'
+                        ? 'bg-[#7A1C30] text-white shadow-2xs'
+                        : 'text-[#54484E] hover:text-[#1F191B]'
+                    }`}
+                  >
+                    <Box className="w-3 h-3" />
+                    3D Volume
+                  </button>
+                  <button
+                    onClick={() => setViewMode('2d-planar')}
+                    className={`px-2 py-0.5 text-[10px] font-semibold rounded transition-colors ${
+                      viewMode === '2d-planar'
+                        ? 'bg-[#7A1C30] text-white shadow-2xs'
+                        : 'text-[#54484E] hover:text-[#1F191B]'
+                    }`}
+                  >
+                    2D Grid
+                  </button>
+                </div>
+              )}
+              <span className="px-2 py-0.5 text-[10px] font-mono-num font-bold rounded bg-[#FAF2E6] text-[#7A1C30] border border-[#EEDAA2]">
+                {STAGES[activeStage].badge}
+              </span>
+            </div>
           </div>
 
           {/* STAGE 0: INPUT TENSOR */}
@@ -353,66 +383,95 @@ export function CNNInferencePipelineVisualizer() {
           {/* STAGE 1: CONVOLUTION & STAGE 2: RELU */}
           {(activeStage === 1 || activeStage === 2) && (
             <div className="space-y-4">
-              {/* Filter Selector Tabs */}
-              <div className="flex items-center gap-1.5 border-b border-[#EAE2D5] pb-2 overflow-x-auto">
-                {INFERENCE_FILTERS.map((filt, idx) => (
-                  <button
-                    key={filt.id}
-                    onClick={() => setSelectedFilterIdx(idx)}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded border transition-colors whitespace-nowrap ${
-                      selectedFilterIdx === idx
-                        ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
-                        : 'bg-[#FAF5EE] text-[#54484E] border-[#EAE2D5] hover:bg-white'
-                    }`}
-                  >
-                    Filter {idx + 1}: {filt.name}
-                  </button>
-                ))}
-              </div>
-
-              {/* 6x6 Feature Map with Clickable Cells */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-[#1F191B]">
-                    {activeStage === 1 ? 'Pre-Activation Map (z)' : 'ReLU Post-Activation Map (a = max(0, z))'}:
-                  </span>
-                  <span className="text-[11px] text-[#54484E] font-mono-num">Click any cell to inspect</span>
-                </div>
-
-                <div className="flex justify-center p-3 bg-[#FAF5EE] border border-[#EAE2D5] rounded-md">
-                  <div className="grid grid-cols-6 gap-1">
-                    {(activeStage === 1
-                      ? inference.convFeatureMaps[selectedFilterIdx].map
-                      : inference.reluFeatureMaps[selectedFilterIdx]
-                    ).map((row, r) =>
-                      row.map((val, c) => {
-                        const isSelected =
-                          selectedConvCoord[0] === r && selectedConvCoord[1] === c;
-                        const norm = Math.min(1, Math.max(0, val / 4.0));
-                        return (
-                          <button
-                            key={`map-cell-${r}-${c}`}
-                            onClick={() => setSelectedConvCoord([r, c])}
-                            title={`Cell (${r}, ${c}): value = ${val}`}
-                            style={{
-                              backgroundColor: norm > 0 ? `rgba(122, 28, 48, ${norm})` : '#FFFFFF',
-                              color: norm > 0.5 ? '#FFFFFF' : '#1F191B',
-                              borderColor: isSelected ? '#7A1C30' : '#EAE2D5'
-                            }}
-                            className={`w-8 h-8 flex items-center justify-center font-mono-num text-[10px] font-bold rounded-sm border transition-all ${
-                              isSelected
-                                ? 'ring-2 ring-[#7A1C30] ring-offset-1 z-10'
-                                : 'hover:scale-105'
-                            }`}
-                          >
-                            {val.toFixed(1)}
-                          </button>
-                        );
-                      })
-                    )}
+              {viewMode === '3d-isometric' ? (
+                <IsometricTensorView
+                  channels={INFERENCE_FILTERS.map((filt, idx) => ({
+                    id: filt.id,
+                    name: filt.name,
+                    grid:
+                      activeStage === 1
+                        ? inference.convFeatureMaps[idx].map
+                        : inference.reluFeatureMaps[idx]
+                  }))}
+                  selectedFilterIdx={selectedFilterIdx}
+                  selectedCoord={selectedConvCoord}
+                  onSelectCell={(filterIdx, coord) => {
+                    setSelectedFilterIdx(filterIdx);
+                    setSelectedConvCoord(coord);
+                  }}
+                  inputGrid={inputGrid}
+                  kernelSize={3}
+                  stageTitle={
+                    activeStage === 1
+                      ? '3D Conv2D Feature Tensor'
+                      : '3D ReLU Rectified Tensor'
+                  }
+                  stageBadge="3 × 6 × 6"
+                />
+              ) : (
+                <>
+                  {/* Filter Selector Tabs */}
+                  <div className="flex items-center gap-1.5 border-b border-[#EAE2D5] pb-2 overflow-x-auto">
+                    {INFERENCE_FILTERS.map((filt, idx) => (
+                      <button
+                        key={filt.id}
+                        onClick={() => setSelectedFilterIdx(idx)}
+                        className={`px-2.5 py-1 text-xs font-semibold rounded border transition-colors whitespace-nowrap ${
+                          selectedFilterIdx === idx
+                            ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
+                            : 'bg-[#FAF5EE] text-[#54484E] border-[#EAE2D5] hover:bg-white'
+                        }`}
+                      >
+                        Filter {idx + 1}: {filt.name}
+                      </button>
+                    ))}
                   </div>
-                </div>
-              </div>
+
+                  {/* 6x6 Feature Map with Clickable Cells */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-[#1F191B]">
+                        {activeStage === 1 ? 'Pre-Activation Map (z)' : 'ReLU Post-Activation Map (a = max(0, z))'}:
+                      </span>
+                      <span className="text-[11px] text-[#54484E] font-mono-num">Click any cell to inspect</span>
+                    </div>
+
+                    <div className="flex justify-center p-3 bg-[#FAF5EE] border border-[#EAE2D5] rounded-md">
+                      <div className="grid grid-cols-6 gap-1">
+                        {(activeStage === 1
+                          ? inference.convFeatureMaps[selectedFilterIdx].map
+                          : inference.reluFeatureMaps[selectedFilterIdx]
+                        ).map((row, r) =>
+                          row.map((val, c) => {
+                            const isSelected =
+                              selectedConvCoord[0] === r && selectedConvCoord[1] === c;
+                            const norm = Math.min(1, Math.max(0, val / 4.0));
+                            return (
+                              <button
+                                key={`map-cell-${r}-${c}`}
+                                onClick={() => setSelectedConvCoord([r, c])}
+                                title={`Cell (${r}, ${c}): value = ${val}`}
+                                style={{
+                                  backgroundColor: norm > 0 ? `rgba(122, 28, 48, ${norm})` : '#FFFFFF',
+                                  color: norm > 0.5 ? '#FFFFFF' : '#1F191B',
+                                  borderColor: isSelected ? '#7A1C30' : '#EAE2D5'
+                                }}
+                                className={`w-8 h-8 flex items-center justify-center font-mono-num text-[10px] font-bold rounded-sm border transition-all ${
+                                  isSelected
+                                    ? 'ring-2 ring-[#7A1C30] ring-offset-1 z-10'
+                                    : 'hover:scale-105'
+                                }`}
+                              >
+                                {val.toFixed(1)}
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Arithmetic Breakdown for Selected Cell */}
               <div className="p-3 bg-[#FAF5EE] border border-[#EAE2D5] rounded space-y-2 text-xs">
@@ -476,59 +535,80 @@ export function CNNInferencePipelineVisualizer() {
             </div>
           )}
 
-
           {/* STAGE 3: MAX POOLING */}
           {activeStage === 3 && (
             <div className="space-y-4">
-              <div className="flex items-center gap-1.5 border-b border-[#EAE2D5] pb-2 overflow-x-auto">
-                {INFERENCE_FILTERS.map((filt, idx) => (
-                  <button
-                    key={filt.id}
-                    onClick={() => setSelectedFilterIdx(idx)}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded border transition-colors whitespace-nowrap ${
-                      selectedFilterIdx === idx
-                        ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
-                        : 'bg-[#FAF5EE] text-[#54484E] border-[#EAE2D5] hover:bg-[#FAF2E6]'
-                    }`}
-                  >
-                    Filter {idx + 1}: {filt.name}
-                  </button>
-                ))}
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-[#1F191B]">3×3 Max-Pooled Channel:</span>
-                  <span className="text-[11px] text-[#54484E] font-mono-num">Click cell to inspect 2×2 quad</span>
-                </div>
-
-                <div className="flex justify-center p-3 bg-[#FAF5EE] border border-[#EAE2D5] rounded-md">
-                  <div className="grid grid-cols-3 gap-2">
-                    {inference.pooledFeatureMaps[selectedFilterIdx].map((row, pr) =>
-                      row.map((val, pc) => {
-                        const isSelected =
-                          selectedPoolCoord[0] === pr && selectedPoolCoord[1] === pc;
-                        return (
-                          <button
-                            key={`pool-${pr}-${pc}`}
-                            onClick={() => setSelectedPoolCoord([pr, pc])}
-                            className={`w-12 h-12 flex flex-col items-center justify-center font-mono-num rounded border transition-all ${
-                              isSelected
-                                ? 'bg-[#7A1C30] text-white border-[#7A1C30] ring-2 ring-[#7A1C30] ring-offset-1'
-                                : 'bg-white text-[#1F191B] border-[#EAE2D5] hover:border-[#7A1C30]'
-                            }`}
-                          >
-                            <span className="text-[10px] font-bold">{val.toFixed(1)}</span>
-                            <span className={`text-[8px] ${isSelected ? 'text-[#EEDAA2]' : 'text-[#786970]'}`}>
-                              ({pr},{pc})
-                            </span>
-                          </button>
-                        );
-                      })
-                    )}
+              {viewMode === '3d-isometric' ? (
+                <IsometricTensorView
+                  channels={INFERENCE_FILTERS.map((filt, idx) => ({
+                    id: filt.id,
+                    name: filt.name,
+                    grid: inference.pooledFeatureMaps[idx]
+                  }))}
+                  selectedFilterIdx={selectedFilterIdx}
+                  selectedCoord={selectedPoolCoord}
+                  onSelectCell={(filterIdx, coord) => {
+                    setSelectedFilterIdx(filterIdx);
+                    setSelectedPoolCoord(coord);
+                  }}
+                  kernelSize={2}
+                  stageTitle="3D Max-Pooled Feature Volume"
+                  stageBadge="3 × 3 × 3"
+                />
+              ) : (
+                <>
+                  <div className="flex items-center gap-1.5 border-b border-[#EAE2D5] pb-2 overflow-x-auto">
+                    {INFERENCE_FILTERS.map((filt, idx) => (
+                      <button
+                        key={filt.id}
+                        onClick={() => setSelectedFilterIdx(idx)}
+                        className={`px-2.5 py-1 text-xs font-semibold rounded border transition-colors whitespace-nowrap ${
+                          selectedFilterIdx === idx
+                            ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
+                            : 'bg-[#FAF5EE] text-[#54484E] border-[#EAE2D5] hover:bg-[#FAF2E6]'
+                        }`}
+                      >
+                        Filter {idx + 1}: {filt.name}
+                      </button>
+                    ))}
                   </div>
-                </div>
-              </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-[#1F191B]">3×3 Max-Pooled Channel:</span>
+                      <span className="text-[11px] text-[#54484E] font-mono-num">Click cell to inspect 2×2 quad</span>
+                    </div>
+
+                    <div className="flex justify-center p-3 bg-[#FAF5EE] border border-[#EAE2D5] rounded-md">
+                      <div className="grid grid-cols-3 gap-2">
+                        {inference.pooledFeatureMaps[selectedFilterIdx].map((row, pr) =>
+                          row.map((val, pc) => {
+                            const isSelected =
+                              selectedPoolCoord[0] === pr && selectedPoolCoord[1] === pc;
+                            return (
+                              <button
+                                key={`pool-${pr}-${pc}`}
+                                onClick={() => setSelectedPoolCoord([pr, pc])}
+                                className={`w-12 h-12 flex flex-col items-center justify-center font-mono-num rounded border transition-all ${
+                                  isSelected
+                                    ? 'bg-[#7A1C30] text-white border-[#7A1C30] ring-2 ring-[#7A1C30] ring-offset-1'
+                                    : 'bg-white text-[#1F191B] border-[#EAE2D5] hover:border-[#7A1C30]'
+                                }`}
+                              >
+                                <span className="text-[10px] font-bold">{val.toFixed(1)}</span>
+                                <span className={`text-[8px] ${isSelected ? 'text-[#EEDAA2]' : 'text-[#786970]'}`}>
+                                  ({pr},{pc})
+                                </span>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
 
               {/* 2x2 Downsampling Quad Breakdown */}
               <div className="p-3 bg-[#FAF5EE] border border-[#EAE2D5] rounded space-y-2 text-xs">
