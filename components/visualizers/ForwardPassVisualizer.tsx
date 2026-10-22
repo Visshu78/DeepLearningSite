@@ -3,7 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import { ActivationType } from '@/lib/math/activations';
 import { forwardPropagate, NetworkConfig, ForwardStepResult } from '@/lib/math/network';
-import { RotateCcw, ChevronRight, ChevronLeft, BookOpen } from 'lucide-react';
+import { RotateCcw, ChevronRight, ChevronLeft, BookOpen, Box } from 'lucide-react';
+import { IsometricNetworkStackView } from './IsometricNetworkStackView';
 
 export function ForwardPassVisualizer() {
   const [inputs, setInputs] = useState<[number, number]>([0.5, -0.4]);
@@ -15,6 +16,9 @@ export function ForwardPassVisualizer() {
   const [wOutput, setWOutput] = useState<[number, number]>([0.9, -0.6]);
   const [bOutput, setBOutput] = useState<number>(0.2);
   const [activation, setActivation] = useState<ActivationType>('sigmoid');
+
+  // View mode: 3D Wafer Stack vs 2D Schematic
+  const [viewMode, setViewMode] = useState<'3d-stack' | '2d-schematic'>('3d-stack');
 
   // Control tabs for full parameter adjustability
   const [paramTab, setParamTab] = useState<'inputs' | 'hidden' | 'output'>('inputs');
@@ -69,6 +73,33 @@ export function ForwardPassVisualizer() {
 
         {/* Stepper controls */}
         <div className="flex items-center gap-2">
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-white p-0.5 rounded border border-[#EAE2D5] mr-1">
+            <button
+              type="button"
+              onClick={() => setViewMode('3d-stack')}
+              className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded transition-colors ${
+                viewMode === '3d-stack'
+                  ? 'bg-[#7A1C30] text-white shadow-2xs'
+                  : 'text-[#54484E] hover:text-[#1F191B]'
+              }`}
+            >
+              <Box className="w-3 h-3" />
+              3D Wafer Stack
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('2d-schematic')}
+              className={`px-2 py-0.5 text-[10px] font-semibold rounded transition-colors ${
+                viewMode === '2d-schematic'
+                  ? 'bg-[#7A1C30] text-white shadow-2xs'
+                  : 'text-[#54484E] hover:text-[#1F191B]'
+              }`}
+            >
+              2D Flat
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
@@ -115,23 +146,34 @@ export function ForwardPassVisualizer() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#EAE2D5]">
-        {/* Network Diagram View (SVG) */}
+        {/* Network Diagram View (3D Stack or 2D Schematic) */}
         <div className="lg:col-span-7 p-4 bg-[#FCFCFA] flex flex-col items-center justify-center min-h-[380px]">
-          <svg
-            viewBox="0 0 540 300"
-            className="w-full max-w-[540px] h-auto select-none"
-            role="img"
-            aria-label="Feedforward neural network diagram with 2 inputs, 2 hidden neurons, and 1 output neuron"
-          >
-            <title>2-2-1 Neural Network Forward Propagation</title>
-            <desc>
-              Interactive multi-layer perceptron showing signal transmission through input layer, hidden layer, and output neuron with current step highlighting.
-            </desc>
+          {viewMode === '3d-stack' ? (
+            <IsometricNetworkStackView
+              inputs={inputs}
+              wHidden={wHidden}
+              bHidden={bHidden}
+              wOutput={wOutput}
+              bOutput={bOutput}
+              currentStep={currentStep}
+              fwdResult={fwdResult}
+            />
+          ) : (
+            <svg
+              viewBox="0 0 540 300"
+              className="w-full max-w-[540px] h-auto select-none"
+              role="img"
+              aria-label="Feedforward neural network diagram with 2 inputs, 2 hidden neurons, and 1 output neuron"
+            >
+              <title>2-2-1 Neural Network Forward Propagation</title>
+              <desc>
+                Interactive multi-layer perceptron showing signal transmission through input layer, hidden layer, and output neuron with current step highlighting.
+              </desc>
 
-            {/* Stage Column Labels */}
-            <text x="70" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#54484E">INPUTS</text>
-            <text x="270" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#54484E">HIDDEN LAYER (l=1)</text>
-            <text x="470" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#54484E">OUTPUT (l=2)</text>
+              {/* Stage Column Labels */}
+              <text x="70" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#54484E">INPUTS</text>
+              <text x="270" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#54484E">HIDDEN LAYER (l=1)</text>
+              <text x="470" y="25" textAnchor="middle" fontSize="11" fontWeight="600" fill="#54484E">OUTPUT (l=2)</text>
 
             {/* Connections: Input to Hidden 0 */}
             <path
@@ -239,6 +281,7 @@ export function ForwardPassVisualizer() {
               <text x="0" y="40" textAnchor="middle" fontSize="9" fill="#6E7682">b={bOutput.toFixed(2)}</text>
             </g>
           </svg>
+        )}
 
           {/* Stepper progress dots */}
           <div className="flex items-center gap-2 mt-3">

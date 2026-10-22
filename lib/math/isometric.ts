@@ -296,3 +296,158 @@ export function buildReceptiveFieldRays(
 export function sortFacesByDepth(faces: PolygonFace[]): PolygonFace[] {
   return [...faces].sort((a, b) => a.avgDepth - b.avgDepth);
 }
+
+export interface WaferPlateNode {
+  nodeId: string;
+  label: string;
+  val: number;
+  subText?: string;
+}
+
+export interface WaferPlate3D {
+  id: string;
+  layerIndex: number;
+  layerName: string;
+  faces: PolygonFace[];
+  nodeAnchors: {
+    nodeId: string;
+    screenPt: ScreenPoint;
+    val: number;
+    subText?: string;
+  }[];
+  labelAnchor: ScreenPoint;
+  avgDepth: number;
+}
+
+export interface SynapticConduit3D {
+  id: string;
+  fromScreen: ScreenPoint;
+  toScreen: ScreenPoint;
+  weight: number;
+  avgDepth: number;
+  fromNodeId: string;
+  toNodeId: string;
+}
+
+/**
+ * Builds an isometric floating circuit wafer plate representing a neural layer
+ */
+export function buildWaferPlate(
+  layerIndex: number,
+  layerName: string,
+  centerPt: Vector3D,
+  width: number,
+  height: number,
+  thickness: number,
+  nodes: WaferPlateNode[],
+  globalCenter: Vector3D,
+  camera: Camera3D
+): WaferPlate3D {
+  const x = centerPt.x - width / 2;
+  const y = centerPt.y - height / 2;
+  const z = centerPt.z - thickness / 2;
+
+  // 8 vertices of the wafer plate
+  const p000 = project3DPoint({ x, y, z }, globalCenter, camera);
+  const p100 = project3DPoint({ x: x + width, y, z }, globalCenter, camera);
+  const p110 = project3DPoint({ x: x + width, y: y + height, z }, globalCenter, camera);
+  const p010 = project3DPoint({ x, y: y + height, z }, globalCenter, camera);
+
+  const p001 = project3DPoint({ x, y, z: z + thickness }, globalCenter, camera);
+  const p101 = project3DPoint({ x: x + width, y, z: z + thickness }, globalCenter, camera);
+  const p111 = project3DPoint({ x: x + width, y: y + height, z: z + thickness }, globalCenter, camera);
+  const p011 = project3DPoint({ x, y: y + height, z: z + thickness }, globalCenter, camera);
+
+  const avgDepth = (pts: ScreenPoint[]) =>
+    pts.reduce((sum, p) => sum + p.depth, 0) / pts.length;
+
+  const faces: PolygonFace[] = [
+    // Top Face
+    {
+      id: `wafer-${layerIndex}-top`,
+      points: [p000, p100, p101, p001],
+      avgDepth: avgDepth([p000, p100, p101, p001]),
+      normal: { x: 0, y: -1, z: 0 },
+      faceType: 'top'
+    },
+    // Front Face (the main board surface facing positive Z)
+    {
+      id: `wafer-${layerIndex}-front`,
+      points: [p001, p101, p111, p011],
+      avgDepth: avgDepth([p001, p101, p111, p011]),
+      normal: { x: 0, y: 0, z: 1 },
+      faceType: 'front'
+    },
+    // Right Side Face
+    {
+      id: `wafer-${layerIndex}-side`,
+      points: [p100, p101, p111, p110],
+      avgDepth: avgDepth([p100, p101, p111, p110]),
+      normal: { x: 1, y: 0, z: 0 },
+      faceType: 'side'
+    }
+  ];
+
+  // Node contact anchors distributed vertically along the wafer face
+  const nodeAnchors = nodes.map((node, i) => {
+    const nodeY = y + ((i + 1) * height) / (nodes.length + 1);
+    const nodeX = centerPt.x;
+    const nodeZ = z + thickness + 0.05; // slightly in front of the front face
+
+    const screenPt = project3DPoint(
+      { x: nodeX, y: nodeY, z: nodeZ },
+      globalCenter,
+      camera
+    );
+
+    return {
+      nodeId: node.nodeId,
+      screenPt,
+      val: node.val,
+      subText: node.subText
+    };
+  });
+
+  // Top header label anchor
+  const labelAnchor = project3DPoint(
+    { x: centerPt.x, y: y - 0.5, z: z + thickness / 2 },
+    globalCenter,
+    camera
+  );
+
+  return {
+    id: `wafer-${layerIndex}`,
+    layerIndex,
+    layerName,
+    faces,
+    nodeAnchors,
+    labelAnchor,
+    avgDepth: avgDepth([p000, p111])
+  };
+}
+
+/**
+ * Builds a synaptic connection conduit between two node 3D anchors
+ */
+export function buildSynapticConduit(
+  fromPt: Vector3D,
+  toPt: Vector3D,
+  weight: number,
+  fromNodeId: string,
+  toNodeId: string,
+  globalCenter: Vector3D,
+  camera: Camera3D
+): SynapticConduit3D {
+  const fromScreen = project3DPoint(fromPt, globalCenter, camera);
+  const toScreen = project3DPoint(toPt, globalCenter, camera);
+
+  return {
+    id: `conduit-${fromNodeId}->${toNodeId}`,
+    fromScreen,
+    toScreen,
+    weight,
+    avgDepth: (fromScreen.depth + toScreen.depth) / 2,
+    fromNodeId,
+    toNodeId
+  };
+}

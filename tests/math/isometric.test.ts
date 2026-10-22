@@ -6,6 +6,8 @@ import {
   buildVoxelFaces,
   sortFacesByDepth,
   buildReceptiveFieldRays,
+  buildWaferPlate,
+  buildSynapticConduit,
   type Camera3D,
   type Vector3D
 } from '../../lib/math/isometric';
@@ -112,5 +114,45 @@ describe('Isometric & 3D Vector Geometry Engine', () => {
       expect(Number.isFinite(ray.from.x)).toBe(true);
       expect(Number.isFinite(ray.to.x)).toBe(true);
     });
+  });
+
+  it('builds wafer plate with faces and anchored node points', () => {
+    const wafer = buildWaferPlate(
+      1,
+      'Hidden Layer',
+      { x: 0, y: 0, z: 2 },
+      3,
+      5,
+      0.4,
+      [
+        { nodeId: 'h1', label: 'h1', val: 0.7 },
+        { nodeId: 'h2', label: 'h2', val: -0.3 }
+      ],
+      center,
+      camera
+    );
+
+    expect(wafer.faces.length).toBe(3);
+    expect(wafer.nodeAnchors.length).toBe(2);
+    expect(wafer.nodeAnchors[0].nodeId).toBe('h1');
+    expect(wafer.nodeAnchors[1].nodeId).toBe('h2');
+    expect(Number.isFinite(wafer.labelAnchor.x)).toBe(true);
+  });
+
+  it('builds synaptic conduit between 3D points', () => {
+    const conduit = buildSynapticConduit(
+      { x: 0, y: 1, z: 0 },
+      { x: 0, y: 1, z: 4 },
+      0.85,
+      'x1',
+      'h1',
+      center,
+      camera
+    );
+
+    expect(conduit.id).toBe('conduit-x1->h1');
+    expect(conduit.weight).toBe(0.85);
+    expect(Number.isFinite(conduit.fromScreen.x)).toBe(true);
+    expect(Number.isFinite(conduit.toScreen.x)).toBe(true);
   });
 });
