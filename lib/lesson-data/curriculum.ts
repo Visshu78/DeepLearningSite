@@ -236,6 +236,63 @@ export const CURRICULUM: ModuleMeta[] = [
           'Flattening vectorizes spatial feature maps into a 1D column vector suitable for dense matrix multiplication',
           'The Softmax activation normalizes final unconstrained logits into an interpretable categorical probability distribution'
         ]
+      },
+      {
+        id: 'lesson-10',
+        slug: 'cnn-backpropagation',
+        title: 'Backpropagation in Convolutional Networks',
+        subtitle: 'Computing filter gradients via cross-correlation and input gradients with rotated transposed convolutions.',
+        moduleId: 'module-5',
+        moduleName: 'Convolutional Neural Networks',
+        moduleNumber: 5,
+        lessonNumber: 10,
+        duration: '25 min',
+        prerequisites: ['cnn-inference-pipeline'],
+        status: 'available',
+        keyTakeaways: [
+          'The gradient w.r.t filter weights is the cross-correlation between input activations and output error: ∂L/∂K = X ⋆ δ_out',
+          'The gradient w.r.t input activations requires full convolution with the 180°-rotated kernel: ∂L/∂X = δ_out ⋆ rot180(K)',
+          'Max-pooling backward pass performs mask routing: only the winning argmax neuron receives the upstream error, others receive 0',
+          'Convolutional weight updates follow the standard gradient descent rule: K_new = K - η · (∂L/∂K)'
+        ]
+      },
+      {
+        id: 'lesson-11',
+        slug: 'resnet-architectures',
+        title: 'Residual Networks (ResNet) & Skip Connections',
+        subtitle: 'Breaking the depth barrier: identity mappings, gradient highways, and bottleneck blocks.',
+        moduleId: 'module-5',
+        moduleName: 'Convolutional Neural Networks',
+        moduleNumber: 5,
+        lessonNumber: 11,
+        duration: '22 min',
+        prerequisites: ['cnn-backpropagation'],
+        status: 'available',
+        keyTakeaways: [
+          'The degradation problem causes plain deep networks (e.g. 56 layers) to perform worse than shallow networks due to vanishing gradients',
+          'ResNet reformulates layers to learn residual mappings: H(x) = F(x) + x',
+          'The gradient highway formulation ∂L/∂x = ∂L/∂H · (∂F/∂x + I) guarantees that gradients flow back unattenuated through the additive identity term I',
+          'Bottleneck residual blocks (1×1 → 3×3 → 1×1) reduce parameter count and FLOPs by >80% while enabling networks beyond 100 layers'
+        ]
+      },
+      {
+        id: 'lesson-12',
+        slug: 'efficientnet-compound-scaling',
+        title: 'EfficientNet & Compound Model Scaling',
+        subtitle: 'Systematically balancing depth, width, and resolution with MBConv and Squeeze-and-Excitation.',
+        moduleId: 'module-5',
+        moduleName: 'Convolutional Neural Networks',
+        moduleNumber: 5,
+        lessonNumber: 12,
+        duration: '25 min',
+        prerequisites: ['resnet-architectures'],
+        status: 'available',
+        keyTakeaways: [
+          'Arbitrarily scaling depth, width, or resolution in isolation quickly hits diminishing accuracy returns',
+          'Compound scaling uses a single coefficient φ to balance depth (α^φ), width (β^φ), and resolution (γ^φ) subject to α·β²·γ² ≈ 2',
+          'Depthwise Separable Convolutions separate spatial filtering from channel mixing, reducing computational cost by ~8x to 9x',
+          'MBConv inverted bottleneck blocks incorporate Squeeze-and-Excitation (SE) channel attention to dynamically recalibrate feature importances'
+        ]
       }
     ]
   },
@@ -247,14 +304,14 @@ export const CURRICULUM: ModuleMeta[] = [
     status: 'available',
     lessons: [
       {
-        id: 'lesson-10',
+        id: 'lesson-13',
         slug: 'regularization-dropout',
         title: 'Overfitting, L2 Weight Decay & Dropout',
         subtitle: 'Techniques to improve out-of-sample generalization and network robustness.',
         moduleId: 'module-6',
         moduleName: 'Training and Generalization',
         moduleNumber: 6,
-        lessonNumber: 10,
+        lessonNumber: 13,
         duration: '20 min',
         prerequisites: ['backpropagation-fundamentals'],
         status: 'available',
@@ -266,14 +323,14 @@ export const CURRICULUM: ModuleMeta[] = [
         ]
       },
       {
-        id: 'lesson-11',
+        id: 'lesson-14',
         slug: 'adaptive-optimizers',
         title: 'Momentum, RMSprop, and Adam',
         subtitle: 'Adaptive learning rate algorithms and second-moment estimation.',
         moduleId: 'module-6',
         moduleName: 'Training and Generalization',
         moduleNumber: 6,
-        lessonNumber: 11,
+        lessonNumber: 14,
         duration: '25 min',
         prerequisites: ['gradient-descent'],
         status: 'available',

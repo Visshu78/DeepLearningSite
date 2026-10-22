@@ -781,6 +781,242 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Flattening transitions spatial tensor representations into vector space for categorical classification.',
       'Inference is purely feed-forward with frozen weights and no computational graph overhead.'
     ]
+  },
+  'cnn-backpropagation': {
+    slug: 'cnn-backpropagation',
+    intuition: [
+      'Backpropagation in convolutional networks follows the multivariate chain rule, but requires spatial transformations to account for weight sharing and 2D sliding operations.',
+      'During the forward pass, a single kernel weight K(m, n) is multiplied by multiple patches across the entire input image. Consequently, by the multivariable chain rule, the gradient of the loss with respect to that kernel weight is the accumulation of errors across all those overlapping patch positions: a cross-correlation between input activations and upstream error deltas.',
+      'To propagate errors backward to input activations (so preceding layers can learn), the upstream error tensor must be convolved with a spatially flipped (180°-rotated) kernel. This reversal properly routes error signals back to the exact input coordinates that generated them.',
+      'Max-pooling layers contain no learnable weights, but their backward pass is critical: gradients are routed strictly to the winning neuron in each pooling window (the argmax location recorded during the forward pass). All non-winning neurons receive an exact gradient of zero because small perturbations to them would have had zero effect on the output.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Kernel Weight Gradient (Cross-Correlation)',
+        latex: '\\frac{\\partial L}{\\partial K(m, n)} = \\sum_{i} \\sum_{j} \\frac{\\partial L}{\\partial Y(i, j)} \\cdot X(i+m, j+n) = (X \\star \\boldsymbol{\\delta}_{out})(m, n)',
+        explanation: 'The gradient for each filter weight equals the sum of products of upstream error deltas with overlapping input activations across all spatial positions.'
+      },
+      {
+        name: 'Input Activation Gradient (180° Rotated Full Convolution)',
+        latex: '\\frac{\\partial L}{\\partial X(r, c)} = (\\boldsymbol{\\delta}_{out} *_{\\text{full}} \\text{rot}_{180}(K))(r, c)',
+        explanation: 'Upstream error deltas are padded and convolved with the kernel rotated by 180 degrees to compute the gradient w.r.t input features for earlier layers.'
+      },
+      {
+        name: 'Max-Pooling Backward Mask Routing',
+        latex: '\\frac{\\partial L}{\\partial X_{pool}(r, c)} = \\begin{cases} \\delta_{out}(pr, pc) & \\text{if } (r, c) = \\text{argmax}_{(p, q)} X(p, q) \\\\ 0 & \\text{otherwise} \\end{cases}',
+        explanation: 'Only the coordinate that produced the maximum forward activation receives the upstream gradient signal; all other coordinates receive zero.'
+      },
+      {
+        name: 'Bias Gradient',
+        latex: '\\frac{\\partial L}{\\partial b} = \\sum_{i} \\sum_{j} \\delta_{out}(i, j)',
+        explanation: 'Because a single bias scalar is added to every spatial position in the output feature map, its gradient is simply the sum of all upstream output errors.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Computing the kernel weight gradient ∂L/∂K[0,0] for a 2×2 kernel sliding over a 3×3 input with 2×2 upstream error map δ_out = [[1.0, -0.5], [0.8, 2.0]].',
+      steps: [
+        { label: 'Step 1: Identify patch pixels multiplied by K[0,0]', math: 'X(0,0)=1.5, \\quad X(0,1)=0.8, \\quad X(1,0)=0.4, \\quad X(1,1)=2.5', note: 'Top-left element of each 2×2 sliding window.' },
+        { label: 'Step 2: Multiply by corresponding upstream errors', math: '(1.5 \\times 1.0) + (0.8 \\times -0.5) + (0.4 \\times 0.8) + (2.5 \\times 2.0)', note: 'Summing contributions across all 4 spatial evaluations.' },
+        { label: 'Step 3: Accumulate dot products', math: '1.50 - 0.40 + 0.32 + 5.00 = 6.42', note: 'Total accumulated gradient for K[0,0].' },
+        { label: 'Step 4: Gradient descent parameter update', math: 'K_{new}[0,0] = K_{old}[0,0] - \\eta \\cdot 6.42', note: 'With learning rate η = 0.1, weight decreases by 0.642 to reduce loss.' }
+      ],
+      result: '∂L/∂K[0,0] = 6.420. Weight updates in the opposite direction of the gradient.',
+      params: {
+        kernelSize: '2x2',
+        inputSize: '3x3',
+        learningRate: 0.1
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'Why must the convolutional kernel be rotated by 180 degrees when computing the gradient with respect to input activations (∂L/∂X)?',
+        options: [
+          'Because gradient descent always moves in the reverse direction of the loss.',
+          'Because convolving an upstream error with a forward kernel would shift gradients in the wrong spatial direction; rotating by 180° aligns the adjoint operation of convolution so error flows backward to the correct input coordinates.',
+          'To invert all negative weights into positive weights.',
+          'It is only needed when using ReLU activations.'
+        ],
+        correctIndex: 1,
+        explanation: 'The mathematical adjoint (transpose) of a discrete convolution operator is a cross-correlation, which is equivalent to a convolution with the kernel flipped horizontally and vertically (rotated 180°).'
+      },
+      {
+        id: 'q2',
+        question: 'During backpropagation through a Max-Pooling layer with a 2×2 window and stride 2, what gradient is assigned to the 3 non-maximum cells in each window?',
+        options: [
+          'One-fourth of the upstream gradient (δ / 4).',
+          'The negative of the maximum cell\'s gradient.',
+          'Exactly zero, because small changes to non-maxima do not affect the output or the loss.',
+          'The average gradient of the surrounding feature map.'
+        ],
+        correctIndex: 2,
+        explanation: 'Max pooling is locally constant with respect to all non-winning inputs. Their partial derivatives ∂y/∂x are identically zero, so by the chain rule, they receive zero gradient.'
+      }
+    ],
+    summary: [
+      'Filter gradients are computed via cross-correlation between input activations and upstream errors: ∂L/∂K = X ⋆ δ_out.',
+      'Input gradients are computed via full convolution with the 180°-rotated kernel: ∂L/∂X = δ_out * rot180(K).',
+      'Max-pooling backpropagation routes gradients exclusively to the forward argmax indices.',
+      'Weight sharing means gradients from every spatial position aggregate into a single parameter update.'
+    ]
+  },
+  'resnet-architectures': {
+    slug: 'resnet-architectures',
+    intuition: [
+      'In theory, adding more layers to a deep neural network should never decrease training performance: extra layers could simply learn the identity function f(x) = x.',
+      'In practice, traditional deep feedforward networks (such as 56-layer VGG networks) suffer from the "degradation problem": as depth increases, training error gets worse because gradients vanish or explode exponentially when multiplied through dozens of stacked weight matrices.',
+      'Residual Networks (ResNet) resolve this by reformulating layer objectives: instead of trying to fit an underlying mapping H(x), the stacked layers fit a residual mapping F(x) = H(x) - x, giving the overall output H(x) = F(x) + x.',
+      'If an identity mapping is optimal, driving the residual weights F(x) toward zero is vastly easier than learning identity transformations through stacked non-linear layers.',
+      'Most importantly, the identity skip connection creates a "gradient highway": during backpropagation, the gradient flows directly through the addition gate with an additive identity term (+ I), allowing healthy gradient signals to propagate back through 100+ layers without vanishing.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Residual Learning Formulation',
+        latex: 'H(\\mathbf{x}) = F(\\mathbf{x}, \\{W_i\\}) + \\mathbf{x}',
+        explanation: 'The output H(x) is the sum of the residual transformation F(x) and the undisturbed input identity shortcut x.'
+      },
+      {
+        name: 'The Gradient Highway Formulation',
+        latex: '\\frac{\\partial L}{\\partial \\mathbf{x}} = \\frac{\\partial L}{\\partial H} \\cdot \\left( \\frac{\\partial F}{\\partial \\mathbf{x}} + \\mathbf{I} \\right) = \\frac{\\partial L}{\\partial H} \\frac{\\partial F}{\\partial \\mathbf{x}} + \\frac{\\partial L}{\\partial H}',
+        explanation: 'The additive identity matrix + I guarantees that the gradient ∂L/∂H flows backward directly without being scaled by any weight matrices.'
+      },
+      {
+        name: 'Bottleneck Block Complexity',
+        latex: '\\text{Cost}_{\\text{bottleneck}} = 1\\times1(4C \\to C) + 3\\times3(C \\to C) + 1\\times1(C \\to 4C) = 17C^2',
+        explanation: 'Compresses wide 4C-channel representations down to C for the expensive 3×3 convolution before restoring dimensions, saving >80% FLOPs.'
+      },
+      {
+        name: 'Projection Shortcut (Dimension Matching)',
+        latex: 'H(\\mathbf{x}) = F(\\mathbf{x}, \\{W_i\\}) + W_s \\mathbf{x}',
+        explanation: 'When spatial dimensions halve or channel depth doubles, a 1×1 convolution with stride 2 matches tensor dimensions.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Evaluating forward signal and backward gradient for a residual unit with input x = 2.0, where residual branch produces F(x) = 0.30 and local slope dF/dx = 0.15.',
+      steps: [
+        { label: 'Step 1: Compute residual branch', math: 'F(x) = 0.30', note: 'Learned modification to the input signal.' },
+        { label: 'Step 2: Add identity shortcut', math: 'H(x) = F(x) + x = 0.30 + 2.00 = 2.30', note: 'Signal is preserved and augmented.' },
+        { label: 'Step 3: Backpropagation gradient with upstream dL/dH = 1.0', math: '\\frac{\\partial L}{\\partial x} = \\frac{\\partial L}{\\partial H} \\cdot \\left(\\frac{\\partial F}{\\partial x} + 1\\right) = 1.0 \\times (0.15 + 1.0) = 1.15', note: 'Identity term +1 prevents gradient from shrinking to 0.15.' },
+        { label: 'Step 4: Comparison to plain network', math: '\\text{Plain gradient} = 1.0 \\times 0.15 = 0.15', note: 'Without skip connection, gradient would have decayed by 85% in a single layer!' }
+      ],
+      result: 'ResNet gradient remains 1.15 (healthy), whereas plain network gradient collapses to 0.15.',
+      params: {
+        x: 2.0,
+        fx: 0.3,
+        dF_dx: 0.15
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'What is the "degradation problem" that inspired the development of ResNet architectures?',
+        options: [
+          'Deeper networks consistently overfit the training dataset and fail on test data.',
+          'As network depth increases beyond ~20 layers, training error gets worse even though deeper networks have strictly greater theoretical representational capacity.',
+          'Convolutional kernels degrade in quality due to GPU floating-point precision issues.',
+          'Activation functions become linear after 10 layers.'
+        ],
+        correctIndex: 1,
+        explanation: 'He et al. (2015) discovered that a 56-layer plain network had higher training error than a 20-layer network. This was not overfitting (which would show low training error), but optimization failure caused by vanishing gradient signals during backpropagation.'
+      },
+      {
+        id: 'q2',
+        question: 'Why does the residual connection H(x) = F(x) + x prevent vanishing gradients across 100+ layers?',
+        options: [
+          'Because the derivative dH/dx = dF/dx + I contains an additive identity term, guaranteeing that error gradients can flow directly to early layers even if dF/dx approaches zero.',
+          'Because it replaces all convolutions with matrix inversions.',
+          'Because it forces every weight in the network to be strictly positive.',
+          'Because it removes the need for backpropagation entirely.'
+        ],
+        correctIndex: 0,
+        explanation: 'In a plain network, gradients are multiplied cumulatively across layers: ∏ W_l · φ\'(z_l). In ResNet, the expansion includes a sum containing the direct term ∂L/∂H, allowing gradients to propagate back unimpeded.'
+      }
+    ],
+    summary: [
+      'The degradation problem causes plain deep networks to perform worse on training data than shallow models.',
+      'Residual learning reformulates layers to learn F(x) = H(x) - x, making identity mappings trivially easy to optimize.',
+      'The gradient highway formulation ∂L/∂x = ∂L/∂H · (∂F/∂x + I) guarantees gradient flow without vanishing.',
+      'Bottleneck blocks (1×1 → 3×3 → 1×1) enable 50+ to 152+ layer architectures with extreme parameter efficiency.'
+    ]
+  },
+  'efficientnet-compound-scaling': {
+    slug: 'efficientnet-compound-scaling',
+    intuition: [
+      'Traditionally, scaling convolutional networks involves arbitrarily tuning a single dimension: making the network deeper (like ResNet-101), wider (like WideResNet), or feeding higher resolution images.',
+      'However, scaling any single dimension exhibits diminishing returns: extremely deep networks encounter vanishing gradients; extremely wide shallow networks struggle with complex hierarchical abstractions; and high-resolution images increase FLOPs quadratically without proportional accuracy gains.',
+      'EfficientNet introduces Compound Model Scaling: systematically balancing network Depth (d), Width (w), and Resolution (r) using a principled compound scaling coefficient φ: d = α^φ, w = β^φ, r = γ^φ.',
+      'Under the constraint α · β² · γ² ≈ 2, scaling by φ roughly doubles total FLOPs while preserving the optimal balance across all three dimensions.',
+      'At the architectural level, EfficientNet utilizes Mobile Inverted Bottleneck Convolutions (MBConv) with Depthwise Separable Convolutions—cutting parameters and FLOPs by ~8× compared to standard 2D convolutions—combined with Squeeze-and-Excitation (SE) channel attention.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Compound Scaling Formulation',
+        latex: '\\text{Depth: } d = \\alpha^\\phi, \\quad \\text{Width: } w = \\beta^\\phi, \\quad \\text{Resolution: } r = \\gamma^\\phi',
+        explanation: 'Balances depth, width, and resolution using compound coefficient φ with baseline constants α = 1.2, β = 1.1, γ = 1.15.'
+      },
+      {
+        name: 'FLOPs Constraint',
+        latex: '\\alpha \\cdot \\beta^2 \\cdot \\gamma^2 \\approx 2, \\quad \\text{subject to } \\alpha \\ge 1, \\beta \\ge 1, \\gamma \\ge 1',
+        explanation: 'Ensures that for any compound scaling factor φ, total computational FLOPs scale by approximately 2^φ.'
+      },
+      {
+        name: 'Depthwise Separable Convolution Cost Ratio',
+        latex: '\\frac{\\text{Cost}_{\\text{sep}}}{\\text{Cost}_{\\text{std}}} = \\frac{K^2 \\cdot C_{in} + C_{in} \\cdot C_{out}}{K^2 \\cdot C_{in} \\cdot C_{out}} = \\frac{1}{C_{out}} + \\frac{1}{K^2}',
+        explanation: 'For a 3×3 kernel (K=3) and 128 channels, the computational cost is only ~1/9 (an 88% reduction in parameters and FLOPs).'
+      },
+      {
+        name: 'Squeeze-and-Excitation Channel Attention',
+        latex: '\\mathbf{s} = \\sigma\\left( W_2 \\cdot \\text{ReLU}(W_1 \\cdot \\text{GAP}(\\mathbf{X})) \\right)',
+        explanation: 'Computes a channel-wise recalibration weight vector s ∈ (0, 1) to dynamically amplify important feature maps and suppress uninformative ones.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Comparing parameter count and FLOPs for a standard 3×3 convolution vs. a Depthwise Separable convolution with Cin = 64, Cout = 128, on a 28×28 feature map.',
+      steps: [
+        { label: 'Step 1: Standard convolution parameters', math: '3 \\times 3 \\times 64 \\times 128 = 73,728 \\text{ weights}', note: 'Full 4D tensor parameter matrix.' },
+        { label: 'Step 2: Depthwise convolution parameters', math: '3 \\times 3 \\times 64 = 576 \\text{ weights}', note: 'One spatial 3×3 filter per input channel.' },
+        { label: 'Step 3: Pointwise 1×1 convolution parameters', math: '1 \\times 1 \\times 64 \\times 128 = 8,192 \\text{ weights}', note: 'Mixes channels linearly.' },
+        { label: 'Step 4: Total separable parameters and savings', math: '576 + 8,192 = 8,768 \\implies \\frac{73,728 - 8,768}{73,728} = 88.1\\% \\text{ savings}', note: '8.4× fewer parameters and FLOPs with virtually identical expressive power!' }
+      ],
+      result: 'Depthwise Separable Conv requires only 8,768 weights vs 73,728 for Standard Conv (88.1% reduction).',
+      params: {
+        kernelSize: 3,
+        inChannels: 64,
+        outChannels: 128
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'Why does compound scaling outperform arbitrarily scaling only the depth (layers) or only the width (channels) of a CNN?',
+        options: [
+          'Because scaling a single dimension hits diminishing accuracy returns: deep networks suffer from vanishing gradients, wide networks struggle with abstractions, and high-resolution images require wider receptive fields to capture global context.',
+          'Because GPUs cannot process images with odd numbers of channels.',
+          'Because single-dimension scaling is incompatible with Adam optimizer.',
+          'Because compound scaling eliminates the need for non-linear activations.'
+        ],
+        correctIndex: 0,
+        explanation: 'Tan & Le (2019) demonstrated that depth, width, and resolution are interdependent: higher resolution images require deeper networks with larger receptive fields and more channels to capture detailed patterns.'
+      },
+      {
+        id: 'q2',
+        question: 'In the MBConv block used by EfficientNet, what is the role of the Squeeze-and-Excitation (SE) component?',
+        options: [
+          'It downsamples the spatial resolution by 50%.',
+          'It uses Global Average Pooling and two small dense layers to compute a dynamic scaling weight (between 0 and 1) for each channel, recalibrating feature importance.',
+          'It replaces the convolutional weights with random noise during training.',
+          'It calculates the second derivatives of the loss.'
+        ],
+        correctIndex: 1,
+        explanation: 'Squeeze-and-Excitation introduces channel-wise attention: by squeezing spatial dimensions with GAP and exciting with a bottleneck MLP + Sigmoid, the network learns which channels to prioritize for each input.'
+      }
+    ],
+    summary: [
+      'Compound scaling systematically balances depth (d), width (w), and resolution (r) via a single coefficient φ.',
+      'Depthwise Separable Convolutions separate spatial filtering from channel mixing, cutting computation by ~8×.',
+      'MBConv inverted bottlenecks perform depthwise convolutions in an expanded high-dimensional space.',
+      'Squeeze-and-Excitation (SE) attention dynamically recalibrates channel weights, maximizing feature selectivity.'
+    ]
   }
 };
 

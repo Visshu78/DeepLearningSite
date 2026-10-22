@@ -2,12 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CURRICULUM, getLessonBySlug } from '@/lib/lesson-data/curriculum';
+import { CURRICULUM, ALL_LESSONS, getLessonBySlug } from '@/lib/lesson-data/curriculum';
 import { useLearningProgress } from '@/lib/progress/progressStore';
 import { CheckCircle2, Clock, Lock, ArrowRight, Layers } from 'lucide-react';
 
 export default function LearnRoadmapPage() {
   const { isCompleted, totalCompleted, mounted } = useLearningProgress();
+  const totalAvailableLessons = ALL_LESSONS.filter(l => l.status === 'available').length;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-10">
@@ -20,7 +21,7 @@ export default function LearnRoadmapPage() {
           </div>
 
           <div className="text-xs font-mono-num text-[#54484E] bg-[#FAF5EE] border border-[#EAE2D5] px-3 py-1.5 rounded">
-            Overall Progress: <strong className="text-[#7A1C30]">{mounted ? `${totalCompleted} / 6` : '0 / 6'} Completed</strong>
+            Overall Progress: <strong className="text-[#7A1C30]">{mounted ? `${totalCompleted} / ${totalAvailableLessons}` : `0 / ${totalAvailableLessons}`} Completed</strong>
           </div>
         </div>
 

@@ -14,6 +14,9 @@ import { PoolingVisualizer } from '@/components/visualizers/PoolingVisualizer';
 import { RegularizationVisualizer } from '@/components/visualizers/RegularizationVisualizer';
 import { AdaptiveOptimizersVisualizer } from '@/components/visualizers/AdaptiveOptimizersVisualizer';
 import { CNNInferencePipelineVisualizer } from '@/components/visualizers/CNNInferencePipelineVisualizer';
+import { CNNBackpropagationVisualizer } from '@/components/visualizers/CNNBackpropagationVisualizer';
+import { ResNetVisualizer } from '@/components/visualizers/ResNetVisualizer';
+import { EfficientNetVisualizer } from '@/components/visualizers/EfficientNetVisualizer';
 import type { Metadata } from 'next';
 
 export async function generateStaticParams() {
@@ -74,6 +77,15 @@ export default async function LessonPage({ params }: PageProps) {
       break;
     case 'cnn-inference-pipeline':
       visualizer = <CNNInferencePipelineVisualizer />;
+      break;
+    case 'cnn-backpropagation':
+      visualizer = <CNNBackpropagationVisualizer />;
+      break;
+    case 'resnet-architectures':
+      visualizer = <ResNetVisualizer />;
+      break;
+    case 'efficientnet-compound-scaling':
+      visualizer = <EfficientNetVisualizer />;
       break;
     case 'regularization-dropout':
       visualizer = <RegularizationVisualizer />;
