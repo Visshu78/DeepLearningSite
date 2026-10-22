@@ -47,9 +47,9 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 pb-2 border-b border-[#EAE2D5]">
-        <HelpCircle className="w-4 h-4 text-[#7A1C30]" aria-hidden="true" />
-        <h3 className="text-sm font-bold uppercase tracking-wider text-[#1F191B]">
+      <div className="flex items-center gap-2 pb-2.5 border-b border-[#EAE2D5]">
+        <HelpCircle className="w-5 h-5 text-[#7A1C30]" aria-hidden="true" />
+        <h3 className="text-sm sm:text-base font-bold uppercase tracking-wider text-[#1F191B]">
           Interactive Knowledge Check
         </h3>
       </div>
@@ -63,19 +63,19 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
           return (
             <div
               key={q.id}
-              className="bg-white border border-[#EAE2D5] rounded-lg p-5 space-y-4 shadow-2xs"
+              className="bg-white border border-[#EAE2D5] rounded-xl p-5 sm:p-6 space-y-4 shadow-2xs"
             >
               <div className="flex items-start gap-3">
-                <span className="w-5 h-5 rounded-full bg-[#FAF2E6] border border-[#EEDAA2] text-[11px] font-mono-num font-bold text-[#7A1C30] flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-6 h-6 rounded-full bg-[#FAF2E6] border border-[#EEDAA2] text-xs font-mono-num font-bold text-[#7A1C30] flex items-center justify-center shrink-0 mt-0.5">
                   {idx + 1}
                 </span>
-                <p className="text-sm font-semibold text-[#1F191B] leading-snug">
+                <p className="text-base sm:text-lg font-bold text-[#1F191B] leading-snug">
                   {q.question}
                 </p>
               </div>
 
               {/* Options */}
-              <div role="radiogroup" aria-label={q.question} className="space-y-2 pl-8">
+              <div role="radiogroup" aria-label={q.question} className="space-y-2.5 pl-9">
                 {q.options.map((option, optIdx) => {
                   const isSelected = selectedAnswers[q.id] === optIdx;
                   let optionStyles = 'border-[#EAE2D5] hover:border-[#DFCDB6] bg-[#FDFBF7] text-[#1F191B]';
@@ -100,7 +100,7 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
                       aria-checked={isSelected}
                       disabled={isSubmitted}
                       onClick={() => handleSelect(q.id, optIdx)}
-                      className={`w-full text-left p-3 rounded text-xs border transition-colors flex items-center justify-between ${optionStyles}`}
+                      className={`w-full text-left p-3.5 rounded-lg text-sm sm:text-base border transition-colors flex items-center justify-between ${optionStyles}`}
                     >
                       <span>{option}</span>
                       {isSubmitted && optIdx === q.correctIndex && (
@@ -115,34 +115,34 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
               </div>
 
               {/* Actions & Feedback */}
-              <div className="pl-8 pt-1">
+              <div className="pl-9 pt-1">
                 {!isSubmitted ? (
                   <button
                     type="button"
                     disabled={!isAnswered}
                     onClick={() => handleSubmit(q.id)}
-                    className="text-xs font-semibold px-4 py-2 rounded bg-[#7A1C30] text-white hover:bg-[#5F1424] disabled:opacity-40 transition-colors shadow-2xs border border-[#9B2242]"
+                    className="text-xs sm:text-sm font-bold px-4 py-2.5 rounded-lg bg-[#7A1C30] text-white hover:bg-[#5F1424] disabled:opacity-40 transition-colors shadow-2xs border border-[#9B2242]"
                   >
                     Check Answer
                   </button>
                 ) : (
                   <div className="space-y-3">
                     <div
-                      className={`p-3 rounded text-xs leading-relaxed border ${
+                      className={`p-3.5 rounded-lg text-xs sm:text-sm leading-relaxed border ${
                         isCorrect
                           ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
                           : 'bg-[#FEF9EE] border-[#EEDAA2] text-[#996515]'
                       }`}
                     >
-                      <div className="flex items-center gap-1.5 font-bold mb-1">
+                      <div className="flex items-center gap-1.5 font-bold mb-1 text-sm sm:text-base">
                         {isCorrect ? (
                           <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#166534]" aria-hidden="true" />
+                            <CheckCircle2 className="w-4 h-4 text-[#166534]" aria-hidden="true" />
                             <span>Correct Concept Application</span>
                           </>
                         ) : (
                           <>
-                            <AlertCircle className="w-3.5 h-3.5 text-[#B8860B]" aria-hidden="true" />
+                            <AlertCircle className="w-4 h-4 text-[#B8860B]" aria-hidden="true" />
                             <span>Explanation & Correction</span>
                           </>
                         )}
@@ -153,7 +153,7 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
                     <button
                       type="button"
                       onClick={() => handleReset(q.id)}
-                      className="text-xs text-[#786970] hover:text-[#7A1C30] underline transition-colors"
+                      className="text-xs sm:text-sm font-medium text-[#786970] hover:text-[#7A1C30] underline transition-colors"
                     >
                       Try Again
                     </button>
