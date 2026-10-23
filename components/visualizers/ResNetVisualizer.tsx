@@ -6,23 +6,40 @@ import {
   computeResidualBlock1D,
   compareResNetBlocks
 } from '@/lib/math/resnet';
-import { Layers, ShieldCheck, AlertTriangle, ArrowRight, Zap, RefreshCw, BarChart3 } from 'lucide-react';
+import {
+  Layers,
+  ShieldCheck,
+  AlertTriangle,
+  ArrowRight,
+  ArrowLeft,
+  Zap,
+  BarChart3,
+  GitFork,
+  CheckCircle2
+} from 'lucide-react';
 
 export function ResNetVisualizer() {
+  const [activeTab, setActiveTab] = useState<'architecture-diagram' | 'gradient-highway' | 'bottleneck-blocks'>('architecture-diagram');
+  
+  // Architecture diagram state
+  const [diagramMode, setDiagramMode] = useState<'forward' | 'backward'>('forward');
+  const [inputSignalX, setInputSignalX] = useState<number>(1.6);
+  const [weightW1, setWeightW1] = useState<number>(0.8);
+  const [weightW2, setWeightW2] = useState<number>(-0.5);
+
+  // Gradient waterfall state
   const [totalLayers, setTotalLayers] = useState<number>(20);
   const [averageLocalGrad, setAverageLocalGrad] = useState<number>(0.75);
-  const [activeTab, setActiveTab] = useState<'gradient-highway' | 'bottleneck-blocks'>('gradient-highway');
-  const [inputSignalX, setInputSignalX] = useState<number>(1.8);
 
   // Simulate gradient flow across all layers
   const gradientSteps = useMemo(() => {
     return simulateResNetGradientFlow(totalLayers, averageLocalGrad, 1.0);
   }, [totalLayers, averageLocalGrad]);
 
-  // Forward residual block simulation
+  // Forward & backward residual block math
   const residualBlockSim = useMemo(() => {
-    return computeResidualBlock1D(inputSignalX, 0.6, -0.5, 0.1, -0.05);
-  }, [inputSignalX]);
+    return computeResidualBlock1D(inputSignalX, weightW1, weightW2, 0.1, -0.05);
+  }, [inputSignalX, weightW1, weightW2]);
 
   // Bottleneck comparison
   const blockComparison = useMemo(() => {
@@ -44,12 +61,22 @@ export function ResNetVisualizer() {
             </span>
           </div>
           <p className="text-xs text-[#625956]">
-            Interactive gradient highway simulation, degradation diagnosis, and bottleneck blocks
+            Interactive residual block architecture diagram, gradient highway simulation, and bottleneck efficiency
           </p>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex gap-1.5 bg-[#EFE9DF] p-1 rounded-lg">
+        <div className="flex flex-wrap gap-1.5 bg-[#EFE9DF] p-1 rounded-lg">
+          <button
+            onClick={() => setActiveTab('architecture-diagram')}
+            className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
+              activeTab === 'architecture-diagram'
+                ? 'bg-[#6E1A2B] text-white shadow-2xs'
+                : 'text-[#54484E] hover:text-[#1D1819] hover:bg-white/60'
+            }`}
+          >
+            1. Architecture Diagram [F(x) + x]
+          </button>
           <button
             onClick={() => setActiveTab('gradient-highway')}
             className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
@@ -58,7 +85,7 @@ export function ResNetVisualizer() {
                 : 'text-[#54484E] hover:text-[#1D1819] hover:bg-white/60'
             }`}
           >
-            1. Gradient Highway (Plain vs ResNet)
+            2. Gradient Waterfall (Plain vs ResNet)
           </button>
           <button
             onClick={() => setActiveTab('bottleneck-blocks')}
@@ -68,12 +95,342 @@ export function ResNetVisualizer() {
                 : 'text-[#54484E] hover:text-[#1D1819] hover:bg-white/60'
             }`}
           >
-            2. Bottleneck Block Efficiency
+            3. Bottleneck Block Efficiency
           </button>
         </div>
       </div>
 
       <div className="p-5 sm:p-6 space-y-6">
+        {/* TAB 1: ARCHITECTURE CIRCUIT DIAGRAM */}
+        {activeTab === 'architecture-diagram' && (
+          <div className="space-y-6">
+            {/* Flow Mode Switcher & Explanation */}
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-lg border border-[#E8E2D9]">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#625956]">
+                  Signal Propagation Mode:
+                </span>
+                <div className="inline-flex rounded-lg bg-[#FAF5EE] p-0.5 border border-[#E8E2D9]">
+                  <button
+                    id="btn-forward-pass"
+                    type="button"
+                    onClick={() => setDiagramMode('forward')}
+                    className={`px-3 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all cursor-pointer ${
+                      diagramMode === 'forward'
+                        ? 'bg-[#6E1A2B] text-white shadow-2xs'
+                        : 'text-[#54484E] hover:text-[#1D1819]'
+                    }`}
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                    Forward Pass: H(x) = F(x) + x
+                  </button>
+                  <button
+                    id="btn-backward-pass"
+                    type="button"
+                    onClick={() => setDiagramMode('backward')}
+                    className={`px-3 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all cursor-pointer ${
+                      diagramMode === 'backward'
+                        ? 'bg-[#8E6523] text-white shadow-2xs'
+                        : 'text-[#54484E] hover:text-[#1D1819]'
+                    }`}
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    Backward Pass: ∂L/∂x = ∂L/∂H · (∂F/∂x + I)
+                  </button>
+                </div>
+              </div>
+
+              <div className="text-xs font-mono-num text-[#8E6523] bg-[#FBF6EB] px-2.5 py-1 rounded border border-[#E8D3A8]">
+                {diagramMode === 'forward'
+                  ? `H(x) = ${residualBlockSim.hx.toFixed(3)}`
+                  : `Highway Gain = +${residualBlockSim.gradientHighwayFactor.toFixed(3)} (unattenuated)`}
+              </div>
+            </div>
+
+            {/* SVG Interactive Architecture Block Diagram */}
+            <div className="bg-white border border-[#E8E2D9] rounded-xl p-4 sm:p-6 shadow-2xs overflow-x-auto">
+              <div className="min-w-[700px]">
+                <svg viewBox="0 0 740 280" className="w-full h-auto select-none">
+                  <defs>
+                    <marker
+                      id="arrow-forward"
+                      viewBox="0 0 10 10"
+                      refX="6"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 1 L 8 5 L 0 9 z" fill="#6E1A2B" />
+                    </marker>
+                    <marker
+                      id="arrow-highway"
+                      viewBox="0 0 10 10"
+                      refX="6"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 1 L 8 5 L 0 9 z" fill="#C28E38" />
+                    </marker>
+                    <marker
+                      id="arrow-backward"
+                      viewBox="0 0 10 10"
+                      refX="6"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 8 1 L 0 5 L 8 9 z" fill="#8E6523" />
+                    </marker>
+                  </defs>
+
+                  {/* 1. INPUT NODE */}
+                  <g transform="translate(50, 110)">
+                    <circle r="26" fill="#FAF8F5" stroke="#6E1A2B" strokeWidth="2.5" />
+                    <text x="0" y="-3" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#1D1819">x</text>
+                    <text x="0" y="12" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#6E1A2B" className="font-mono-num">
+                      {inputSignalX.toFixed(2)}
+                    </text>
+                    <text x="0" y="38" textAnchor="middle" fontSize="11" fontWeight="600" fill="#625956">Input</text>
+                  </g>
+
+                  {/* BRANCH SPLIT POINT */}
+                  <circle cx="105" cy="110" r="4.5" fill="#6E1A2B" />
+
+                  {/* Line from Input to Split */}
+                  <line x1="76" y1="110" x2="101" y2="110" stroke="#6E1A2B" strokeWidth="2.5" />
+
+                  {/* RESIDUAL PATH: Line into Weight Layer 1 */}
+                  <line
+                    x1="105"
+                    y1="110"
+                    x2="140"
+                    y2="110"
+                    stroke="#6E1A2B"
+                    strokeWidth="2.5"
+                    markerEnd={diagramMode === 'forward' ? 'url(#arrow-forward)' : undefined}
+                    markerStart={diagramMode === 'backward' ? 'url(#arrow-backward)' : undefined}
+                  />
+
+                  {/* 2. WEIGHT LAYER 1 */}
+                  <g transform="translate(145, 80)">
+                    <rect width="88" height="60" rx="6" fill="#FAF5EE" stroke="#E8E2D9" strokeWidth="1.5" />
+                    <text x="44" y="24" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1D1819">Weight Layer</text>
+                    <text x="44" y="42" textAnchor="middle" fontSize="10" fill="#625956" className="font-mono-num">
+                      w₁ = {weightW1.toFixed(2)}
+                    </text>
+                    <text x="44" y="74" textAnchor="middle" fontSize="10" fontWeight="600" fill="#8E6523">3×3 Conv / BN</text>
+                  </g>
+
+                  {/* Line from Weight 1 to ReLU 1 */}
+                  <line
+                    x1="233"
+                    y1="110"
+                    x2="263"
+                    y2="110"
+                    stroke="#6E1A2B"
+                    strokeWidth="2.5"
+                    markerEnd={diagramMode === 'forward' ? 'url(#arrow-forward)' : undefined}
+                  />
+
+                  {/* 3. RELU ACTIVATION */}
+                  <g transform="translate(268, 88)">
+                    <rect width="52" height="44" rx="6" fill="#FBF6EB" stroke="#E8D3A8" strokeWidth="1.5" />
+                    <text x="26" y="26" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#8E6523">ReLU</text>
+                  </g>
+
+                  {/* Line from ReLU to Weight Layer 2 */}
+                  <line
+                    x1="320"
+                    y1="110"
+                    x2="350"
+                    y2="110"
+                    stroke="#6E1A2B"
+                    strokeWidth="2.5"
+                    markerEnd={diagramMode === 'forward' ? 'url(#arrow-forward)' : undefined}
+                  />
+
+                  {/* 4. WEIGHT LAYER 2 */}
+                  <g transform="translate(355, 80)">
+                    <rect width="88" height="60" rx="6" fill="#FAF5EE" stroke="#E8E2D9" strokeWidth="1.5" />
+                    <text x="44" y="24" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1D1819">Weight Layer</text>
+                    <text x="44" y="42" textAnchor="middle" fontSize="10" fill="#625956" className="font-mono-num">
+                      w₂ = {weightW2.toFixed(2)}
+                    </text>
+                    <text x="44" y="74" textAnchor="middle" fontSize="10" fontWeight="600" fill="#8E6523">3×3 Conv / BN</text>
+                  </g>
+
+                  {/* Line from Weight 2 into Addition Node (Carrying F(x)) */}
+                  <line
+                    x1="443"
+                    y1="110"
+                    x2="526"
+                    y2="110"
+                    stroke="#6E1A2B"
+                    strokeWidth="2.5"
+                    markerEnd={diagramMode === 'forward' ? 'url(#arrow-forward)' : undefined}
+                  />
+                  <text x="485" y="96" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#6E1A2B">
+                    F(x) = {residualBlockSim.fx.toFixed(2)}
+                  </text>
+
+                  {/* 5. THE RESNET IDENTITY SHORTCUT HIGHWAY (Bypassing layers) */}
+                  <path
+                    d="M 105 110 C 105 235, 545 235, 545 133"
+                    fill="none"
+                    stroke={diagramMode === 'backward' ? '#8E6523' : '#C28E38'}
+                    strokeWidth={diagramMode === 'backward' ? '3.5' : '3'}
+                    strokeDasharray={diagramMode === 'backward' ? 'none' : '5 4'}
+                    markerEnd={diagramMode === 'forward' ? 'url(#arrow-highway)' : undefined}
+                  />
+
+                  {/* Identity Highway Label Badge */}
+                  <g transform="translate(325, 215)">
+                    <rect x="-85" y="-14" width="170" height="28" rx="6" fill="#FBF6EB" stroke="#E8D3A8" strokeWidth="1.5" />
+                    <text x="0" y="4" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#8E6523">
+                      Identity Shortcut x = {inputSignalX.toFixed(2)}
+                    </text>
+                  </g>
+
+                  {/* 6. ELEMENT-WISE ADDITION NODE (⊕) */}
+                  <g transform="translate(545, 110)">
+                    <circle r="18" fill="#FFFFFF" stroke="#6E1A2B" strokeWidth="2.5" className="shadow-2xs" />
+                    <line x1="-8" y1="0" x2="8" y2="0" stroke="#6E1A2B" strokeWidth="2.5" />
+                    <line x1="0" y1="-8" x2="0" y2="8" stroke="#6E1A2B" strokeWidth="2.5" />
+                    <text x="0" y="-24" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#6E1A2B">
+                      F(x) + x
+                    </text>
+                  </g>
+
+                  {/* Line from Addition to Final ReLU */}
+                  <line
+                    x1="563"
+                    y1="110"
+                    x2="595"
+                    y2="110"
+                    stroke="#6E1A2B"
+                    strokeWidth="2.5"
+                    markerEnd={diagramMode === 'forward' ? 'url(#arrow-forward)' : undefined}
+                  />
+
+                  {/* 7. POST-ADDITION RELU & FINAL OUTPUT */}
+                  <g transform="translate(600, 88)">
+                    <rect width="48" height="44" rx="6" fill="#FBF6EB" stroke="#E8D3A8" strokeWidth="1.5" />
+                    <text x="24" y="26" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#8E6523">ReLU</text>
+                  </g>
+
+                  <line
+                    x1="648"
+                    y1="110"
+                    x2="675"
+                    y2="110"
+                    stroke="#6E1A2B"
+                    strokeWidth="2.5"
+                    markerEnd={diagramMode === 'forward' ? 'url(#arrow-forward)' : undefined}
+                  />
+
+                  {/* Final Output Label */}
+                  <g transform="translate(695, 110)">
+                    <circle r="18" fill="#6E1A2B" />
+                    <text x="0" y="-2" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#FFFFFF">H(x)</text>
+                    <text x="0" y="10" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#FFFFFF" className="font-mono-num">
+                      {residualBlockSim.hx.toFixed(2)}
+                    </text>
+                    <text x="0" y="34" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#6E1A2B">Output</text>
+                  </g>
+                </svg>
+              </div>
+
+              {/* Legend & Mechanics */}
+              <div className="pt-4 border-t border-[#E8E2D9] grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="space-y-1">
+                  <div className="font-bold text-[#1D1819] flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#15803D]" />
+                    Forward Pass Intuition
+                  </div>
+                  <p className="text-[#625956] leading-relaxed">
+                    The incoming feature signal <code>x</code> bifurcates: one branch computes a learned residual modification <code>F(x)</code> through two convolution layers, while the shortcut carries the undisturbed identity signal <code>x</code>. They sum together element-wise: <code>H(x) = F(x) + x</code>.
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="font-bold text-[#1D1819] flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-[#C28E38]" />
+                    Backward Gradient Highway Intuition
+                  </div>
+                  <p className="text-[#625956] leading-relaxed">
+                    During backpropagation, the gradient splits at the addition gate <code>⊕</code>. The term <code>∂L/∂H · 1.0</code> flows back unobstructed through the identity highway directly to the early layers, bypassing weight matrices and completely resolving the degradation problem.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Interactive Parameter Controls for Architecture Diagram */}
+            <div className="bg-white border border-[#E8E2D9] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#625956]">
+                Interactive Signal & Weight Controls
+              </h4>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center text-xs">
+                    <label htmlFor="res-x" className="font-semibold text-[#1D1819]">Input Signal x</label>
+                    <span className="font-mono-num font-bold text-[#6E1A2B]">{inputSignalX.toFixed(2)}</span>
+                  </div>
+                  <input
+                    id="res-x"
+                    type="range"
+                    min="-2.0"
+                    max="3.0"
+                    step="0.1"
+                    value={inputSignalX}
+                    onChange={e => setInputSignalX(parseFloat(e.target.value))}
+                    className="w-full accent-[#6E1A2B] cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center text-xs">
+                    <label htmlFor="res-w1" className="font-semibold text-[#1D1819]">Weight Layer 1 (w₁)</label>
+                    <span className="font-mono-num font-bold text-[#8E6523]">{weightW1.toFixed(2)}</span>
+                  </div>
+                  <input
+                    id="res-w1"
+                    type="range"
+                    min="-1.5"
+                    max="1.5"
+                    step="0.1"
+                    value={weightW1}
+                    onChange={e => setWeightW1(parseFloat(e.target.value))}
+                    className="w-full accent-[#C28E38] cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center text-xs">
+                    <label htmlFor="res-w2" className="font-semibold text-[#1D1819]">Weight Layer 2 (w₂)</label>
+                    <span className="font-mono-num font-bold text-[#8E6523]">{weightW2.toFixed(2)}</span>
+                  </div>
+                  <input
+                    id="res-w2"
+                    type="range"
+                    min="-1.5"
+                    max="1.5"
+                    step="0.1"
+                    value={weightW2}
+                    onChange={e => setWeightW2(parseFloat(e.target.value))}
+                    className="w-full accent-[#C28E38] cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: WATERFALL GRADIENT HIGHWAY COMPARISON */}
         {activeTab === 'gradient-highway' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left: Waterfall Comparison Chart */}
@@ -226,6 +583,7 @@ export function ResNetVisualizer() {
           </div>
         )}
 
+        {/* TAB 3: BOTTLENECK BLOCKS */}
         {activeTab === 'bottleneck-blocks' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
