@@ -1017,6 +1017,163 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'MBConv inverted bottlenecks perform depthwise convolutions in an expanded high-dimensional space.',
       'Squeeze-and-Excitation (SE) attention dynamically recalibrates channel weights, maximizing feature selectivity.'
     ]
+  },
+  'self-attention-scaled-dot-product': {
+    slug: 'self-attention-scaled-dot-product',
+    intuition: [
+      'Prior to Transformers, sequence processing relied on Recurrent Neural Networks (RNNs) that passed hidden state sequentially step-by-step ($h_t = f(h_{t-1}, x_t)$). This created a severe bottleneck: information had to traverse $O(N)$ sequential steps, causing distant dependencies to fade or vanish.',
+      'Self-Attention completely eliminates recurrence. Instead of passing state sequentially, every token in a sequence directly compares itself against every other token in parallel with $O(1)$ path length.',
+      'To enable dynamic information routing, each token is projected into three distinct vectors: a Query ($Q$, what am I looking for?), a Key ($K$, what information do I offer?), and a Value ($V$, what content do I communicate?).',
+      'By taking the dot product between a query $q_i$ and all keys $k_j$, the network computes compatibility scores. Scaling by $1/\\sqrt{d_k}$ stabilizes the variance so the subsequent Softmax function does not saturate and cause vanishing gradients.',
+      'The final representation for each token is a contextualized weighted sum of all value vectors: $\\text{Attention}(Q, K, V) = \\text{Softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V$.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Scaled Dot-Product Attention',
+        latex: '\\text{Attention}(Q, K, V) = \\text{Softmax}\\left( \\frac{Q K^T}{\\sqrt{d_k}} \\right) V',
+        explanation: 'Computes pairwise attention weights between queries Q and keys K scaled by temperature 1/√d_k, then multiplies by values V.'
+      },
+      {
+        name: 'Query, Key, Value Projections',
+        latex: 'Q = X W_Q, \\quad K = X W_K, \\quad V = X W_V',
+        explanation: 'Input token representations X ∈ R^{N × d_model} are mapped into specialized matching subspaces via learned parameter matrices.'
+      },
+      {
+        name: 'Softmax Row Normalization',
+        latex: 'A_{i,j} = \\frac{\\exp\\left( \\frac{q_i \\cdot k_j}{\\sqrt{d_k}} \\right)}{\\sum_{m=1}^N \\exp\\left( \\frac{q_i \\cdot k_m}{\\sqrt{d_k}} \\right)}',
+        explanation: 'Guarantees that attention weights across all key positions j sum to 1.0 for each query token i, forming a valid probability distribution.'
+      },
+      {
+        name: 'Variance Scaling Theorem',
+        latex: '\\text{Var}(q \\cdot k) = \\sum_{m=1}^{d_k} \\text{Var}(q_m k_m) = d_k \\implies \\text{Var}\\left( \\frac{q \\cdot k}{\\sqrt{d_k}} \\right) = 1.0',
+        explanation: 'Assuming independent zero-mean unit-variance components, dividing by √d_k normalizes dot product variance back to unit variance.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Computing the self-attention output for a query token with 2 keys and d_k = 4, using scale factor √d_k = 2.0.',
+      steps: [
+        { label: 'Step 1: Compute raw dot products', math: 'q \\cdot k_1 = 4.0, \\quad q \\cdot k_2 = 1.0', note: 'Higher dot product indicates higher alignment.' },
+        { label: 'Step 2: Apply 1/√d_k scaling', math: 's_1 = \\frac{4.0}{2.0} = 2.0, \\quad s_2 = \\frac{1.0}{2.0} = 0.5', note: 'Prevents extreme logits that saturate Softmax.' },
+        { label: 'Step 3: Evaluate Softmax attention weights', math: 'e^{2.0} \\approx 7.389, \\quad e^{0.5} \\approx 1.649 \\implies a_1 = \\frac{7.389}{9.038} = 0.818, \\quad a_2 = 0.182', note: 'Token 1 receives 81.8% of the attention.' },
+        { label: 'Step 4: Compute contextual output', math: 'z = 0.818 \\cdot v_1 + 0.182 \\cdot v_2', note: 'Weighted combination of value representations.' }
+      ],
+      result: 'The attention weight for token 1 is 81.8% and token 2 is 18.2%, aggregating a context-rich output vector.',
+      params: {
+        d_k: 4,
+        scale: 2.0
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'Why does Scaled Dot-Product Attention divide the dot products by √d_k rather than using the raw dot products?',
+        options: [
+          'Because for large d_k, dot products grow large in magnitude, pushing Softmax into regions with extremely small gradients (vanishing gradients).',
+          'Because GPUs cannot compute matrix multiplications without dividing by square roots.',
+          'Because dividing by √d_k guarantees that all dot products are integers.',
+          'Because it reduces the computational complexity from O(N²) to O(N).'
+        ],
+        correctIndex: 0,
+        explanation: 'Vaswani et al. (2017) showed that when d_k is large, the dot products grow large in magnitude, which pushes the Softmax function into regions where its derivative is nearly zero, preventing effective learning.'
+      },
+      {
+        id: 'q2',
+        question: 'In the sentence "The robot saw the battery and charged it", what enables self-attention to resolve "it" to "battery"?',
+        options: [
+          'The query vector for "it" and the key vector for "battery" have high dot product alignment, producing a high attention weight on "battery".',
+          'The network uses an explicit grammatical lookup table stored in memory.',
+          'Backpropagation zeroes out all other words in the sentence.',
+          'Convolutional pooling selects the maximum word length.'
+        ],
+        correctIndex: 0,
+        explanation: 'Learned projection matrices W_Q and W_K train the query vector of pronouns to closely match the key vectors of their semantic antecedents, routing the antecedent value vector directly into the pronoun representation.'
+      }
+    ],
+    summary: [
+      'Self-attention enables direct O(1) pairwise interaction between all tokens in a sequence.',
+      'Projections Q = X·W_Q, K = X·W_K, V = X·W_V create specialized queries, keys, and values.',
+      'Scaling by 1/√d_k maintains unit variance, protecting Softmax from gradient saturation.',
+      'The output is a dynamically weighted convex combination of value vectors.'
+    ]
+  },
+  'transformer-block-multihead-attention': {
+    slug: 'transformer-block-multihead-attention',
+    intuition: [
+      'While a single attention head can focus on one type of relationship (e.g. resolving a pronoun), language and vision require attending to multiple diverse relationships simultaneously (e.g. syntactic structure, semantic role, positional adjacency).',
+      'Multi-Head Attention (MHA) solves this by splitting the model dimension $d_{\\text{model}}$ into $h$ parallel heads, where each head operates on dimension $d_k = d_{\\text{model}} / h$. This allows the model to jointly attend to information from different representation subspaces at different positions.',
+      'The outputs from all $h$ heads are concatenated and linearly transformed: $\\text{MHA}(Q,K,V) = \\text{Concat}(\\text{head}_1, \\dots, \\text{head}_h)W^O$. Crucially, because each head has reduced dimension $d_k$, total computational cost is identical to single-head attention with full dimensionality!',
+      'The complete Transformer Encoder Block packages Multi-Head Attention with residual skip connections ($x + \\text{Sublayer}(x)$), Layer Normalization, and a point-wise Feed-Forward Network (FFN).',
+      'Modern architectures (like LLaMA, GPT-3, and ViT) utilize Pre-Layer Normalization (Pre-LN), applying LayerNorm before each sublayer so gradients can pass completely unattenuated through the residual stream.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Multi-Head Attention Formulation',
+        latex: '\\text{MHA}(Q, K, V) = \\text{Concat}(\\text{head}_1, \\dots, \\text{head}_h) W^O',
+        explanation: 'Each head_i = Attention(Q W_i^Q, K W_i^K, V W_i^V) projects inputs into a distinct subspace before final projection W^O.'
+      },
+      {
+        name: 'Subspace Dimension Split',
+        latex: 'd_k = d_v = \\frac{d_{\\text{model}}}{h}',
+        explanation: 'Splitting d_model across h heads keeps the total parameter count and FLOPs identical to full-rank single-head attention.'
+      },
+      {
+        name: 'Position-Wise Feed-Forward Network (FFN)',
+        latex: '\\text{FFN}(x) = \\max(0, x W_1 + b_1) W_2 + b_2 = \\text{GELU}(x W_1 + b_1) W_2 + b_2',
+        explanation: 'Applies two linear transformations with non-linearity to each position separately, typically expanding to 4·d_model.'
+      },
+      {
+        name: 'Pre-Layer Normalization (Pre-LN) Residual Stream',
+        latex: 'x^{(1)} = x + \\text{MHA}(\\text{LN}(x)), \\quad x^{(2)} = x^{(1)} + \\text{FFN}(\\text{LN}(x^{(1)}))',
+        explanation: 'Normalizing inputs before each sublayer creates an unimpeded gradient highway across all Transformer layers.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Calculating dimensions and parameter counts for a Multi-Head Attention layer with d_model = 512 and h = 8 heads.',
+      steps: [
+        { label: 'Step 1: Compute head dimension d_k', math: 'd_k = \\frac{d_{\\text{model}}}{h} = \\frac{512}{8} = 64', note: 'Each head operates in a 64-dimensional subspace.' },
+        { label: 'Step 2: Projection matrix parameters per head', math: 'W_i^Q, W_i^K, W_i^V \\in \\mathbb{R}^{512 \\times 64} \\implies 3 \\times (512 \\times 64) = 98,304 \\text{ weights}', note: 'Parameters for one attention head.' },
+        { label: 'Step 3: Total projection parameters across all 8 heads', math: '8 \\times 98,304 = 786,432 \\text{ weights}', note: 'Exact equivalent to single-head matrices (3 × 512²).' },
+        { label: 'Step 4: Output projection matrix W^O', math: 'W^O \\in \\mathbb{R}^{512 \\times 512} = 262,144 \\text{ weights}', note: 'Mixes concatenated head outputs back into d_model.' }
+      ],
+      result: 'Total MHA parameters = 786,432 + 262,144 = 1,048,576 (exactly 4 × d_model² weights).',
+      params: {
+        d_model: 512,
+        h: 8,
+        d_k: 64
+      }
+    },
+    quiz: [
+      {
+        id: 'q1',
+        question: 'Why does Multi-Head Attention split d_model into h heads rather than just performing one large attention operation?',
+        options: [
+          'Because multi-head attention allows the model to simultaneously attend to information from different representation subspaces at different positions (e.g. syntax, semantics, and coreference).',
+          'Because GPUs cannot process matrices larger than 64 columns.',
+          'Because splitting into heads reduces training memory to zero.',
+          'Because single-head attention cannot be trained with backpropagation.'
+        ],
+        correctIndex: 0,
+        explanation: 'With a single attention head, averaging over multiple positions can blur distinct relationships. Multi-Head Attention allows distinct heads to specialize in syntactic dependencies, pronoun coreference, and local adjacency simultaneously.'
+      },
+      {
+        id: 'q2',
+        question: 'Why do modern architectures (such as GPT-3 and LLaMA) prefer Pre-Layer Normalization (Pre-LN) over Post-Layer Normalization (Post-LN)?',
+        options: [
+          'Pre-LN applies LayerNorm before the MHA/FFN sublayers, keeping the residual highway clean and allowing gradients to flow unattenuated through 100+ layers without warm-up failures.',
+          'Pre-LN eliminates the need for matrix multiplications entirely.',
+          'Post-LN cannot be executed on Nvidia GPUs.',
+          'Pre-LN replaces non-linear activations with linear identity mappings.'
+        ],
+        correctIndex: 0,
+        explanation: 'In Pre-LN, the identity shortcut connects directly from layer input to output (x_next = x + Sublayer(LN(x))), ensuring that dL/dx includes an unattenuated +1 term, exactly like ResNet gradient highways.'
+      }
+    ],
+    summary: [
+      'Multi-Head Attention enables joint attention across h distinct linguistic and semantic subspaces.',
+      'Splitting d_model into h heads of size d_k preserves computational efficiency identical to full-rank attention.',
+      'The Transformer Encoder block couples MHA with point-wise FFNs, residual skip connections, and LayerNorm.',
+      'Pre-LN architecture stabilizes gradient flow, enabling deep foundation models to train reliably.'
+    ]
   }
 };
 

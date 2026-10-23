@@ -89,6 +89,81 @@ const CHALLENGES: PracticeChallenge[] = [
     ],
     correctIndex: 0,
     explanation: 'Because σ\'(z) ≤ 0.25 for all z, multiplying derivatives across 8 layers causes exponential decay: 0.25⁸ ≈ 0.000015! ReLU has slope = 1 for positive values, enabling gradients to flow through deep networks without diminishing.'
+  },
+  {
+    id: 'c6',
+    category: 'Convolutional Arithmetic',
+    title: 'Calculate 2D Convolution Output Spatial Grid',
+    scenario: 'An input image of spatial dimension 32×32 is passed into a 2D convolution layer with kernel size K = 5, padding P = 2, and stride S = 2.',
+    question: 'What is the spatial width and height of the resulting output feature map?',
+    options: [
+      '14×14',
+      '16×16',
+      '15×15',
+      '28×28'
+    ],
+    correctIndex: 1,
+    explanation: 'Output formula: W_out = ⌊(W_in - K + 2P)/S⌋ + 1 = ⌊(32 - 5 + 2(2))/2⌋ + 1 = ⌊(31)/2⌋ + 1 = 15 + 1 = 16. The output spatial grid is 16×16.'
+  },
+  {
+    id: 'c7',
+    category: 'ResNet Dynamics',
+    title: 'Verify Residual Highway Gradient Flow',
+    scenario: 'In a deep ResNet residual block H(x) = F(x) + x, the upstream gradient ∂L/∂H = 0.85 arrives at the output addition node. The local gradient through the parameterized convolutional path is ∂F/∂x = -0.15.',
+    question: 'What is the exact gradient ∂L/∂x flowing backward to the preceding layer?',
+    options: [
+      '∂L/∂x = -0.1275',
+      '∂L/∂x = 0.7225',
+      '∂L/∂x = 0.85',
+      '∂L/∂x = 0.0000'
+    ],
+    correctIndex: 1,
+    explanation: 'Gradient highway theorem: ∂L/∂x = ∂L/∂H · (∂F/∂x + I) = 0.85 × (-0.15 + 1.0) = 0.85 × 0.85 = 0.7225. Because of the additive identity term +1, the signal cannot vanish even if ∂F/∂x is small or zero!'
+  },
+  {
+    id: 'c8',
+    category: 'Compound Model Scaling',
+    title: 'Evaluate EfficientNet FLOPs Scaling Factor',
+    scenario: 'EfficientNet scales depth by α^φ, width by β^φ, and resolution by γ^φ under the principled constraint α · β² · γ² ≈ 2.',
+    question: 'If you scale the compound coefficient from φ = 0 (B0) to φ = 3 (B3), by approximately what factor do the computational FLOPs increase?',
+    options: [
+      'FLOPs increase by approximately 2³ = 8×',
+      'FLOPs increase linearly by 3×',
+      'FLOPs increase quadratically by 9×',
+      'FLOPs remain constant'
+    ],
+    correctIndex: 0,
+    explanation: 'By constraining α · β² · γ² ≈ 2, scaling by compound coefficient φ doubles FLOPs for every unit increase. Moving from φ = 0 to φ = 3 multiplies total FLOPs by 2³ = 8× (e.g. B0 ~0.39B to B3 ~1.8B FLOPs).'
+  },
+  {
+    id: 'c9',
+    category: 'Transformer Attention',
+    title: 'Identify Purpose of √d_k Attention Temperature',
+    scenario: 'A researcher designs a self-attention model with head dimension d_k = 64. When computing Attention(Q, K, V), they omit the 1/√d_k divisor.',
+    question: 'What mathematical pathology will emerge during training?',
+    options: [
+      'The dot products QKᵀ grow large in variance (Var = 64), driving Softmax into saturated extremes where gradients vanish to 0.',
+      'The output context vector becomes negative.',
+      'The attention matrix becomes non-invertible.',
+      'Token representations collapse into identity matrices.'
+    ],
+    correctIndex: 0,
+    explanation: 'For independent zero-mean unit-variance components, Var(q · k) = d_k. When d_k = 64, standard deviation is 8. Extreme dot product values cause Softmax to output near-one-hot probabilities (e.g. 0.9999 and 0.0001), where the derivative σ\'(z) ≈ 0, arresting gradient backpropagation.'
+  },
+  {
+    id: 'c10',
+    category: 'Regularization',
+    title: 'Calculate Inverted Dropout Scaling Factor',
+    scenario: 'During training of a dense layer, you set dropout rate p = 0.40 (40% probability of dropping any unit). The surviving 60% of activations are scaled by an inverted dropout factor.',
+    question: 'What is the required inverted scaling factor applied to surviving activations during training?',
+    options: [
+      'Scale by 1 / (1 - 0.40) = 1 / 0.60 ≈ 1.667',
+      'Scale by 0.40',
+      'Scale by 0.60',
+      'Scale by 1.0 (no scaling needed)'
+    ],
+    correctIndex: 0,
+    explanation: 'Inverted dropout scales surviving activations by 1/(1-p) = 1/0.60 ≈ 1.667 during training so that the expected sum of activations remains identical between training and test time without requiring any scaling at inference.'
   }
 ];
 

@@ -342,6 +342,53 @@ export const CURRICULUM: ModuleMeta[] = [
         ]
       }
     ]
+  },
+  {
+    id: 'module-7',
+    number: 7,
+    title: 'Transformers and Attention Mechanisms',
+    description: 'Master the architectural revolution powering modern foundation models: Scaled Dot-Product Attention, Multi-Head projections, and Transformer Encoders.',
+    status: 'available',
+    lessons: [
+      {
+        id: 'lesson-15',
+        slug: 'self-attention-scaled-dot-product',
+        title: 'Self-Attention & Scaled Dot-Product',
+        subtitle: 'Queries, Keys, and Values: how pairwise dot products dynamically route information across sequence positions.',
+        moduleId: 'module-7',
+        moduleName: 'Transformers and Attention Mechanisms',
+        moduleNumber: 7,
+        lessonNumber: 15,
+        duration: '22 min',
+        prerequisites: ['forward-propagation'],
+        status: 'available',
+        keyTakeaways: [
+          'Self-attention enables each token in a sequence to attend directly to every other token with O(1) sequential path length',
+          'Projections Q = X·W_Q, K = X·W_K, V = X·W_V map input tokens into specialized matching and representation spaces',
+          'Scaling dot products by 1/√d_k prevents numerical saturation of the Softmax function and avoids vanishing gradients',
+          'The output is a convex combination of value vectors weighted by pairwise Softmax affinities: Attention(Q, K, V) = Softmax(QKᵀ / √d_k) · V'
+        ]
+      },
+      {
+        id: 'lesson-16',
+        slug: 'transformer-block-multihead-attention',
+        title: 'Multi-Head Attention & The Transformer Block',
+        subtitle: 'Subspace projections, residual highways, Layer Normalization, and Feed-Forward Networks.',
+        moduleId: 'module-7',
+        moduleName: 'Transformers and Attention Mechanisms',
+        moduleNumber: 7,
+        lessonNumber: 16,
+        duration: '25 min',
+        prerequisites: ['self-attention-scaled-dot-product', 'resnet-architectures'],
+        status: 'available',
+        keyTakeaways: [
+          'Multi-Head Attention splits d_model into h heads (d_k = d_model / h), enabling joint attention across distinct linguistic subspaces',
+          'Outputs of all heads are concatenated and linearly projected back: MHA(Q,K,V) = Concat(head_1, ..., head_h) · W^O',
+          'The Transformer block alternates Multi-Head Attention and a 2-layer point-wise FFN with Layer Normalization and residual connections',
+          'Pre-LN applies LayerNorm prior to MHA/FFN, allowing gradients to flow unattenuated through the residual highway for 100+ layer stability'
+        ]
+      }
+    ]
   }
 ];
 

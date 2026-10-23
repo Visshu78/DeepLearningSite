@@ -17,6 +17,7 @@ import { CNNInferencePipelineVisualizer } from '@/components/visualizers/CNNInfe
 import { CNNBackpropagationVisualizer } from '@/components/visualizers/CNNBackpropagationVisualizer';
 import { ResNetVisualizer } from '@/components/visualizers/ResNetVisualizer';
 import { EfficientNetVisualizer } from '@/components/visualizers/EfficientNetVisualizer';
+import { SelfAttentionVisualizer } from '@/components/visualizers/SelfAttentionVisualizer';
 import type { Metadata } from 'next';
 
 export async function generateStaticParams() {
@@ -92,6 +93,10 @@ export default async function LessonPage({ params }: PageProps) {
       break;
     case 'adaptive-optimizers':
       visualizer = <AdaptiveOptimizersVisualizer />;
+      break;
+    case 'self-attention-scaled-dot-product':
+    case 'transformer-block-multihead-attention':
+      visualizer = <SelfAttentionVisualizer />;
       break;
     default:
       visualizer = <div className="p-8 text-center text-sm text-[#5C626B]">Interactive visualizer initializing...</div>;
