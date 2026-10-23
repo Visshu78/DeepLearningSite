@@ -181,3 +181,163 @@ export function computeSqueezeExcitation(
     excitationScale
   };
 }
+
+export interface MBConvBlockParams {
+  inChannels: number;
+  outChannels: number;
+  expansionFactor: number; // typically 1 or 6
+  kernelSize: number;      // 3 or 5
+  stride: number;          // 1 or 2
+  seReductionRatio: number;// typically 4 or 24
+  inputHeight: number;
+  inputWidth: number;
+}
+
+export interface ChannelAttentionProbe {
+  channelIndex: number;
+  gapValue: number;
+  seWeight: number;
+  recalibratedValue: number;
+  state: 'amplified' | 'balanced' | 'attenuated';
+}
+
+export interface MBConvSimulationResult {
+  expandedChannels: number;
+  outputHeight: number;
+  outputWidth: number;
+  hasSkipConnection: boolean;
+  expansionParams: number;
+  depthwiseParams: number;
+  seParams: number;
+  projectionParams: number;
+  totalBlockParams: number;
+  totalBlockFlops: number;
+  standardExpandedParams: number;
+  standardExpandedFlops: number;
+  expandedSavingsPercent: number;
+  directConvParams: number;
+  directConvFlops: number;
+  channelProbes: ChannelAttentionProbe[];
+}
+
+export interface EfficientNetStage {
+  stage: number;
+  operator: string;
+  kernelSize: number;
+  stride: number;
+  resolution: string;
+  channels: number;
+  numLayers: number;
+  seRatio: number;
+  description: string;
+}
+
+/**
+ * Standard EfficientNet-B0 baseline macro-architecture stages
+ * Source: Tan & Le (2019), Table 1
+ */
+export const EFFICIENTNET_B0_STAGES: EfficientNetStage[] = [
+  { stage: 1, operator: 'Conv3x3', kernelSize: 3, stride: 2, resolution: '224x224', channels: 32, numLayers: 1, seRatio: 0, description: 'Stem standard convolution + BN + Swish' },
+  { stage: 2, operator: 'MBConv1', kernelSize: 3, stride: 1, resolution: '112x112', channels: 16, numLayers: 1, seRatio: 4, description: 'Mobile inverted bottleneck, expansion t=1 with SE' },
+  { stage: 3, operator: 'MBConv6', kernelSize: 3, stride: 2, resolution: '112x112', channels: 24, numLayers: 2, seRatio: 4, description: 'Expansion t=6, downsampling stride 2' },
+  { stage: 4, operator: 'MBConv6', kernelSize: 5, stride: 2, resolution: '56x56', channels: 40, numLayers: 2, seRatio: 4, description: '5x5 spatial receptive field filter + SE' },
+  { stage: 5, operator: 'MBConv6', kernelSize: 3, stride: 2, resolution: '28x28', channels: 80, numLayers: 3, seRatio: 4, description: 'Deep feature extraction across 3 repeated blocks' },
+  { stage: 6, operator: 'MBConv6', kernelSize: 5, stride: 1, resolution: '14x14', channels: 112, numLayers: 3, seRatio: 4, description: 'High-level pattern representation at full resolution' },
+  { stage: 7, operator: 'MBConv6', kernelSize: 5, stride: 2, resolution: '14x14', channels: 192, numLayers: 4, seRatio: 4, description: 'Coarse semantic abstraction before classification' },
+  { stage: 8, operator: 'MBConv6', kernelSize: 3, stride: 1, resolution: '7x7', channels: 320, numLayers: 1, seRatio: 4, description: 'Top bottleneck representation' },
+  { stage: 9, operator: 'Conv1x1 + GAP + FC', kernelSize: 1, stride: 1, resolution: '7x7', channels: 1280, numLayers: 1, seRatio: 0, description: 'Pointwise expansion to 1280, GAP, and 1000-class classifier' }
+];
+
+/**
+ * Simulates an MBConv block with Squeeze-and-Excitation
+ */
+export function simulateMBConvBlock(params: MBConvBlockParams): MBConvSimulationResult {
+  const {
+    inChannels,
+    outChannels,
+    expansionFactor,
+    kernelSize,
+    stride,
+    seReductionRatio,
+    inputHeight,
+    inputWidth
+  } = params;
+
+  const expandedChannels = inChannels * expansionFactor;
+  const outputHeight = Math.floor(inputHeight / stride);
+  const outputWidth = Math.floor(inputWidth / stride);
+
+  // Identity skip connection exists only if stride == 1 and Cin == Cout
+  const hasSkipConnection = (stride === 1 && inChannels === outChannels);
+
+  // 1. Expansion 1x1 Conv (Cin -> expandedChannels)
+  const expansionParams = expansionFactor > 1 ? inChannels * expandedChannels : 0;
+  const expansionFlops = expansionParams * inputHeight * inputWidth;
+
+  // 2. Depthwise Conv kxk on expanded channels
+  const depthwiseParams = kernelSize * kernelSize * expandedChannels;
+  const depthwiseFlops = depthwiseParams * outputHeight * outputWidth;
+
+  // 3. Squeeze & Excitation (expandedChannels -> reduced -> expandedChannels)
+  const seReduced = Math.max(1, Math.floor(expandedChannels / seReductionRatio));
+  const seParams = (expandedChannels * seReduced) + (seReduced * expandedChannels);
+  const seFlops = seParams; // GAP is 1x1 vector
+
+  // 4. Pointwise Linear Projection (expandedChannels -> Cout)
+  const projectionParams = expandedChannels * outChannels;
+  const projectionFlops = projectionParams * outputHeight * outputWidth;
+
+  const totalBlockParams = expansionParams + depthwiseParams + seParams + projectionParams;
+  const totalBlockFlops = expansionFlops + depthwiseFlops + seFlops + projectionFlops;
+
+  // Direct Standard Conv equivalent: kernelSize * kernelSize * inChannels * outChannels
+  const directConvParams = kernelSize * kernelSize * inChannels * outChannels;
+  const directConvFlops = directConvParams * outputHeight * outputWidth;
+
+  // Standard Conv in the expanded manifold space (K x K x C_exp x C_exp)
+  const standardExpandedParams = kernelSize * kernelSize * expandedChannels * expandedChannels;
+  const standardExpandedFlops = standardExpandedParams * outputHeight * outputWidth;
+
+  const expandedSavingsPercent = standardExpandedParams > 0
+    ? Math.max(0, ((standardExpandedParams - totalBlockParams) / standardExpandedParams) * 100)
+    : 0;
+
+  // Synthetic channel activations for visual attention probing
+  const baseSignals = [0.85, 0.22, 1.45, 0.38, 1.10, 0.15, 0.92, 0.60];
+  const seOutput = computeSqueezeExcitation(baseSignals, seReductionRatio);
+
+  const channelProbes: ChannelAttentionProbe[] = baseSignals.map((sig, i) => {
+    const seWeight = seOutput.excitationScale[i] ?? 0.5;
+    const recalibratedValue = Number((sig * seWeight).toFixed(3));
+    let state: 'amplified' | 'balanced' | 'attenuated' = 'balanced';
+    if (seWeight >= 0.70) state = 'amplified';
+    else if (seWeight <= 0.35) state = 'attenuated';
+
+    return {
+      channelIndex: i + 1,
+      gapValue: sig,
+      seWeight,
+      recalibratedValue,
+      state
+    };
+  });
+
+  return {
+    expandedChannels,
+    outputHeight,
+    outputWidth,
+    hasSkipConnection,
+    expansionParams,
+    depthwiseParams,
+    seParams,
+    projectionParams,
+    totalBlockParams,
+    totalBlockFlops,
+    standardExpandedParams,
+    standardExpandedFlops,
+    expandedSavingsPercent: Number(expandedSavingsPercent.toFixed(1)),
+    directConvParams,
+    directConvFlops,
+    channelProbes
+  };
+}

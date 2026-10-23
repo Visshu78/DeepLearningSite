@@ -3,7 +3,9 @@ import {
   computeCompoundScaling,
   compareSeparableConvolution,
   computeSqueezeExcitation,
-  EFFICIENTNET_MODELS
+  EFFICIENTNET_MODELS,
+  simulateMBConvBlock,
+  EFFICIENTNET_B0_STAGES
 } from '../../lib/math/efficientnet';
 
 describe('EfficientNet Mathematical Engine', () => {
@@ -51,4 +53,49 @@ describe('EfficientNet Mathematical Engine', () => {
       expect(val).toBeLessThan(1);
     });
   });
+
+  it('correctly simulates MBConv block parameters, skip connection status, and savings', () => {
+    // Case 1: MBConv6 with stride 1, Cin=32, Cout=32 (has skip connection)
+    const blockWithSkip = simulateMBConvBlock({
+      inChannels: 32,
+      outChannels: 32,
+      expansionFactor: 6,
+      kernelSize: 3,
+      stride: 1,
+      seReductionRatio: 4,
+      inputHeight: 28,
+      inputWidth: 28
+    });
+
+    expect(blockWithSkip.expandedChannels).toBe(192);
+    expect(blockWithSkip.hasSkipConnection).toBe(true);
+    expect(blockWithSkip.outputHeight).toBe(28);
+    expect(blockWithSkip.channelProbes.length).toBe(8);
+    expect(blockWithSkip.totalBlockParams).toBeLessThan(blockWithSkip.standardExpandedParams);
+    expect(blockWithSkip.expandedSavingsPercent).toBeGreaterThan(80);
+
+    // Case 2: MBConv6 with stride 2 (downsampling, no skip connection)
+    const blockStride2 = simulateMBConvBlock({
+      inChannels: 32,
+      outChannels: 64,
+      expansionFactor: 6,
+      kernelSize: 3,
+      stride: 2,
+      seReductionRatio: 4,
+      inputHeight: 28,
+      inputWidth: 28
+    });
+
+    expect(blockStride2.hasSkipConnection).toBe(false);
+    expect(blockStride2.outputHeight).toBe(14);
+    expect(blockStride2.outputWidth).toBe(14);
+  });
+
+  it('validates EfficientNet-B0 architectural stages table', () => {
+    expect(EFFICIENTNET_B0_STAGES.length).toBe(9);
+    expect(EFFICIENTNET_B0_STAGES[0].operator).toBe('Conv3x3');
+    expect(EFFICIENTNET_B0_STAGES[1].operator).toBe('MBConv1');
+    expect(EFFICIENTNET_B0_STAGES[8].channels).toBe(1280);
+  });
 });
+
