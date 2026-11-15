@@ -14,7 +14,7 @@ import {
   type WaferPlate3D,
   type SynapticConduit3D
 } from '@/lib/math/isometric';
-import { ForwardStepResult } from '@/lib/math/network';
+import { ForwardStepResult, BackpropResult } from '@/lib/math/network';
 import {
   RotateCcw,
   Sparkles,
@@ -33,7 +33,7 @@ interface IsometricNetworkStackViewProps {
   bOutput: number;
   currentStep: number;
   fwdResult: ForwardStepResult;
-  bpResult?: any; // BackpropResult
+  bpResult?: BackpropResult;
   mode?: 'forward' | 'backprop';
   target?: number;
   onSelectNode?: (nodeType: 'input' | 'hidden' | 'output', index: number) => void;

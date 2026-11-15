@@ -411,11 +411,15 @@ export function ForwardPassVisualizer() {
 
             {paramTab === 'inputs' && (
               <div className="space-y-2 text-xs">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
-                    <div className="flex justify-between mb-1">
-                      <label htmlFor="fwd-in-x1" className="text-[#54484E]">Input x₁</label>
-                      <span className="font-mono-num font-semibold text-[#7A1C30]">{inputs[0].toFixed(2)}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="bg-[#FAF5EE] p-2.5 rounded border border-[#EAE2D5]">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <label htmlFor="fwd-in-x1" className="text-[#54484E] leading-tight">
+                        <span className="block text-[10.5px]">Footfall</span>
+                        <span className="sr-only"> / </span>
+                        <span className="block text-xs font-bold text-[#1F191B]">Input x₁</span>
+                      </label>
+                      <span className="font-mono-num font-semibold text-[#7A1C30] shrink-0">{inputs[0].toFixed(2)}</span>
                     </div>
                     <input
                       id="fwd-in-x1"
@@ -428,10 +432,14 @@ export function ForwardPassVisualizer() {
                       className="w-full"
                     />
                   </div>
-                  <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
-                    <div className="flex justify-between mb-1">
-                      <label htmlFor="fwd-in-x2" className="text-[#54484E]">Input x₂</label>
-                      <span className="font-mono-num font-semibold text-[#7A1C30]">{inputs[1].toFixed(2)}</span>
+                  <div className="bg-[#FAF5EE] p-2.5 rounded border border-[#EAE2D5]">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <label htmlFor="fwd-in-x2" className="text-[#54484E] leading-tight">
+                        <span className="block text-[10.5px]">Sponsors</span>
+                        <span className="sr-only"> / </span>
+                        <span className="block text-xs font-bold text-[#1F191B]">Input x₂</span>
+                      </label>
+                      <span className="font-mono-num font-semibold text-[#7A1C30] shrink-0">{inputs[1].toFixed(2)}</span>
                     </div>
                     <input
                       id="fwd-in-x2"
@@ -447,7 +455,7 @@ export function ForwardPassVisualizer() {
                 </div>
 
                 <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5] flex justify-between items-center">
-                  <label htmlFor="fwd-activation" className="text-[#1F191B] font-medium">Network Activation φ</label>
+                  <label htmlFor="fwd-activation" className="text-[#1F191B] font-medium">Review Style / Activation φ</label>
                   <select
                     id="fwd-activation"
                     value={activation}

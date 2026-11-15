@@ -147,40 +147,49 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {CURRICULUM.map((module) => (
-            <div
-              key={module.id}
-              className="bg-white border border-[#E8E2D9] rounded-lg p-5 space-y-3 flex flex-col justify-between shadow-2xs hover:border-[#C28E38] editorial-card-lift"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[11px] font-mono-num text-[#968A86]">
-                  <span>Module {module.number}</span>
-                  <span className="text-[#C28E38] font-semibold">{module.lessons.length} Lessons</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {CURRICULUM.map((module) => {
+            const firstAvailable = module.lessons.find(l => l.status === 'available');
+            return (
+              <div
+                key={module.id}
+                className="bg-white border border-[#E8E2D9] rounded-lg p-5 space-y-3 flex flex-col justify-between shadow-2xs hover:border-[#C28E38] editorial-card-lift"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-mono-num text-[#968A86]">
+                    <span>Step {module.learningOrder} • Track {module.number}</span>
+                    <span className="text-[#C28E38] font-semibold">{module.lessons.length} Lessons</span>
+                  </div>
+                  <h3 className="text-sm font-bold text-[#1D1819]">
+                    {module.title}
+                  </h3>
+                  <p className="text-xs text-[#625956] leading-relaxed line-clamp-2">
+                    {module.description}
+                  </p>
                 </div>
-                <h3 className="text-sm font-bold text-[#1D1819]">
-                  {module.title}
-                </h3>
-                <p className="text-xs text-[#625956] leading-relaxed line-clamp-2">
-                  {module.description}
-                </p>
-              </div>
 
-              <div className="pt-2 border-t border-[#EAE2D5] flex items-center justify-between text-xs">
-                {module.status === 'available' ? (
+                <div className="pt-2 border-t border-[#EAE2D5] flex items-center justify-between text-xs">
+                  {firstAvailable ? (
+                    <Link
+                      href={`/learn/${firstAvailable.slug}`}
+                      className="font-semibold text-[#7A1C30] hover:text-[#5F1424] flex items-center gap-1"
+                    >
+                      <span>Start Track</span>
+                      <ArrowRight className="w-3 h-3 text-[#B8860B]" />
+                    </Link>
+                  ) : (
+                    <span className="text-[#786970] font-mono-num text-[11px]">Upcoming Track</span>
+                  )}
                   <Link
-                    href={`/learn/${module.lessons[0].slug}`}
-                    className="font-semibold text-[#7A1C30] hover:text-[#5F1424] flex items-center gap-1"
+                    href="/projects"
+                    className="text-[11px] font-mono-num text-[#625956] hover:text-[#7A1C30]"
                   >
-                    <span>Start Module</span>
-                    <ArrowRight className="w-3 h-3 text-[#B8860B]" />
+                    {module.projectSlugs.length} {module.projectSlugs.length === 1 ? 'Project' : 'Projects'} →
                   </Link>
-                ) : (
-                  <span className="text-[#786970] font-mono-num text-[11px]">Upcoming Content</span>
-                )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -204,7 +213,7 @@ export default function HomePage() {
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-[11px] font-mono-num text-[#786970]">
-                  <span>Lesson {lesson.moduleNumber}.{lesson.lessonNumber}</span>
+                  <span>Track {lesson.moduleNumber} • Lesson {lesson.lessonCode}</span>
                   <span className="text-[#B8860B]">{lesson.duration}</span>
                 </div>
                 <h3 className="text-sm font-bold text-[#1F191B] group-hover:text-[#7A1C30] transition-colors">

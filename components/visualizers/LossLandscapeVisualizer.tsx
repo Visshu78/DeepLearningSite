@@ -223,7 +223,7 @@ export function LossLandscapeVisualizer() {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label htmlFor="loss-pred-slider" className="text-xs font-semibold text-[#1F191B]">
-                  Model Prediction (ŷ)
+                  Predicted Score / Model Prediction (ŷ)
                 </label>
                 <span className="text-xs font-mono-num font-bold text-[#7A1C30]">
                   ŷ = {prediction.toFixed(2)}
@@ -244,7 +244,7 @@ export function LossLandscapeVisualizer() {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label htmlFor="loss-target-slider" className="text-xs font-semibold text-[#1F191B]">
-                  Ground Truth Target (y)
+                  Actual Scoreboard / Target (y)
                 </label>
                 <span className="text-xs font-mono-num font-bold text-[#15803D]">
                   y = {target.toFixed(2)}

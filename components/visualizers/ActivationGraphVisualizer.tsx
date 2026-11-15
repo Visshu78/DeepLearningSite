@@ -334,7 +334,7 @@ export function ActivationGraphVisualizer() {
           <div>
             <div className="flex justify-between items-center mb-1">
               <label htmlFor="act-probe-slider" className="text-xs font-semibold text-[#1F191B] uppercase tracking-wider">
-                Probe Pre-Activation (z)
+                Persuasion Score / Pre-Activation (z)
               </label>
               <span className="text-sm font-mono-num font-bold text-[#7A1C30]">
                 z = {zProbe.toFixed(2)}

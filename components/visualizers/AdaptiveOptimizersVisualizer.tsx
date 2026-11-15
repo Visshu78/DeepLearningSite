@@ -193,7 +193,7 @@ export function AdaptiveOptimizersVisualizer() {
         {/* Learning rate */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-[#1F191B]">Learning Rate (η)</span>
+            <span className="font-semibold text-[#1F191B]">Base Step Speed / Learning Rate (η)</span>
             <span className="font-mono-num font-bold text-[#7A1C30]">{learningRate.toFixed(2)}</span>
           </div>
           <input
@@ -215,7 +215,7 @@ export function AdaptiveOptimizersVisualizer() {
         {/* Momentum Beta */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-[#1F191B]">Momentum Beta (β₁)</span>
+            <span className="font-semibold text-[#1F191B]">Ball Inertia / Momentum Beta (β₁)</span>
             <span className="font-mono-num font-bold text-[#7A1C30]">{beta1.toFixed(2)}</span>
           </div>
           <input

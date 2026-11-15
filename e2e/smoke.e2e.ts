@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 const LESSONS = [
+  'first-look-at-data-eda',
+  'handling-missing-data',
   'what-is-an-artificial-neuron',
   'activation-functions',
   'forward-propagation',
@@ -14,7 +16,7 @@ const LESSONS = [
   'adaptive-optimizers',
 ];
 
-const PAGES = ['/', '/learn', '/playground', '/practice', '/about'];
+const PAGES = ['/', '/learn', '/projects', '/projects/chest-xray-classifier', '/playground', '/practice', '/about'];
 
 async function expectNoHorizontalOverflow(page: import('@playwright/test').Page) {
   const overflow = await page.evaluate(

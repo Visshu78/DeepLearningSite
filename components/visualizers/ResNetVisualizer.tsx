@@ -377,7 +377,7 @@ export function ResNetVisualizer() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center text-xs">
-                    <label htmlFor="res-x" className="font-semibold text-[#1D1819]">Input Signal x</label>
+                    <label htmlFor="res-x" className="font-semibold text-[#1D1819]">Original Draft / Input x</label>
                     <span className="font-mono-num font-bold text-[#6E1A2B]">{inputSignalX.toFixed(2)}</span>
                   </div>
                   <input
@@ -394,7 +394,7 @@ export function ResNetVisualizer() {
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center text-xs">
-                    <label htmlFor="res-w1" className="font-semibold text-[#1D1819]">Weight Layer 1 (w₁)</label>
+                    <label htmlFor="res-w1" className="font-semibold text-[#1D1819]">Edit Pass 1 / Weight (w₁)</label>
                     <span className="font-mono-num font-bold text-[#8E6523]">{weightW1.toFixed(2)}</span>
                   </div>
                   <input
@@ -411,7 +411,7 @@ export function ResNetVisualizer() {
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center text-xs">
-                    <label htmlFor="res-w2" className="font-semibold text-[#1D1819]">Weight Layer 2 (w₂)</label>
+                    <label htmlFor="res-w2" className="font-semibold text-[#1D1819]">Edit Pass 2 / Weight (w₂)</label>
                     <span className="font-mono-num font-bold text-[#8E6523]">{weightW2.toFixed(2)}</span>
                   </div>
                   <input

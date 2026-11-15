@@ -111,7 +111,7 @@ export function RegularizationVisualizer() {
         {/* Model Capacity Slider */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-[#1F191B]">Model Capacity (Polynomial Degree d)</span>
+            <span className="font-semibold text-[#1F191B]">Rote-Learning Capacity / Polynomial Degree (d)</span>
             <span className="font-mono-num font-bold text-[#7A1C30]">Degree {degree} ({degree + 1} params)</span>
           </div>
           <input
@@ -133,7 +133,7 @@ export function RegularizationVisualizer() {
         {/* L2 Weight Decay Slider */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-[#1F191B]">L2 Regularization Penalty (λ)</span>
+            <span className="font-semibold text-[#1F191B]">Extreme-Rule Fine / L2 Penalty (λ)</span>
             <span className="font-mono-num font-bold text-[#7A1C30]">λ = {lambdaL2.toFixed(3)}</span>
           </div>
           <input
@@ -272,7 +272,7 @@ export function RegularizationVisualizer() {
 
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-[#1F191B]">Dropout Rate (p)</span>
+                <span className="font-semibold text-[#1F191B]">Absentee Rate / Dropout (p)</span>
                 <span className="font-mono-num font-bold text-[#7A1C30]">{(dropoutRate * 100).toFixed(0)}%</span>
               </div>
               <input

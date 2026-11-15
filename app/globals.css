@@ -172,9 +172,10 @@ input[type="range"]::-moz-range-thumb {
   background-color: #FFFFFF;
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
-  padding: 10px 13px;
+  padding: 10px 12px;
   box-shadow: var(--shadow-subtle);
   min-width: 0;
+  overflow: hidden;
 }
 
 .param-card.is-bias {
@@ -183,18 +184,22 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .param-card .label {
-  font-size: 13.5px;
+  font-size: 12.5px;
+  line-height: 1.25;
   font-weight: 600;
   color: var(--text-secondary);
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .param-card .value {
   font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 15.5px;
+  font-size: 14px;
+  line-height: 1.2;
   font-weight: 700;
   color: var(--primary-accent);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* --------------------------------------------------------------------------

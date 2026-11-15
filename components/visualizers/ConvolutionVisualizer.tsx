@@ -113,7 +113,7 @@ export function ConvolutionVisualizer() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-white border border-[#EAE2D5] rounded-lg">
         {/* Input pattern */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-[#1F191B] block">Input Image Pattern</label>
+          <label className="text-xs font-semibold text-[#1F191B] block">Photo Pattern / Input (I)</label>
           <select
             value={selectedInputId}
             onChange={e => {
@@ -130,7 +130,7 @@ export function ConvolutionVisualizer() {
 
         {/* Filter selection */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-[#1F191B] block">Convolution Filter / Kernel</label>
+          <label className="text-xs font-semibold text-[#1F191B] block">Stencil / Filter Kernel (K)</label>
           <select
             value={selectedKernelId}
             onChange={e => handleKernelPresetChange(e.target.value)}
@@ -146,7 +146,7 @@ export function ConvolutionVisualizer() {
         {/* Padding & Stride */}
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#1F191B] block">Padding (P)</label>
+            <label className="text-xs font-semibold text-[#1F191B] block">Border Frame / Padding (P)</label>
             <div className="flex gap-1">
               {[0, 1].map(p => (
                 <button
@@ -165,7 +165,7 @@ export function ConvolutionVisualizer() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#1F191B] block">Stride (S)</label>
+            <label className="text-xs font-semibold text-[#1F191B] block">Hop Size / Stride (S)</label>
             <div className="flex gap-1">
               {[1, 2].map(s => (
                 <button

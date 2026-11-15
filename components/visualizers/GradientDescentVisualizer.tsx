@@ -329,7 +329,7 @@ export function GradientDescentVisualizer() {
           <div>
             <div className="flex justify-between items-center mb-1">
               <label htmlFor="gd-lr-slider" className="text-xs font-semibold text-[#1F191B]">
-                Learning Rate (η)
+                Stride Length / Learning Rate (η)
               </label>
               <span className="text-xs font-mono-num font-bold text-[#7A1C30]">
                 η = {learningRate.toFixed(2)}
@@ -350,7 +350,7 @@ export function GradientDescentVisualizer() {
           <div>
             <div className="flex justify-between items-center mb-1">
               <label htmlFor="gd-theta-slider" className="text-xs font-semibold text-[#1F191B]">
-                Current Position (θ)
+                Hillside Coordinates / Position (θ)
               </label>
               <span className="text-xs font-mono-num font-bold text-[#1F191B]">
                 θ = {currentTheta.toFixed(3)}

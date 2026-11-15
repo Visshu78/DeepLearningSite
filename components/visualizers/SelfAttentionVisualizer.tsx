@@ -131,7 +131,7 @@ export function SelfAttentionVisualizer() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#625956]">
-                    Select Query Token to Inspect (q_i):
+                    Looking-For Question / Query Token (q_i):
                   </span>
                   <div className="inline-flex rounded-lg bg-[#FAF5EE] p-0.5 border border-[#E8E2D9]">
                     {tokens.map((token, idx) => (
@@ -156,7 +156,7 @@ export function SelfAttentionVisualizer() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#625956] flex items-center gap-1">
                     <Flame className="w-3.5 h-3.5 text-[#C28E38]" />
-                    Scale 1/√d_k:
+                    Volume Normalizer / Scale 1/√d_k:
                   </span>
                   <div className="inline-flex rounded-lg bg-[#FAF5EE] p-0.5 border border-[#E8E2D9]">
                     <button

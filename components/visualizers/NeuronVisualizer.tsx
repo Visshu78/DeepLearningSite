@@ -290,10 +290,14 @@ export function NeuronVisualizer() {
             </h4>
 
             {/* Inputs & Weights */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="param-card">
-                <div className="flex items-baseline justify-between gap-1 mb-1">
-                  <label htmlFor="neuron-x1" className="label">Input x₁</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="param-card flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <label htmlFor="neuron-x1" className="label">
+                    <span className="block text-[11px] font-medium text-[#625956] leading-snug">Weather</span>
+                    <span className="sr-only"> / </span>
+                    <span className="block text-xs font-bold text-[#1D1819] leading-snug">Input x₁</span>
+                  </label>
                   <span className="value font-mono-num">{inputs[0].toFixed(2)}</span>
                 </div>
                 <input
@@ -308,9 +312,13 @@ export function NeuronVisualizer() {
                 />
               </div>
 
-              <div className="param-card">
-                <div className="flex items-baseline justify-between gap-1 mb-1">
-                  <label htmlFor="neuron-w1" className="label">Weight w₁</label>
+              <div className="param-card flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <label htmlFor="neuron-w1" className="label">
+                    <span className="block text-[11px] font-medium text-[#625956] leading-snug">Importance</span>
+                    <span className="sr-only"> / </span>
+                    <span className="block text-xs font-bold text-[#1D1819] leading-snug">Weight w₁</span>
+                  </label>
                   <span className="value font-mono-num">{weights[0].toFixed(2)}</span>
                 </div>
                 <input
@@ -325,9 +333,13 @@ export function NeuronVisualizer() {
                 />
               </div>
 
-              <div className="param-card">
-                <div className="flex items-baseline justify-between gap-1 mb-1">
-                  <label htmlFor="neuron-x2" className="label">Input x₂</label>
+              <div className="param-card flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <label htmlFor="neuron-x2" className="label">
+                    <span className="block text-[11px] font-medium text-[#625956] leading-snug">Stall Distance</span>
+                    <span className="sr-only"> / </span>
+                    <span className="block text-xs font-bold text-[#1D1819] leading-snug">Input x₂</span>
+                  </label>
                   <span className="value font-mono-num">{inputs[1].toFixed(2)}</span>
                 </div>
                 <input
@@ -342,9 +354,13 @@ export function NeuronVisualizer() {
                 />
               </div>
 
-              <div className="param-card">
-                <div className="flex items-baseline justify-between gap-1 mb-1">
-                  <label htmlFor="neuron-w2" className="label">Weight w₂</label>
+              <div className="param-card flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <label htmlFor="neuron-w2" className="label">
+                    <span className="block text-[11px] font-medium text-[#625956] leading-snug">Importance</span>
+                    <span className="sr-only"> / </span>
+                    <span className="block text-xs font-bold text-[#1D1819] leading-snug">Weight w₂</span>
+                  </label>
                   <span className="value font-mono-num">{weights[1].toFixed(2)}</span>
                 </div>
                 <input
@@ -361,10 +377,14 @@ export function NeuronVisualizer() {
             </div>
 
             {/* Bias & Activation */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="param-card is-bias">
-                <div className="flex items-baseline justify-between gap-1 mb-1">
-                  <label htmlFor="neuron-bias" className="label text-[#8E6523]">Bias b</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="param-card is-bias flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <label htmlFor="neuron-bias" className="label text-[#8E6523]">
+                    <span className="block text-[11px] font-medium text-[#8E6523]/85 leading-snug">Craving Baseline</span>
+                    <span className="sr-only"> / </span>
+                    <span className="block text-xs font-bold text-[#8E6523] leading-snug">Bias b</span>
+                  </label>
                   <span className="value text-[#C28E38] font-mono-num">{bias.toFixed(2)}</span>
                 </div>
                 <input
@@ -380,7 +400,11 @@ export function NeuronVisualizer() {
               </div>
 
               <div className="param-card flex flex-col justify-between">
-                <label htmlFor="neuron-activation" className="label mb-1">Activation φ</label>
+                <label htmlFor="neuron-activation" className="label mb-1.5">
+                  <span className="block text-[11px] font-medium text-[#625956] leading-snug">Decision Style</span>
+                  <span className="sr-only"> / </span>
+                  <span className="block text-xs font-bold text-[#1D1819] leading-snug">Activation φ</span>
+                </label>
                 <select
                   id="neuron-activation"
                   value={activation}

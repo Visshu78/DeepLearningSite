@@ -86,7 +86,7 @@ export function PoolingVisualizer() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white border border-[#EAE2D5] rounded-lg">
             {/* Pooling Type */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#1F191B] block">Downsampling Strategy</label>
+              <label className="text-xs font-semibold text-[#1F191B] block">Summary Rule / Pooling Strategy</label>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPoolingType('max')}
@@ -113,7 +113,7 @@ export function PoolingVisualizer() {
 
             {/* Window Size */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#1F191B] block">Pool Window Size</label>
+              <label className="text-xs font-semibold text-[#1F191B] block">Neighborhood Block / Window (K×K)</label>
               <div className="flex gap-2">
                 {[2, 3].map(sz => (
                   <button
@@ -133,7 +133,7 @@ export function PoolingVisualizer() {
 
             {/* Stride */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#1F191B] block">Window Stride</label>
+              <label className="text-xs font-semibold text-[#1F191B] block">Hop Step / Stride (S)</label>
               <div className="flex gap-2">
                 {[1, 2].map(st => (
                   <button

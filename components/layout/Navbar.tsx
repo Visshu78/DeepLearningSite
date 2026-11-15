@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLearningProgress } from '@/lib/progress/progressStore';
 import { ALL_LESSONS } from '@/lib/lesson-data/curriculum';
-import { BookOpen, Sliders, CheckSquare, Info, Menu, X } from 'lucide-react';
+import { BookOpen, Sliders, CheckSquare, Info, Menu, X, FolderGit2 } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -16,6 +16,7 @@ export function Navbar() {
 
   const navLinks = [
     { href: '/learn', label: 'Learn', icon: BookOpen },
+    { href: '/projects', label: 'Projects', icon: FolderGit2 },
     { href: '/playground', label: 'Playground', icon: Sliders },
     { href: '/practice', label: 'Practice', icon: CheckSquare },
     { href: '/about', label: 'About', icon: Info },

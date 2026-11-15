@@ -758,7 +758,7 @@ export function BackpropagationVisualizer() {
               <select
                 aria-label="Parameter to check with finite difference"
                 value={verifyParam}
-                onChange={e => setVerifyParam(e.target.value as any)}
+                onChange={e => setVerifyParam(e.target.value as typeof verifyParam)}
                 className="text-xs bg-white border border-[#D1D1C7] rounded px-2 py-0.5 text-[#1F191B]"
               >
                 <option value="wOut0">Output Weight w_out1</option>
@@ -916,9 +916,12 @@ export function BackpropagationVisualizer() {
 
           {/* Interactive Workbench Inputs & Optimization Action */}
           <div className="space-y-2.5 pt-1 border-t border-[#EAE2D5]">
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <label htmlFor="bp-target-slider" className="text-[#1F191B] font-semibold">Target y ({target.toFixed(2)})</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
+                <div className="flex items-baseline justify-between gap-1 mb-1">
+                  <label htmlFor="bp-target-slider" className="text-[#1F191B] font-semibold leading-tight">Audit Target y</label>
+                  <span className="font-mono-num font-bold text-[#7A1C30] shrink-0">{target.toFixed(2)}</span>
+                </div>
                 <input
                   id="bp-target-slider"
                   type="range"
@@ -931,8 +934,11 @@ export function BackpropagationVisualizer() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="bp-lr-slider" className="text-[#B8860B] font-semibold">Learning Rate η ({learningRate})</label>
+              <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
+                <div className="flex items-baseline justify-between gap-1 mb-1">
+                  <label htmlFor="bp-lr-slider" className="text-[#B8860B] font-semibold leading-tight">Correction Step / LR η</label>
+                  <span className="font-mono-num font-bold text-[#B8860B] shrink-0">{learningRate.toFixed(1)}</span>
+                </div>
                 <input
                   id="bp-lr-slider"
                   type="range"
@@ -946,9 +952,12 @@ export function BackpropagationVisualizer() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <label htmlFor="bp-x1" className="text-[#54484E] font-medium">Input x₁ ({config.inputs[0]})</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
+                <div className="flex items-baseline justify-between gap-1 mb-1">
+                  <label htmlFor="bp-x1" className="text-[#54484E] font-medium leading-tight">Proposal Signal x₁</label>
+                  <span className="font-mono-num font-bold text-[#1F191B] shrink-0">{config.inputs[0].toFixed(1)}</span>
+                </div>
                 <input
                   id="bp-x1"
                   type="range"
@@ -960,8 +969,11 @@ export function BackpropagationVisualizer() {
                   className="w-full accent-[#7A1C30] cursor-pointer"
                 />
               </div>
-              <div>
-                <label htmlFor="bp-x2" className="text-[#54484E] font-medium">Input x₂ ({config.inputs[1]})</label>
+              <div className="bg-[#FAF5EE] p-2 rounded border border-[#EAE2D5]">
+                <div className="flex items-baseline justify-between gap-1 mb-1">
+                  <label htmlFor="bp-x2" className="text-[#54484E] font-medium leading-tight">Proposal Signal x₂</label>
+                  <span className="font-mono-num font-bold text-[#1F191B] shrink-0">{config.inputs[1].toFixed(1)}</span>
+                </div>
                 <input
                   id="bp-x2"
                   type="range"
