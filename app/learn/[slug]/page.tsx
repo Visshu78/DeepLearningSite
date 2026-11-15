@@ -242,10 +242,19 @@ export default async function LessonPage({ params }: PageProps) {
       visualizer = <div className="p-8 text-center text-sm text-[#5C626B]">Interactive visualizer initializing...</div>;
   }
 
+  const clientContent = {
+    ...content,
+    quiz: content.quiz.map(q => ({
+      id: q.id,
+      question: q.question,
+      options: q.options,
+    })),
+  };
+
   return (
     <LessonLayout
       meta={meta}
-      content={content}
+      content={clientContent}
       visualizer={visualizer}
     />
   );

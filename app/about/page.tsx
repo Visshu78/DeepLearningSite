@@ -90,17 +90,17 @@ export default function AboutPage() {
       <section className="p-6 bg-[#FAF2E6] border border-[#EEDAA2] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h3 className="text-sm font-bold text-[#1F191B]">
-            Ready to explore?
+            Ready to explore the 10-track curriculum?
           </h3>
           <p className="text-xs text-[#54484E]">
-            Begin with Lesson 1: What is an Artificial Neuron?
+            Begin with Track 0 Free Preview (Lesson 0.1): Vectors, Matrices and Dot Products.
           </p>
         </div>
         <Link
-          href="/learn/what-is-an-artificial-neuron"
+          href="/learn/vectors-matrices-and-dot-products"
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded text-xs font-semibold bg-[#7A1C30] text-white hover:bg-[#5F1424] transition-colors shrink-0"
         >
-          <span>Start Module 1</span>
+          <span>Start Track 0 Free</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </section>

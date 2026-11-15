@@ -126,11 +126,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'In our hostel chai scene, suppose weather x₁ = 0 and distance x₂ = 0 (neutral conditions), but Rohan still agrees to go because his default mood b = +1.2. What is the mathematical role of the bias b in a neuron?',
         options: [
           'It normalizes the input features to zero mean and unit variance.',
-          'It shifts the neuron\'s activation threshold independently of the inputs so the decision boundary does not have to pass through the origin.',
           'It acts as the learning rate during backward propagation.',
+          'It shifts the neuron\'s activation threshold independently of the inputs so the decision boundary does not have to pass through the origin.',
           'It forces the output of the neuron to remain between 0 and 1.'
         ],
-        correctIndex: 1,
+        correctIndex: 2,
         explanation: 'Without a bias, the hyperplane formed by wᵀx = 0 is constrained to pass directly through the origin (0, 0, …). The bias shifts the activation threshold independently of x.'
       },
       {
@@ -233,23 +233,23 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'Suppose a student builds a deep network with Sigmoid hidden units, and one neuron receives a very strong pre-activation z = 8.0 ("already 99.97% convinced"). What happens to its gradient during backpropagation?',
         options: [
           'The gradient explodes towards infinity.',
-          'The gradient becomes nearly zero (vanishing gradient) because the Sigmoid curve is almost completely flat at z = 8.0.',
+          'The gradient oscillates between positive and negative.',
           'The gradient remains exactly 1.0.',
-          'The gradient oscillates between positive and negative.'
+          'The gradient becomes nearly zero (vanishing gradient).'
         ],
-        correctIndex: 1,
+        correctIndex: 3,
         explanation: 'At z = 8.0, σ(8) ≈ 0.9997, and σ\'(8) ≈ 0.0003. When backpropagating, multiplying upstream gradients by 0.0003 practically annihilates the learning signal.'
       },
       {
         id: 'q2',
         question: 'If a large negative bias update pushes a standard ReLU neuron so that z < 0 for every training example in the dataset, what happens to that neuron and how does Leaky ReLU fix it?',
         options: [
-          'It computes faster than before.',
+          'It becomes a "dead ReLU" with derivative 0 forever.',
           'It restricts all outputs strictly between -1 and 1.',
-          'It becomes a "dead ReLU" with derivative 0 forever; Leaky ReLU fixes this by keeping a small non-zero slope (e.g. α = 0.01) when z ≤ 0.',
+          'It computes faster than before.',
           'It eliminates the need for bias parameters.'
         ],
-        correctIndex: 2,
+        correctIndex: 0,
         explanation: 'When a standard ReLU neuron gets stuck in the negative region, its derivative is 0, so no gradient ever updates its weights again ("dying ReLU"). Leaky ReLU keeps a small slope α > 0 when z < 0 to keep the neuron trainable.'
       }
     ],
@@ -342,11 +342,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'Your fest approval network takes 3 input metrics, passes them to 4 Faculty Coordinators (hidden layer), who report to 1 Dean (output neuron). How many total trainable parameters (weights + biases) exist in this network?',
         options: [
           '12 parameters',
+          '21 parameters',
           '16 parameters',
-          '21 parameters (12 hidden weights + 4 hidden biases + 4 output weights + 1 output bias)',
           '8 parameters'
         ],
-        correctIndex: 2,
+        correctIndex: 1,
         explanation: 'Hidden layer: 3 × 4 weights + 4 biases = 16 parameters. Output layer: 4 × 1 weights + 1 bias = 5 parameters. Total = 16 + 5 = 21 parameters.'
       },
       {
@@ -354,11 +354,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'Why must a deep learning framework keep the intermediate values z^[1] and a^[1] in GPU memory during a training forward pass instead of throwing them away once ŷ is computed?',
         options: [
           'Because the loss function requires adding all hidden activations together.',
-          'Because backpropagation needs a^[l-1] and φ\'(z^[l]) to compute exact weight gradients ∂L/∂W^[l] without re-running the forward pass.',
+          'They are only kept during test-time inference, not during training.',
           'To display them on the monitor.',
-          'They are only kept during test-time inference, not during training.'
+          'Because backpropagation needs a^[l-1] and φ\'(z^[l]) to compute exact weight gradients ∂L/∂W^[l] without re-running the forward pass.'
         ],
-        correctIndex: 1,
+        correctIndex: 3,
         explanation: 'By the chain rule, ∂L/∂W^[l] = δ^[l] · (a^[l-1])ᵀ where δ^[l] depends on φ\'(z^[l]). Caching z^[l] and a^[l] during the forward pass is what makes reverse-mode autodiff fast.'
       }
     ],
@@ -452,19 +452,19 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q1',
         question: 'Suppose the actual target score is y = 1.0, and your model over-predicts ŷ = 2.5. Under L = ½(ŷ - y)², what is the initial gradient ∂L/∂ŷ and which direction should ŷ move to reduce the loss?',
         options: [
-          '∂L/∂ŷ = +1.5; ŷ must decrease (step in the negative gradient direction).',
-          '∂L/∂ŷ = -1.5; ŷ must increase.',
           '∂L/∂ŷ = +2.25; ŷ must stay fixed.',
+          '∂L/∂ŷ = -1.5; ŷ must increase.',
+          '∂L/∂ŷ = +1.5; ŷ must decrease.',
           '∂L/∂ŷ = 0.75; ŷ must double.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: '∂L/∂ŷ = ŷ - y = 2.5 - 1.0 = +1.5. A positive gradient indicates that increasing ŷ increases the loss, so gradient descent steps in the negative direction (-1.5) to push ŷ down toward 1.0.'
       },
       {
         id: 'q2',
         question: 'Why does Mean Squared Error react much more strongly to a single corrupt outlier in a dataset than Mean Absolute Error |ŷ - y|?',
         options: [
-          'Because squaring an error of size 10 produces a penalty of 100 (and gradient 10), whereas absolute error only penalizes it by 10 (with constant gradient ±1).',
+          'Because squaring an error of size 10 produces a penalty of 100 (and gradient 10).',
           'Because MSE ignores errors smaller than 1.',
           'Because MSE cannot be differentiated.',
           'Because MSE divides by N² instead of N.'
@@ -554,23 +554,23 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'On the parabolic valley L(θ) = 0.5(θ - 2)² where curvature (second derivative) is 1.0, what happens if you set your stride length / learning rate to η = 2.30?',
         options: [
           'The hiker stops immediately because the gradient becomes 0.',
-          'Each step overshoots the valley center θ = 2 and lands higher up the opposite wall (|1 - η| = 1.3 > 1), causing growing oscillations and divergence.',
+          'The weights freeze and stop changing.',
           'The hiker reaches θ = 2 in a single step.',
-          'The weights freeze and stop changing.'
+          'Each step overshoots the valley center θ = 2 and lands higher up the opposite wall (|1 - η| = 1.3 > 1), causing growing oscillations and divergence.'
         ],
-        correctIndex: 1,
+        correctIndex: 3,
         explanation: 'Because η = 2.30 exceeds the stability threshold 2 / curvature = 2.0, the distance to the minimum multiplies by |1 - 2.30| = 1.30 on every step, exploding to infinity.'
       },
       {
         id: 'q2',
         question: 'When switching the landscape to "Double-Well" (non-convex), why can two hikers with the exact same learning rate η end up at different final loss values?',
         options: [
-          'Because gradient descent is a local optimizer that follows the slope from its starting point θ₀ and can settle into whichever local valley basin it starts in.',
           'Because derivatives do not exist on non-convex curves.',
+          'Because gradient descent is a local optimizer that follows the slope from its starting point θ₀ and can settle into whichever local valley basin it starts in.',
           'Because the learning rate changes randomly.',
           'Because convex functions have no minimum.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'At any local minimum, the first derivative dL/dθ = 0, so standard gradient descent stops even if a deeper global valley exists across a ridge.'
       }
     ],
@@ -664,12 +664,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q1',
         question: 'In our group-project chain rule analogy, if Hidden Coder 1 sent an output of a₁ = 0.0 (contributed nothing during the forward pass), what is the weight gradient ∂L/∂w_out1 for the connection from Coder 1 to the Presenter?',
         options: [
+          'It is strictly 0.0.',
           'It equals the learning rate η.',
-          'It is strictly 0.0, because ∂L/∂w_out1 = δ_out · a₁ = δ_out · 0 = 0 (changing a weight that multiplied zero input would not have changed the output).',
           'It equals the bias b_out.',
           'It equals infinity.'
         ],
-        correctIndex: 1,
+        correctIndex: 0,
         explanation: 'By the chain rule, ∂L/∂w_ij = δ_j · a_i. If the incoming activation a_i is 0, nudging weight w_ij has zero effect on z_j, so its gradient is 0.'
       },
       {
@@ -677,11 +677,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'How do ML engineers mathematically verify that their analytical backpropagation code is 100% bug-free?',
         options: [
           'By running more training epochs until accuracy improves.',
-          'By comparing analytical gradients against numerical finite differences [L(θ + ε) - L(θ - ε)] / (2ε) (gradient checking).',
           'By removing all non-linear activation functions.',
+          'By comparing analytical gradients against numerical finite differences [L(θ + ε) - L(θ - ε)] / (2ε).',
           'By setting the learning rate to zero.'
         ],
-        correctIndex: 1,
+        correctIndex: 2,
         explanation: 'Central finite difference approximation [L(θ + ε) - L(θ - ε)] / (2ε) calculates numerical derivatives directly from forward loss evaluations. Matching within ~1e-5 verifies the backward code.'
       }
     ],
@@ -776,23 +776,23 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'In our study-group Dropout scene, if 50% of neurons are randomly absent during training (p = 0.5), why does Inverted Dropout multiply the surviving neurons\' outputs by 1 / (1 - 0.5) = 2.0 during training?',
         options: [
           'To ensure the gradients do not vanish at the output layer.',
-          'So the expected total signal stays constant, allowing the full group to work together at test/exam time without any scaling factor.',
           'To turn all negative activations into positive activations.',
+          'So the expected total signal stays constant.',
           'To force half the weights to strictly equal zero.'
         ],
-        correctIndex: 1,
+        correctIndex: 2,
         explanation: 'If 50% of neurons are zeroed (p=0.5), the total forward signal would drop by half. Scaling surviving nodes by 1/(1-0.5) = 2x preserves the expected sum E[ã] = a during training, so at test time dropout is simply turned off.'
       },
       {
         id: 'q2',
         question: 'In terms of model parameter distributions, what is the primary difference between L1 (Lasso) and L2 (Ridge) weight penalties?',
         options: [
-          'L1 forces many unimportant weights to become strictly zero (feature selection), while L2 shrinks weights smoothly toward zero in proportion to their size.',
           'L2 causes weights to grow exponentially large.',
+          'L1 forces many unimportant weights to become strictly zero (feature selection).',
           'L1 can only be applied to convolutional layers.',
           'L2 is incompatible with backpropagation.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'L1 penalty |w| has a constant gradient ±λ everywhere except zero, driving uninformative weights strictly to 0. L2 penalty (λ/2)w² has gradient λw, which shrinks large weights aggressively and small weights gently.'
       }
     ],
@@ -887,23 +887,23 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'Why does Adam divide its moving averages m_t and v_t by (1 - β₁^t) and (1 - β₂^t) during the first few steps of training?',
         options: [
           'To prevent the learning rate from ever reaching zero.',
-          'Because m₀ and v₀ start at 0, so without bias correction the first step m₁ = (1 - 0.9)g₁ would be artificially shrunk by 10× toward zero.',
+          'To replace the need for backpropagation.',
           'To ensure the gradients satisfy the Cauchy-Schwarz inequality.',
-          'To replace the need for backpropagation.'
+          'Because m₀ and v₀ start at 0.'
         ],
-        correctIndex: 1,
+        correctIndex: 3,
         explanation: 'Because m₀ = 0 and v₀ = 0, at step t=1, m₁ = (1 - β₁)g₁. When β₁ = 0.9, m₁ is only 0.10 · g₁. Dividing by (1 - 0.9¹) = 0.10 un-biases the estimate back to g₁.'
       },
       {
         id: 'q2',
         question: 'In our narrow gully scene (steep y-walls, gentle x-floor), why is standard SGD forced to make agonizingly slow progress along the x-floor?',
         options: [
+          'Because a single learning rate η must be kept tiny to avoid exploding across the steep y-walls.',
           'It converges exponentially fast.',
-          'Because a single learning rate η must be kept tiny to avoid exploding across the steep y-walls, which starves the gentle x-direction of step size.',
           'It automatically computes second derivatives.',
           'It immediately finds the global optimum.'
         ],
-        correctIndex: 1,
+        correctIndex: 0,
         explanation: 'In ill-conditioned ravines, the maximum stable learning rate for SGD is dictated by the steepest direction η < 2/λ_max. That tiny η makes updates along the flat direction (small λ_min) crawl.'
       }
     ],
@@ -1012,10 +1012,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         options: [
           '28 × 28',
           '30 × 30',
-          '32 × 32',
-          '36 × 36'
+          '36 × 36',
+          '32 × 32'
         ],
-        correctIndex: 2,
+        correctIndex: 3,
         explanation: 'Using W_out = ⌊(W_in - K + 2P)/S⌋ + 1 = ⌊(32 - 5 + 4)/1⌋ + 1 = 31 + 1 = 32. Padding P = (K-1)/2 with stride S=1 preserves exact spatial dimensions ("Same" padding).'
       }
     ],
@@ -1099,23 +1099,23 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'Why is Max Pooling generally preferred over Average Pooling in early feature-extraction layers of a visual classifier?',
         options: [
           'Average pooling requires learnable weights, while max pooling has none.',
-          'Max pooling preserves sharp, high-contrast feature detections ("did the edge appear in this 2×2 patch?"), whereas average pooling dilutes strong activations with surrounding zeros.',
           'Max pooling guarantees the output matrix has odd dimensions.',
+          'Max pooling preserves sharp, high-contrast feature detections ("did the edge appear in this 2×2 patch?").',
           'Average pooling cannot be used with ReLU activations.'
         ],
-        correctIndex: 1,
+        correctIndex: 2,
         explanation: 'Max pooling acts as a logical OR detector over a small patch. Average pooling washes out a strong edge activation by averaging it with three background zeros.'
       },
       {
         id: 'q2',
         question: 'How many learnable weight parameters are inside a 2×2 Max Pooling layer with stride 2?',
         options: [
+          '0 learnable parameters',
           '4 weights + 1 bias = 5 parameters',
-          'Exactly 0 learnable parameters — it simply selects the maximum number in each fixed window.',
           '16 parameters',
           'It depends on the number of channels.'
         ],
-        correctIndex: 1,
+        correctIndex: 0,
         explanation: 'Pooling layers perform a fixed mathematical reduction (max or mean) and introduce zero trainable parameters.'
       }
     ],
@@ -1233,11 +1233,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'When the cheque-scanner CNN runs in production inference mode (as opposed to training mode), what changes?',
         options: [
           'Inference uses smaller convolutional kernels than training.',
-          'Inference only executes the forward pass with frozen weights; no backward computational graph is stored and Dropout is turned off.',
+          'Inference reverses the order of layers, computing Softmax first.',
           'Inference requires calculating second-order Hessian matrices.',
-          'Inference reverses the order of layers, computing Softmax first.'
+          'Inference only executes the forward pass with frozen weights.'
         ],
-        correctIndex: 1,
+        correctIndex: 3,
         explanation: 'During inference, model weights are static and evaluation is purely feed-forward, saving memory and compute.'
       },
       {
@@ -1256,12 +1256,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q3',
         question: 'If a colour cheque scanner uses 16 filters of size 5×5 on an RGB image (3 input channels), how many learnable weight parameters (excluding biases) are in that Conv2D layer?',
         options: [
-          '400 weights (16 × 5 × 5)',
-          '1,200 weights (16 filters × 5 × 5 × 3 channels)',
-          '75 weights (5 × 5 × 3)',
+          '1,200 weights',
+          '400 weights',
+          '75 weights',
           '16 weights'
         ],
-        correctIndex: 1,
+        correctIndex: 0,
         explanation: 'Each 3D filter spans all 3 input channels: 5 × 5 × 3 = 75 weights per filter. Across 16 filters, total weights = 16 × 75 = 1,200.'
       }
     ],
@@ -1363,11 +1363,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'Why must the convolutional kernel K be rotated by 180 degrees when computing the backward gradient with respect to the input image (∂L/∂X)?',
         options: [
           'Because gradient descent always moves in the reverse direction of the loss.',
-          'Because in the forward pass X(r, c) was multiplied by K(m, n) to produce output Y(r - m, c - n); reversing that coordinate offset requires flipping K both horizontally and vertically (180°).',
           'To invert all negative weights into positive weights.',
+          'Because in the forward pass X(r, c) was multiplied by K(m, n) to produce output Y(r - m, c - n).',
           'It is only needed when using ReLU activations.'
         ],
-        correctIndex: 1,
+        correctIndex: 2,
         explanation: 'The mathematical adjoint (transpose) of discrete cross-correlation is full convolution with the kernel flipped 180°, routing each output error back to the exact input pixel that fed it.'
       },
       {
@@ -1376,7 +1376,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         options: [
           'One-fourth of the upstream gradient (δ / 4).',
           'The negative of the maximum cell\'s gradient.',
-          'Exactly 0, because nudging a non-maximum value by ε did not change the forward max output at all.',
+          'Exactly 0 for all three non-winning cells.',
           'The average gradient of the surrounding feature map.'
         ],
         correctIndex: 2,
@@ -1481,7 +1481,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'What is the "degradation problem" discovered by He et al. (2015) that motivated ResNet?',
         options: [
           'Deeper networks consistently overfit the training dataset and fail only on test data.',
-          'Adding more layers to a plain CNN (e.g. 56 layers vs 20 layers) caused TRAINING error itself to get worse because gradients vanished through stacked weight multiplications.',
+          'Adding more layers to a plain CNN (e.g. 56 layers vs 20 layers) caused TRAINING error itself to get worse.',
           'Convolutional kernels degrade in quality due to GPU floating-point precision issues.',
           'Activation functions become linear after 10 layers.'
         ],
@@ -1492,12 +1492,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'In a ResNet block H(x) = F(x) + x, even if all weights inside the residual branch F(x) temporarily have zero gradient (∂F/∂x = 0), what happens to the upstream gradient ∂L/∂H flowing back to earlier layers?',
         options: [
-          'Because ∂L/∂x = ∂L/∂H · (0 + I) = ∂L/∂H, 100% of the upstream gradient still rides the identity skip highway to earlier layers.',
+          'It removes the need for backpropagation entirely.',
           'It becomes zero and stops learning.',
           'It forces every weight in the network to be strictly positive.',
-          'It removes the need for backpropagation entirely.'
+          'Because ∂L/∂x = ∂L/∂H · (0 + I) = ∂L/∂H, 100% of the upstream gradient still rides the identity skip highway to earlier layers.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'The derivative of x with respect to x is the identity matrix I (+1), so the addition gate passes ∂L/∂H backward unimpeded.'
       }
     ],
@@ -1604,7 +1604,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q1',
         question: 'In EfficientNet\'s FLOPs constraint α · β² · γ² ≈ 2, why are the width multiplier β and resolution multiplier γ squared while the depth multiplier α has exponent 1?',
         options: [
-          'Because doubling the number of layers (depth) doubles FLOPs linearly (α¹), whereas doubling channel width (Cin and Cout) or doubling image height and width (H and W) each quadruple convolution FLOPs (β² and γ²).',
+          'Because doubling the number of layers (depth) doubles FLOPs linearly (α¹).',
           'Because GPUs cannot process images with odd numbers of channels.',
           'Because single-dimension scaling is incompatible with Adam optimizer.',
           'Because compound scaling eliminates the need for non-linear activations.'
@@ -1721,24 +1721,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q1',
         question: 'Why does Scaled Dot-Product Attention divide the raw dot products QKᵀ by √d_k before applying Softmax?',
         options: [
-          'Because when head dimension d_k is large, the dot product variance grows as d_k, pushing Softmax into flat saturated extremes where gradients vanish to zero.',
+          'Because it reduces the computational complexity from O(N²) to O(N).',
           'Because GPUs cannot compute matrix multiplications without dividing by square roots.',
           'Because dividing by √d_k guarantees that all dot products are integers.',
-          'Because it reduces the computational complexity from O(N²) to O(N).'
+          'Because when head dimension d_k is large, the dot product variance grows as d_k, pushing Softmax into flat saturated extremes where gradients vanish to zero.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Vaswani et al. (2017) showed that when d_k is large, dot products grow in magnitude with standard deviation √d_k, pushing Softmax into near-one-hot saturation where ∂Softmax/∂z ≈ 0.'
       },
       {
         id: 'q2',
         question: 'In the sentence "The robot saw the battery and charged it", what allows self-attention to link "it" to "battery" in a single step?',
         options: [
-          'The learned Query projection q("it") has a high dot product with the Key projection k("battery"), assigning a large Softmax weight to v("battery").',
-          'The network uses an explicit dictionary lookup table stored on disk.',
           'Backpropagation zeroes out all other words in the sentence.',
+          'The network uses an explicit dictionary lookup table stored on disk.',
+          'The learned Query projection q("it") has a high dot product with the Key projection k("battery"), assigning a large Softmax weight to v.',
           'Convolutional pooling selects the maximum word length.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Learned projection matrices W_Q and W_K align the query vector of "it" with the key vector of its semantic antecedent, routing "battery"\'s value vector directly into "it".'
       }
     ],
@@ -1839,7 +1839,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q1',
         question: 'In our 4-friends movie scene, why does splitting d_model = 512 into h = 8 heads of size d_k = 64 cost the exact same number of matrix-multiply parameters as 1 giant head of size 512?',
         options: [
-          'Because 8 heads × (512 × 64) = 512 × 512 — the subspace dimension d_k = d_model / h divides the per-head width by h while giving the model h independent attention distributions.',
+          'Because 8 heads × (512 × 64) = 512 × 512.',
           'Because GPUs cannot process matrices larger than 64 columns.',
           'Because splitting into heads reduces training memory to zero.',
           'Because single-head attention cannot be trained with backpropagation.'
@@ -1851,12 +1851,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'Why do modern foundation models (such as GPT-3/4 and LLaMA) prefer Pre-Layer Normalization x + Sublayer(LN(x)) over the original Post-LN LN(x + Sublayer(x))?',
         options: [
-          'Pre-LN places LayerNorm inside the residual branch, leaving the main identity stream x completely unblocked so gradients flow from output to Layer 1 with a +I highway.',
+          'Pre-LN replaces non-linear activations with linear identity mappings.',
           'Pre-LN eliminates the need for matrix multiplications entirely.',
           'Post-LN cannot be executed on Nvidia GPUs.',
-          'Pre-LN replaces non-linear activations with linear identity mappings.'
+          'Pre-LN places LayerNorm inside the residual branch, leaving the main identity stream x completely unblocked so gradients flow from output to Layer 1 with a +I highway.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'In Pre-LN, the identity shortcut connects directly from layer input to output (x_next = x + Sublayer(LN(x))), ensuring that dL/dx includes an unattenuated +1 term, just like ResNet.'
       }
     ],
@@ -1957,19 +1957,19 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'eda-q1',
         question: 'You inspect a delivery-time column in an app dataset and find Mean = 48 minutes, Median = 24 minutes, and Skewness γ₁ = +4.2. What does this tell you immediately?',
         options: [
-          'Most deliveries arrive around 24 minutes, but a long right tail of delayed/stuck orders is pulling the mean up to 48 minutes.',
           'Exactly half of the deliveries took 48 minutes.',
+          'Most deliveries arrive around 24 minutes, but a long right tail of delayed/stuck orders is pulling the mean up to 48 minutes.',
           'The dataset has zero outliers and follows a perfect bell curve.',
           'The median calculation is broken because median must always equal the mean.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'When Mean >> Median and skewness is strongly positive, a minority of large right-tail values is pulling the center of mass upward.'
       },
       {
         id: 'eda-q2',
         question: 'In Kaggle\'s Telco Customer Churn dataset, the TotalCharges column looks numeric in Excel, but pandas loads it as object/string dtype. Why must EDA catch this before modeling?',
         options: [
-          'New customers with tenure = 0 have a blank space " " in TotalCharges; converting with pd.to_numeric(..., errors="coerce") exposes those hidden NaNs so they can be imputed cleanly.',
+          'New customers with tenure = 0 have a blank space " " in TotalCharges.',
           'Strings train 10x faster than float32 tensors on GPUs.',
           'Neural networks automatically parse whitespace strings into medians.',
           'Object columns have zero variance.'
@@ -2065,24 +2065,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'miss-q1',
         question: 'In a loan-default dataset, 18% of applicants left "Existing Credit Card Limit" blank because they have never owned a credit card. What is the best way to handle those blanks?',
         options: [
-          'Impute the blank with the training median (or 0) AND add a binary column credit_limit_was_missing ∈ {0, 1}.',
-          'Drop all 18% of applicants from the dataset so the model never sees a blank.',
           'Fill the blanks with the maximum credit limit in the dataset.',
+          'Drop all 18% of applicants from the dataset so the model never sees a blank.',
+          'Impute the blank with the training median (or 0) AND add a binary column credit_limit_was_missing ∈ {0, 1}.',
           'Leave NaN values in the tensor and let ReLU set them to zero.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Having no credit card is strongly informative for loan risk! Imputing + adding a binary missingness indicator preserves every row and lets the model weight the absence signal.'
       },
       {
         id: 'miss-q2',
         question: 'Why does Tukey\'s IQR fence (Q₃ + 1.5·IQR) catch a single huge typo in a 10-row sample more reliably than a Z-score threshold (|z| > 3)?',
         options: [
-          'Because a single huge typo inflates the sample standard deviation σ so much that its own Z-score (x - μ)/σ is masked below 3, whereas Q₁ and Q₃ ignore the extreme tail.',
-          'Because Z-scores can only be computed on integers.',
           'Because IQR requires training a neural network first.',
+          'Because Z-scores can only be computed on integers.',
+          'Because a single huge typo inflates the sample standard deviation σ so much that its own Z-score (x - μ)/σ is masked below 3.',
           'Because standard deviation is always zero when outliers exist.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'In small samples, a single extreme outlier explodes σ in the denominator of (x - μ)/σ, capping the Z-score ("masking"). Quartiles are order statistics and remain uncorrupted.'
       }
     ],
@@ -2178,24 +2178,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'scale-q1',
         question: 'Which family of models is completely invariant to monotone feature scaling (like Z-Score or Min-Max) and why?',
         options: [
-          'Decision Trees and Random Forests, because axis-aligned threshold splits (x_j ≤ t) only depend on the sorted rank order of values, not their scale.',
           'Multi-Layer Perceptrons trained with SGD, because weights automatically invert any scale.',
+          'Decision Trees and Random Forests,.',
           'K-Nearest Neighbors (KNN) with Euclidean distance.',
           'Ridge and Lasso Regression with L2/L1 weight penalties.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Linear/affine rescaling preserves order: if x_i ≤ t, then (x_i - μ)/σ ≤ (t - μ)/σ, yielding the exact same tree split and Gini impurity reduction.'
       },
       {
         id: 'scale-q2',
         question: 'Why do we use np.log1p(x) = ln(1 + x) instead of np.log(x) when compressing a right-skewed "number of app orders" feature?',
         options: [
-          'Because many users have x = 0 orders, and ln(0) = -∞ whereas ln(1 + 0) = 0.',
+          'Because log1p guarantees outputs between -1 and +1.',
           'Because ln(1 + x) is a linear function.',
           'Because GPUs cannot evaluate natural logarithms without adding 1.',
-          'Because log1p guarantees outputs between -1 and +1.'
+          'Because many users have x = 0 orders, and ln(0) = -∞ whereas ln(1 + 0) = 0.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Count and currency features frequently include zero; log1p(0) = 0 avoids -Infinity while behaving like ln(x) for large x.'
       }
     ],
@@ -2287,7 +2287,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'enc-q1',
         question: 'What happens if you compute unsmoothed Target Encoding on the entire training set (including each row\'s own target y_i) for a column like Customer_ID where every row is unique (n_c = 1)?',
         options: [
-          'Catastrophic target leakage: the encoded feature equals y_i exactly (1.0 for positives, 0.0 for negatives), giving 100% training accuracy and ~50% random guessing on test data!',
+          'Catastrophic target leakage.',
           'The model underfits on the training set.',
           'One-Hot and Target Encoding become identical.',
           'The weights automatically regularize to zero.'
@@ -2299,12 +2299,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'enc-q2',
         question: 'When fitting a linear model with an intercept bias b and One-Hot Encoding a 3-category feature, why do statisticians often drop one column (drop="first") or use L2 regularization?',
         options: [
-          'Because the 3 one-hot columns sum to [1, 1, ..., 1] for every row, which is collinear with the constant bias column (the "dummy variable trap").',
           'Because dropping a column doubles the number of categories.',
+          'Because the 3 one-hot columns sum to [1, 1, ..., 1] for every row.',
           'Because neural networks cannot take binary 0/1 inputs.',
           'Because the third category never occurs in test data.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Since Σ_k e_k = 1, the full one-hot matrix plus an intercept column is rank-deficient for unregularized Normal Equations (XᵀX)⁻¹.'
       }
     ],
@@ -2395,24 +2395,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'leak-q1',
         question: 'A student writes: X_scaled = StandardScaler().fit_transform(X); cross_val_score(model, X_scaled, y, cv=5). Why is this code subtly buggy?',
         options: [
-          'StandardScaler was fit on all 5 folds before cross-validation started, leaking each validation fold\'s mean and variance into its training folds. Wrapping StandardScaler + model inside sklearn.pipeline.Pipeline fixes it.',
+          'fit_transform only works on test sets.',
           'cross_val_score requires at least 100 folds.',
           'StandardScaler deletes 20% of the rows.',
-          'fit_transform only works on test sets.'
+          'StandardScaler was fit on all 5 folds before cross-validation started, leaking each validation fold\'s mean and variance into its training folds. Wrapping StandardScaler + model inside sklearn.pipeline.Pipeline fixes it.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Passing a Pipeline to cross_val_score guarantees that StandardScaler.fit() is called only on the 4 training folds inside each iteration.'
       },
       {
         id: 'leak-q2',
         question: 'You have 10,000 chest X-rays from 2,000 patients (5 X-rays per patient taken on different days). If you do a random image-level 80/20 split, why will your test accuracy be artificially inflated?',
         options: [
-          'Images from the exact same patient will appear in both train and test, so the CNN can memorize patient-specific rib/heart anatomy instead of disease features. You must split by patient_id (GroupShuffleSplit).',
-          'Because 80/20 splits only work on RGB images.',
           'Because 10,000 images is too large for a validation set.',
+          'Because 80/20 splits only work on RGB images.',
+          'Images from the exact same patient will appear in both train and test.',
           'Because random splits invert pixel intensities.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Whenever multiple rows belong to the same entity (patient, customer, device), splitting must be grouped by entity ID to prevent entity-memorization leakage.'
       }
     ],
@@ -2509,12 +2509,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'imb-q2',
         question: 'When evaluating a classifier on a 99%-negative / 1%-positive dataset, why is the Precision-Recall Curve (PR-AUC) much more informative than raw Accuracy?',
         options: [
-          'Because Precision and Recall focus directly on the minority positive predictions without letting the 99% True Negatives wash out the metric.',
+          'Because Precision ignores False Positives.',
           'Because PR-AUC is always equal to 1.0.',
           'Because Accuracy cannot be computed on binary labels.',
-          'Because Precision ignores False Positives.'
+          'Because Precision and Recall focus directly on the minority positive predictions without letting the 99% True Negatives wash out the metric.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Accuracy (TP + TN)/N is dominated by TN when negatives are 99% of the data. Precision TP/(TP+FP) and Recall TP/(TP+FN) do not include TN at all.'
       }
     ],
@@ -2610,19 +2610,19 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'pipe-q1',
         question: 'Why must you include BOTH sin(2πt/24) and cos(2πt/24) when encoding the hour of the day, instead of only sin(2πt/24)?',
         options: [
-          'Because sin(θ) = sin(π - θ) is symmetric on [0, 2π], so sin alone assigns the exact same value to two different hours (e.g. 00:00 and 12:00 both have sin = 0); adding cos uniquely identifies every point on the circle.',
           'Because sin only works for mornings and cos only works for evenings.',
+          'Because sin(θ) = sin(π - θ) is symmetric on [0, 2π].',
           'Because neural networks require an even number of inputs.',
           'Because cos(2πt/24) is always equal to 1.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'A single sinusoid crosses every value in (-1, 1) twice per period. The pair (sin θ, cos θ) is a bijection onto the unit circle S¹.'
       },
       {
         id: 'pipe-q2',
         question: 'What is "training-serving skew" in production ML, and how does serializing a single fitted Pipeline prevent it?',
         options: [
-          'Training-serving skew happens when production API code re-implements preprocessing slightly differently (or uses different means/medians) than the training notebook; exporting the fitted Pipeline bundles exact training statistics with the model.',
+          'Training-serving skew happens when production API code re-implements preprocessing slightly differently (or uses different means/medians) than the training notebook.',
           'It means the GPU runs faster during training than during inference.',
           'It refers to the skewness γ₁ of the target variable.',
           'It happens when batch size is 1.'
@@ -2729,24 +2729,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'emb-q1',
         question: 'Why do we measure word similarity using Cosine Similarity (u · v)/(||u|| ||v||) instead of the unnormalized dot product u · v?',
         options: [
-          'Because frequent words undergo more gradient updates during training and develop larger vector norms ||u||; Cosine Similarity divides out vector length so similarity depends purely on semantic angle.',
-          'Because the dot product is always negative.',
           'Because Cosine Similarity does not require multiplication.',
+          'Because the dot product is always negative.',
+          'Because frequent words undergo more gradient updates during training and develop larger vector norms ||u||.',
           'Because one-hot vectors have a cosine similarity of 1.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Without L2 normalization, a common word with a huge norm ||u|| = 10 would have a large dot product with almost everything; dividing by ||u|| ||v|| isolates directional alignment.'
       },
       {
         id: 'emb-q2',
         question: 'How many learnable parameters are stored inside an Embedding layer for a vocabulary of |V| = 30,000 tokens with embedding dimension d = 256?',
         options: [
-          '7,680,000 parameters (30,000 × 256)',
-          '30,256 parameters (30,000 + 256)',
           '256 parameters',
+          '30,256 parameters',
+          '7,680,000 parameters',
           '0 learnable parameters'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'An embedding lookup table is a dense matrix E ∈ R^{|V| × d}, containing |V| × d = 30,000 × 256 = 7,680,000 trainable weights.'
       }
     ],
@@ -2843,24 +2843,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'rnn-q1',
         question: 'Why does an RNN use the exact same weight matrices (W_xh, W_hh) at every time step t = 1, 2, ..., T instead of having a separate matrix for each word position?',
         options: [
-          'Temporal weight sharing allows the RNN to process sequences of any length and recognize a phrase like "not good" whether it appears at the start or end of a review, with a fixed parameter budget.',
           'Because computers cannot store more than two matrices in RAM.',
+          'Temporal weight sharing allows the RNN to process sequences of any length and recognize a phrase like "not good" whether it appears at the start or end of a review, with a fixed parameter budget.',
           'Because W_hh is always the identity matrix.',
           'To force the output to be linear.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Just as CNNs share weights across 2D space for translation equivariance, RNNs share weights across time steps for temporal invariance and variable-length generalization.'
       },
       {
         id: 'rnn-q2',
         question: 'Why is tanh(z) historically preferred over unbounded linear activation z inside a vanilla RNN recurrence h_t = φ(W_hh h_{t-1} + W_xh x_t)?',
         options: [
-          'Because repeated multiplication by W_hh across decenas of time steps can rapidly blow up unbounded activations to infinity; tanh bounds every hidden coordinate strictly inside (-1, +1).',
+          'Because linear activations cannot be multiplied by matrices.',
           'Because tanh has a constant derivative of 1 everywhere.',
           'Because tanh outputs only positive integers.',
-          'Because linear activations cannot be multiplied by matrices.'
+          'Because repeated multiplication by W_hh across decenas of time steps can rapidly blow up unbounded activations to infinity.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Squashing h_t into (-1, +1) prevents forward activations from exploding to ±∞ over long sequences.'
       }
     ],
@@ -2956,7 +2956,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'bptt-q1',
         question: 'When training an RNN, your loss suddenly jumps to NaN on batch 42 because the gradient norm spiked to 10⁵. What is the standard, lightweight fix for exploding gradients?',
         options: [
-          'Gradient Norm Clipping: if ||g||₂ > c, rescale g ← g · (c / ||g||₂) before the optimizer step so the update magnitude is bounded while keeping the exact gradient direction.',
+          'Gradient Norm Clipping.',
           'Set the learning rate to 100.',
           'Remove all activation functions.',
           'Initialize all weights to zero.'
@@ -2968,12 +2968,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'bptt-q2',
         question: 'Why does Gradient Clipping NOT solve the Vanishing Gradient problem?',
         options: [
-          'Because vanishing gradients have tiny norms (||g||₂ ≪ c) where long-range derivatives ∂h_T/∂h_1 have already decayed to ~0 relative to short-range derivatives; rescaling the whole vector cannot recover a signal that was multiplied down to zero.',
           'Because clipping sets all gradients to zero.',
+          'Because vanishing gradients have tiny norms (||g||₂ ≪ c) where long-range derivatives ∂h_T/∂h_1 have already decayed to ~0 relative to short-range derivatives.',
           'Because vanishing gradients only happen in linear regression.',
           'Because tanh derivatives are always greater than 10.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Total parameter gradient ∂L/∂W_hh sums short-term and long-term contributions. When long-term terms vanish, ∂L/∂W_hh is dominated by the last 2–3 words regardless of global scaling.'
       }
     ],
@@ -3069,24 +3069,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'lstm-q1',
         question: 'What is the fundamental mathematical reason an LSTM can propagate gradients across 100 time steps much better than a vanilla RNN?',
         options: [
-          'The cell state C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t updates ADDITIVELY rather than wrapping C_{t-1} inside a matrix multiplication and tanh, so ∂C_t/∂C_{t-1} = f_t can stay close to 1.0 whenever the forget gate is open.',
+          'The forget gate is always fixed at 2.0.',
           'LSTMs do not use backpropagation.',
           'LSTMs have fewer parameters than vanilla RNNs.',
-          'The forget gate is always fixed at 2.0.'
+          'The cell state C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t updates ADDITIVELY rather than wrapping C_{t-1} inside a matrix multiplication and tanh.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Just like ResNet\'s H(x) = F(x) + x creates an additive spatial highway, the LSTM cell state creates an additive temporal highway controlled by f_t.'
       },
       {
         id: 'lstm-q2',
         question: 'If an input projection size is d and the hidden state size is H, how many times more weight parameters does an LSTM layer have compared to a vanilla RNN layer of the same dimensions?',
         options: [
-          'Exactly 4× as many parameters, because an LSTM computes 4 parallel linear transformations (Forget gate f_t, Input gate i_t, Candidate C̃_t, and Output gate o_t) instead of 1.',
-          'The exact same number of parameters (1×).',
           '10× as many parameters.',
+          'The exact same number of parameters (1×).',
+          '4× as many parameters.',
           'Half as many parameters (0.5×).'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Each of the 3 gates (f, i, o) plus the candidate cell update (C̃) has its own W_x ∈ R^{H×d}, W_h ∈ R^{H×H}, and bias b ∈ R^H, totaling 4(Hd + H² + H) parameters.'
       }
     ],
@@ -3178,7 +3178,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'gru-q1',
         question: 'How does a GRU achieve long-term memory without using a separate Cell State vector C_t or separate Forget and Input gates?',
         options: [
-          'It couples forgetting and writing with a single Update Gate z_t via h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t; when z_t → 0, the previous hidden state h_{t-1} is copied straight through with gradient ∂h_t/∂h_{t-1} → 1.',
+          'It couples forgetting and writing with a single Update Gate z_t via h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t.',
           'It removes all non-linearities.',
           'It uses 8 gates instead of 4.',
           'It only processes 2 words at a time.'
@@ -3190,12 +3190,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'gru-q2',
         question: 'What was the core architectural limitation of vanilla Seq2Seq (without Attention) on long 50-word sentences that directly inspired the Attention mechanism?',
         options: [
-          'Forcing the Encoder to compress the entire variable-length source sentence into a single fixed-size vector h_S created an information bottleneck where early words were forgotten.',
+          'Teacher forcing was impossible without Attention.',
           'Vanilla Seq2Seq could only output numbers, not words.',
           'Vanilla Seq2Seq required both sentences to have the exact same word count.',
-          'Teacher forcing was impossible without Attention.'
+          'Forcing the Encoder to compress the entire variable-length source sentence into a single fixed-size vector h_S created an information bottleneck where early words were forgotten.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Allowing the decoder to attend over all encoder states (h_1, ..., h_S) via dynamic weights α_{ti} removed the fixed-vector bottleneck and led directly to the Transformer.'
       }
     ],
@@ -3292,19 +3292,19 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'ae-q1',
         question: 'What happens if you build an autoencoder where the hidden bottleneck dimension d is LARGER than the input dimension D (d ≥ D) without any regularization or noise?',
         options: [
-          'The network can learn the trivial identity function (copying x straight through to x̂ with zero error) without learning any meaningful features or structure.',
           'The loss becomes infinite.',
+          'The network can learn the trivial identity function (copying x straight through to x̂ with zero error) without learning any meaningful features or structure.',
           'It automatically becomes a Variational Autoencoder.',
           'Backpropagation stops working when d > D.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Without a narrow bottleneck (d < D) or denoising/sparsity constraints, an overcomplete autoencoder simply memorizes the identity map I.'
       },
       {
         id: 'ae-q2',
         question: 'Why is a standard deterministic Autoencoder poor at generating brand-new realistic images when you sample a random point z ~ N(0, I) in its bottleneck space?',
         options: [
-          'Because a deterministic autoencoder leaves arbitrary "dead zones" or gaps between clusters in latent space; sampling in a gap decodes into blurry nonsense, which is why VAEs enforce a smooth Gaussian prior!',
+          'Because a deterministic autoencoder leaves arbitrary "dead zones" or gaps between clusters in latent space.',
           'Because the decoder cannot run without the encoder.',
           'Because z is always an integer.',
           'Because MSE loss only works on text.'
@@ -3406,24 +3406,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'vae-q1',
         question: 'Why is the Reparameterization Trick (z = μ + σ ⊙ ε with ε ~ N(0, I)) essential for training a Variational Autoencoder?',
         options: [
-          'Because backpropagation cannot differentiate through a raw random number generator z ~ N(μ, σ²); expressing z as a deterministic function of μ, σ, and an external noise input ε allows exact chain-rule gradients ∂L/∂μ and ∂L/∂σ.',
-          'To make the decoder linear.',
           'To set KL divergence to infinity.',
+          'To make the decoder linear.',
+          'Because backpropagation cannot differentiate through a raw random number generator z ~ N.',
           'Because computers cannot generate Gaussian random numbers.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Moving stochasticity to an input leaf node ε keeps the computational path from encoder weights through μ and σ to the decoder completely deterministic and differentiable.'
       },
       {
         id: 'vae-q2',
         question: 'In a β-VAE (L = L_recon + β · D_KL), what happens if you set β = 0?',
         options: [
-          'The KL regularization disappears: the encoder shrinks σ → 0 to avoid noise and scatters μ freely, collapsing back into a standard deterministic autoencoder that cannot generate clean samples from N(0, I).',
-          'The model ignores reconstruction and outputs blank gray images.',
           'The latent space becomes 100% disentangled.',
+          'The model ignores reconstruction and outputs blank gray images.',
+          'The KL regularization disappears.',
           'Training converges in 1 step.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Without the KL penalty (β = 0), adding noise σ > 0 only hurts reconstruction loss, so the network drives σ → 0 and loses its smooth generative prior.'
       }
     ],
@@ -3520,24 +3520,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'gan-q1',
         question: 'In practice, why do we train the Generator to minimize -log D(G(z)) (the non-saturating loss) instead of minimizing log(1 - D(G(z)))?',
         options: [
-          'Because early in training the Discriminator easily rejects poor fakes (D(G(z)) ≈ 0), where log(1 - D(G(z))) has a near-zero slope; -log D(G(z)) has a steep slope near D = 0, giving the Generator strong gradients.',
           'Because log(1 - D) cannot be computed on a GPU.',
+          'Because early in training the Discriminator easily rejects poor fakes (D(G(z)) ≈ 0), where log(1 - D(G(z))) has a near-zero slope.',
           'Because -log D(G(z)) removes the need for a Discriminator.',
           'Because it forces D(x) to be 1.0 at Nash equilibrium.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Flipping the target so G maximizes log D(G(z)) cures early gradient saturation while preserving the exact same fixed point p_g = p_data.'
       },
       {
         id: 'gan-q2',
         question: 'Your GAN generates super-sharp, realistic photos of the digit "1", but no matter what random noise vector z you pass in, it NEVER generates digits 0, 2, 3, ..., 9. What is this failure called?',
         options: [
-          'Mode Collapse: the Generator found a single high-density mode that fools the current Discriminator and collapsed all latent vectors z onto that single output.',
+          'Over-smoothing.',
           'Vanishing ReLU.',
           'Data Leakage.',
-          'Over-smoothing.'
+          'Mode Collapse: the Generator found a single high-density mode that fools the current Discriminator and collapsed all latent vectors z onto that single output.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Because the standard GAN loss does not directly penalize lack of diversity across a batch, G can exploit a blind spot in D by repeating one convincing sample.'
       }
     ],
@@ -3634,7 +3634,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'diff-q1',
         question: 'Why can we train a 1,000-step Diffusion Model efficiently without running a 1,000-step loop on every training batch?',
         options: [
-          'Because the sum of Gaussian noise steps has a closed-form marginal q(x_t | x_0): we can jump directly to any random timestep t ∈ {1..1000} in O(1) via x_t = √(ᾱ_t) x_0 + √(1 - ᾱ_t) ε!',
+          'Because the sum of Gaussian noise steps has a closed-form marginal q(x_t | x_0).',
           'Because training only uses t = 1.',
           'Because Diffusion Models do not use neural networks during training.',
           'Because ᾱ_t is always 0.'
@@ -3646,12 +3646,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'diff-q2',
         question: 'What is the main trade-off of Diffusion Models compared to GANs at inference (generation) time?',
         options: [
-          'GANs generate an image in a single forward pass G(z), whereas standard Diffusion Models require tens to hundreds of iterative denoising steps from x_T down to x_0 (though stable and free of mode collapse).',
           'Diffusion Models suffer from severe mode collapse and unstable adversarial training.',
+          'GANs generate an image in a single forward pass G(z).',
           'Diffusion Models can only generate 8×8 grayscale images.',
           'GANs require 1,000 discriminator passes at inference time.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Diffusion models trade multi-step iterative sampling at inference time for rock-solid MSE training stability and superior mode coverage.'
       }
     ],
@@ -3747,24 +3747,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'init-q1',
         question: 'What happens if you initialize all weights W = 0 in a 5-layer neural network (even if the biases or inputs are non-zero)?',
         options: [
-          'Every neuron in a given hidden layer computes the exact same output and receives the exact same gradient update forever—failing to break symmetry and collapsing the layer to 1 effective feature.',
+          'Weights automatically become random after 1 step of SGD.',
           'The network trains faster because 0 is close to regularized weights.',
           'Only the first layer fails; deeper layers learn normally.',
-          'Weights automatically become random after 1 step of SGD.'
+          'Every neuron in a given hidden layer computes the exact same output and receives the exact same gradient update forever.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Without distinct initial weights W_ij, hidden units within a layer are permutation-identical and receive identical gradients at every step.'
       },
       {
         id: 'init-q2',
         question: 'Why does Kaiming / He Initialization set Var(W) = 2 / n_in instead of Xavier\'s 1 / n_in for ReLU networks?',
         options: [
-          'Because ReLU(z) = max(0, z) sets all negative pre-activations to zero, cutting the variance of a zero-mean symmetric distribution in half at every layer; multiplying Var(W) by 2 restores unit variance.',
-          'Because ReLU has a derivative of 2 for positive inputs.',
           'Because ReLU networks have twice as many layers.',
+          'Because ReLU has a derivative of 2 for positive inputs.',
+          'Because ReLU(z) = max(0, z) sets all negative pre-activations to zero, cutting the variance of a zero-mean symmetric distribution in half at every layer.',
           'To make all weights positive.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'For z ~ N(0, σ²), E[(max(0, z))²] = ½ σ². Multiplying weight variance by 2 cancels the ½ factor.'
       }
     ],
@@ -3860,7 +3860,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'norm-q1',
         question: 'Why must you call model.eval() before running single-image production inference on a CNN that contains Batch Normalization layers?',
         options: [
-          'Because in training mode BatchNorm computes mean and variance across the current mini-batch (which fails or produces noisy outputs when batch size is 1); model.eval() switches BatchNorm to use its frozen running population mean and variance.',
+          'Because in training mode BatchNorm computes mean and variance across the current mini-batch.',
           'Because model.eval() deletes all convolutional kernels.',
           'Because BatchNorm only runs on CPUs.',
           'Because γ and β are set to zero in eval mode.'
@@ -3872,12 +3872,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'norm-q2',
         question: 'If a Conv2D layer outputs 64 channels and is followed immediately by a BatchNorm2d(64) layer, why do we set bias=False in the Conv2D layer?',
         options: [
-          'Because BatchNorm immediately subtracts the channel mean μ_B (which cancels out any constant additive Conv2D bias b), and BatchNorm\'s own learnable shift parameter β already serves as the bias!',
+          'To double the receptive field.',
           'Because Conv2D layers cannot have biases in PyTorch.',
           'Because biases cause exploding gradients.',
-          'To double the receptive field.'
+          'Because BatchNorm immediately subtracts the channel mean μ_B (which cancels out any constant additive Conv2D bias b), and BatchNorm\'s own learnable shift parameter β already serves as the bias!'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Adding a constant b to x shifts μ_B by +b, so (x + b) - (μ_B + b) = x - μ_B — a Conv bias before BatchNorm has zero effect on the output and Zero gradient!'
       }
     ],
@@ -3967,19 +3967,19 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'sched-q1',
         question: 'Why is Linear Warmup (ramping η from 0 to η_max over the first few hundred steps) critical when training Transformers with Adam?',
         options: [
-          'Because in the very first steps, Adam\'s second-moment variance estimate v_t is noisy and unreliable; taking a large step before v_t stabilizes can cause attention logits and layer norms to diverge.',
           'Because GPUs need 5 minutes to warm up physically before multiplying matrices.',
+          'Because in the very first steps, Adam\'s second-moment variance estimate v_t is noisy and unreliable.',
           'Because Linear Warmup increases the number of parameters.',
           'To force the training loss to increase during epoch 1.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Warmup gives Adam\'s exponential moving averages (m_t, v_t) time to accumulate accurate second-moment statistics before full-sized parameter updates are applied.'
       },
       {
         id: 'sched-q2',
         question: 'In a Cosine Annealing schedule from η_max = 0.02 to η_min = 0.00 over 100 steps (with 0 warmup), what is the learning rate at step t = 50?',
         options: [
-          '0.010 (because cos(π × 50/100) = cos(π/2) = 0, so ½ × 0.02 × (1 + 0) = 0.010).',
+          '0.010',
           '0.020',
           '0.000',
           '0.005'
@@ -4080,24 +4080,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'dbg-q1',
         question: 'You write a new neural network training script, and before running on all 50,000 images, you test it on a tiny batch of 8 images. Even after 500 steps on those 8 images, the training loss refuses to drop below 2.30. What does this tell you?',
         options: [
-          'There is a bug in the code or setup (e.g. forgot optimizer.zero_grad(), learning rate is 0, labels are shuffled randomly on every step, or gradients are detached)—because any working network should easily memorize 8 examples!',
-          'You need to collect 1,000,000 more training images.',
           'You need to add stronger Dropout and L2 regularization.',
+          'You need to collect 1,000,000 more training images.',
+          'There is a bug in the code or setup (e.g. forgot optimizer.zero_grad(), learning rate is 0, labels are shuffled randomly on every step, or gradients are detached).',
           'The model is overfitting.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Overfitting a tiny batch of 8–16 samples is the fastest unit test in deep learning: if the model cannot memorize 8 examples, adding more data or regularization will only hide the bug.'
       },
       {
         id: 'dbg-q2',
         question: 'After 5 epochs with a high learning rate, 70% of the neurons in your ReLU hidden layer output 0.000 for every single validation image and never change again. What happened, and how do you fix it?',
         options: [
-          'The Dying ReLU problem: a huge gradient update pushed their biases strongly negative so z ≤ 0 everywhere and ∂ReLU/∂z = 0; fix by lowering the learning rate, using He initialization + warmup, or switching to Leaky ReLU / GELU.',
-          'The neurons converged to the global optimum.',
           'Dropout is still turned on during validation.',
+          'The neurons converged to the global optimum.',
+          'The Dying ReLU problem: a huge gradient update pushed their biases strongly negative so z ≤ 0 everywhere and ∂ReLU/∂z = 0.',
           'L2 regularization set the inputs to zero.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Because ReLU has a flat zero slope for z < 0, a large negative update traps the unit permanently unless a non-zero negative slope (Leaky ReLU / GELU) or smaller step size is used.'
       }
     ],
@@ -4189,24 +4189,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'tok-q1',
         question: 'Why do modern LLMs use subword tokenization (Byte-Pair Encoding) instead of whole-word vocabularies or raw character-level vocabularies?',
         options: [
-          'BPE hits the sweet spot: common words stay intact as 1 token (keeping sequences short for O(N²) attention), while rare or unseen words decompose into known subword pieces with zero <UNK> errors.',
           'Because BPE requires zero embedding parameters.',
+          'BPE hits the sweet spot.',
           'Because character-level models cannot use Softmax.',
           'Because BPE makes every sentence 1 token long.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Whole-word vocabularies fail on out-of-vocabulary words, while character-level sequences are 4–5× longer (making O(N²) self-attention 16–25× slower).'
       },
       {
         id: 'tok-q2',
         question: 'When generating code or factual math answers from an LLM, why do engineers typically set Temperature T = 0.0 (or very low, e.g. T = 0.1) instead of T = 1.5?',
         options: [
-          'Because as T → 0, Softmax(z / T) concentrates almost 100% of probability mass on the highest-scoring token (greedy decoding), avoiding random sampling of lower-probability syntax errors or hallucinations.',
+          'Because Temperature changes the model\'s pretraining weights.',
           'Because T = 0.0 makes the model run 10× more layers.',
           'Because T = 1.5 sets all logits to infinity.',
-          'Because Temperature changes the model\'s pretraining weights.'
+          'Because as T → 0, Softmax(z / T) concentrates almost 100% of probability mass on the highest-scoring token (greedy decoding), avoiding random sampling of lower-probability syntax errors or hallucinations.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'High temperature flattens the probability distribution and increases random exploration, which is fun for creative stories but harmful for deterministic syntax and math.'
       }
     ],
@@ -4302,7 +4302,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'lora-q1',
         question: 'In LoRA (ΔW = B · A), why do we initialize A with random Gaussian noise and B = 0, instead of initializing both A and B with random noise?',
         options: [
-          'Initializing B = 0 guarantees that ΔW = B · A = 0 at the start of fine-tuning so the model begins with the exact capabilities of the pretrained LLM rather than injecting random noise, while A ≠ 0 ensures B receives non-zero gradients on Step 1!',
+          'Initializing B = 0 guarantees that ΔW = B · A = 0 at the start of fine-tuning so the model begins with the exact capabilities of the pretrained LLM rather than injecting random noise.',
           'Because B is frozen during training.',
           'Because matrix multiplication only works when one matrix is zero.',
           'To force the output to be zero forever.'
@@ -4314,12 +4314,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'lora-q2',
         question: 'How much extra inference latency does a LoRA adapter add once you deploy a single fine-tuned model to production?',
         options: [
-          'Zero extra latency! Because W_0 and (α/r)B·A are both linear matrices of shape (d × k), you simply pre-add them once (W_merged = W_0 + (α/r)B·A) before serving.',
           'It doubles inference latency because every layer runs twice.',
+          'Zero extra latency! Because W_0 and (α/r)B·A are both linear matrices of shape (d × k), you simply pre-add them once (W_merged = W_0 + (α/r)B·A) before serving.',
           'It increases latency by 8× when rank r = 8.',
           'It requires running Adam during inference.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'By linearity of matrix multiplication, W_0 x + (α/r)B A x = (W_0 + (α/r)B A) x = W_merged x.'
       }
     ],
@@ -4410,24 +4410,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'rag-q1',
         question: 'Your hospital updates its medicine inventory every 10 minutes and needs an LLM assistant that cites the exact current stock count without hallucinating. Should you use RAG or Full Fine-Tuning?',
         options: [
-          'RAG (Retrieval-Augmented Generation): it fetches live inventory records at query time and injects them into the prompt with citations, whereas fine-tuning every 10 minutes is computationally infeasible and still prone to hallucinating numbers.',
+          'Increase the BPE vocabulary size.',
           'Full Fine-Tuning from scratch every 10 minutes.',
           'Set Temperature to 5.0.',
-          'Increase the BPE vocabulary size.'
+          'RAG (Retrieval-Augmented Generation).'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'RAG decouples dynamic factual memory (stored in an instant-update index) from the LLM\'s reasoning weights.'
       },
       {
         id: 'rag-q2',
         question: 'Why do we include a 15–20% token overlap (e.g. 50 tokens of overlap for 256-token chunks) when splitting documents for a RAG pipeline?',
         options: [
-          'To ensure sentences and facts that straddle the boundary between two adjacent chunks are not sliced in half, preserving semantic context for the embedding model.',
-          'To make the vector database use less RAM.',
           'Because cosine similarity requires overlapping vectors.',
+          'To make the vector database use less RAM.',
+          'To ensure sentences and facts that straddle the boundary between two adjacent chunks are not sliced in half, preserving semantic context for the embedding model.',
           'To set all chunk embeddings to zero.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Without overlap, a key subject at the end of Chunk i and its predicate at the start of Chunk i+1 get separated, hurting retrieval recall.'
       }
     ],
@@ -4524,7 +4524,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'rlhf-q1',
         question: 'What happens during RLHF policy optimization if you remove the KL divergence penalty (setting β = 0) and let the LLM purely maximize the neural Reward Model score r_ϕ(x, y)?',
         options: [
-          'Reward Hacking (Goodhart\'s Law): the LLM drifts far away from natural language and discovers degenerate, repetitive, or adversarial token sequences that exploit blind spots in the Reward Model to get artificially huge scores.',
+          'Reward Hacking (Goodhart\'s Law).',
           'The LLM remains identical to the base pretrained model.',
           'Training finishes in 1 step with perfect grammar.',
           'The vocabulary size shrinks by half.'
@@ -4536,12 +4536,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'rlhf-q2',
         question: 'Why has Direct Preference Optimization (DPO) become a popular alternative to PPO-based RLHF for aligning open-weights LLMs?',
         options: [
-          'DPO mathematically reparameterizes the reward in terms of the policy π_θ and reference π_ref log-probabilities, allowing preference alignment via a stable binary cross-entropy loss without training a separate Reward Model or running unstable PPO sampling loops.',
+          'DPO removes the reference model constraint completely (β = 0).',
           'DPO does not require any preference pairs (y_w, y_l).',
           'DPO sets all model weights to integers.',
-          'DPO removes the reference model constraint completely (β = 0).'
+          'DPO mathematically reparameterizes the reward in terms of the policy π_θ and reference π_ref log-probabilities.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'DPO achieves the exact same optimal policy as KL-regularized RLHF while requiring only 2 models in memory (π_θ and frozen π_ref) instead of 4 (Actor, Critic, Reward, Reference).'
       }
     ],
@@ -4637,19 +4637,19 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'lin-q1',
         question: 'When is it better to train Linear Regression using iterative Gradient Descent (SGD) instead of the closed-form Normal Equation w* = (X^T X)^{-1} X^T y?',
         options: [
-          'When the number of features D is very large (e.g. D > 50,000), because forming and inverting the D × D matrix X^T X takes O(D³) time and O(D²) memory, whereas Gradient Descent takes only O(ND) per step.',
           'When N = 10 and D = 2.',
+          'When the number of features D is very large (e.g. D > 50,000), because forming and inverting the D × D matrix X^T X takes O(D³) time and O(D²) memory.',
           'Because the Normal Equation only works for classification.',
           'Because Gradient Descent does not require a learning rate.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Matrix inversion scales cubically O(D³) with feature count D; first-order gradient methods scale linearly O(ND).'
       },
       {
         id: 'lin-q2',
         question: 'Your linear regression model achieves R² = 0.00 on the test set. What does R² = 0.00 mean?',
         options: [
-          'Your model performs no better than a trivial horizontal line that always predicts the average target value ȳ for every input (SS_res = SS_tot).',
+          'Your model performs no better than a trivial horizontal line that always predicts the average target value ȳ for every input.',
           'Your model has zero error (MSE = 0).',
           'All weights w are equal to 1.',
           'The dataset has zero variance.'
@@ -4750,24 +4750,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'log-q1',
         question: 'Why do we train Logistic Regression with Binary Cross-Entropy (BCE) loss instead of Mean Squared Error (MSE) loss (σ(z) - y)²?',
         options: [
-          'Putting Sigmoid σ(z) inside MSE creates a non-convex loss surface with flat vanishing-gradient plateaus when confident-and-wrong, whereas BCE + Sigmoid is strictly convex with gradient (p - y)x proportional to the error!',
-          'Because MSE cannot be computed on probabilities.',
           'Because BCE makes the decision boundary curved.',
+          'Because MSE cannot be computed on probabilities.',
+          'Putting Sigmoid σ(z) inside MSE creates a non-convex loss surface with flat vanishing-gradient plateaus when confident-and-wrong.',
           'Because MSE is always negative.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Under MSE, ∂L/∂z = 2(p - y)p(1 - p), which vanishes to 0 when p ≈ 0 even if y = 1! Under BCE, p(1 - p) cancels out so ∂L/∂z = p - y.'
       },
       {
         id: 'log-q2',
         question: 'What is the geometric shape of the decision boundary (where p = 0.50) of a Logistic Regression classifier in D-dimensional feature space?',
         options: [
-          'A flat linear hyperplane defined by w^T x + b = 0 (since σ(z) = 0.50 if and only if z = 0).',
-          'An S-shaped curve in feature space.',
           'A circle centered at the origin.',
+          'An S-shaped curve in feature space.',
+          'A flat linear hyperplane defined by w^T x + b = 0 (since σ(z) = 0.50 if and only if z = 0).',
           'Axis-aligned rectangles.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'While the probability surface p(x) is S-shaped, the level set p(x) = τ is w^T x + b = ln(τ/(1-τ)), which is a flat hyperplane!'
       }
     ],
@@ -4852,24 +4852,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'bv-q1',
         question: 'Your linear model has High Bias (both training error and validation error are equally high at 32%). What happens if you collect 10× more training rows without changing the model features or architecture?',
         options: [
-          'Training and validation error will stay stuck near 32%, because adding more data reduces Variance—it cannot give a rigid linear model the flexibility to fit a non-linear relationship!',
           'Validation error will drop to 0%.',
+          'Training and validation error will stay stuck near 32%,.',
           'The model will start overfitting.',
           'Irreducible noise σ_ε² will become zero.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'More training data shrinks Variance (O(1/N)), but does not reduce approximation Bias; to fix Underfitting you must increase model capacity or engineer better features.'
       },
       {
         id: 'bv-q2',
         question: 'When you increase the L2 regularization penalty λ in Ridge Regression, how do Bias and Variance change?',
         options: [
-          'Bias increases slightly while Variance decreases significantly (trading a small rise in Bias for a large drop in Variance when the unregularized model was overfitting).',
+          'Neither changes.',
           'Both Bias and Variance decrease to zero.',
           'Bias decreases and Variance increases.',
-          'Neither changes.'
+          'Bias increases slightly while Variance decreases significantly.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Shrinking weights toward zero restricts hypothesis flexibility (raising Bias slightly) while making predictions much less sensitive to noise in any single training sample (lowering Variance).'
       }
     ],
@@ -4958,7 +4958,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'tree-q1',
         question: 'In a Random Forest, why do we restrict each node split to only consider a random subset of √D features instead of all D features?',
         options: [
-          'To decorrelate the trees (lowering pairwise correlation ρ): if all D features were allowed at every split, every bootstrapped tree would pick the same dominant root feature and make correlated errors that don\'t cancel out when averaged.',
+          'To decorrelate the trees (lowering pairwise correlation ρ).',
           'Because Decision Trees cannot handle more than 3 features.',
           'To increase the Bias of the ensemble.',
           'Because Gini impurity is undefined for D features.'
@@ -4970,12 +4970,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'tree-q2',
         question: 'Can a Random Forest extrapolate a rising linear trend (like inflation-adjusted house prices in 2035) to feature values larger than anything seen in the training set?',
         options: [
-          'No! Because every leaf of a Decision Tree predicts the average target y of the training samples that fell into that leaf, a Random Forest\'s predictions are strictly bounded between [min(y_train), max(y_train)].',
           'Yes, Random Forests extrapolate linear trends better than Linear Regression.',
+          'No! Because every leaf of a Decision Tree predicts the average target y of the training samples that fell into that leaf, a Random Forest\'s predictions are strictly bounded between [min(y_train), max(y_train)].',
           'Yes, if you use Entropy instead of Gini.',
           'Only when B > 500 trees.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Tree ensembles partition space into axis-aligned boxes with constant piecewise predictions; outside the training bounding box, they predict the outermost leaf constant.'
       }
     ],
@@ -5071,24 +5071,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'km-q1',
         question: 'What happens if you run PCA or k-Means on a table containing [Age (years: 20–60), Annual_Salary (Rupees: 3,00,000–50,00,000)] WITHOUT standardizing the features first?',
         options: [
-          'Annual_Salary has a variance ~10¹² times larger than Age, so both k-Means Euclidean distances and the first Principal Component (PC1) will be 99.9999% dominated by Salary and completely ignore Age!',
+          'The eigenvalues become negative.',
           'PCA automatically standardizes every column to unit variance.',
           'k-Means is invariant to feature scaling like Decision Trees.',
-          'The eigenvalues become negative.'
+          'Annual_Salary has a variance ~10¹² times larger than Age.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Both k-Means (Euclidean distance) and PCA (variance maximization) are scale-sensitive: always apply StandardScaler before running them on mixed-unit features.'
       },
       {
         id: 'km-q2',
         question: 'Why can\'t we choose the optimal number of clusters k in k-Means simply by picking the k that gives the lowest Inertia J?',
         options: [
-          'Because Inertia J decreases monotonically as k grows and hits J = 0 when k = N (putting every single data point in its own 1-point cluster), which is useless memorization!',
-          'Because Inertia increases as k grows.',
           'Because J is always negative.',
+          'Because Inertia increases as k grows.',
+          'Because Inertia J decreases monotonically as k grows and hits J = 0 when k = N (putting every single data point in its own 1-point cluster).',
           'Because k-Means only works for k = 2.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Adding more centroids can only reduce or keep equal each point\'s distance to its nearest centroid; thus we use the Elbow method or Silhouette score instead of raw minimum J.'
       }
     ],
@@ -5184,25 +5184,25 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'vec-q1',
         question: 'If matrix A has shape (32 × 768) (a batch of 32 token embeddings of dimension 768) and weight matrix W has shape (768 × 256), what is the shape of the matrix product Y = A · W?',
         options: [
-          '(32 × 256) — the inner dimension 768 contracts via dot products, leaving 32 rows and 256 output columns.',
           '(768 × 768)',
           '(32 × 768)',
-          'The matrices cannot be multiplied.'
+          '(32 × 256)',
+          '(256 × 32)'
         ],
-        correctIndex: 0,
-        explanation: 'Multiplying (m × d) by (d × n) requires matching inner dimension d and outputs shape (m × n).'
+        correctIndex: 2,
+        explanation: 'Multiplying (m × d) by (d × n) contracts the matching inner dimension d = 768 via dot products and outputs shape (m × n) = (32 × 256).'
       },
       {
         id: 'vec-q2',
         question: 'Two non-zero feature vectors u and v have a dot product u · v = 0. What does this tell you about the angle θ between them?',
         options: [
-          'They are orthogonal (perpendicular, θ = 90°), meaning they share zero linear correlation.',
           'They point in the exact same direction (θ = 0°).',
+          'They are orthogonal (perpendicular, θ = 90°).',
           'They point in opposite directions (θ = 180°).',
-          'At least one of the vectors must be all zeros.'
+          'They are separated by an acute angle (θ = 45°).'
         ],
-        correctIndex: 0,
-        explanation: 'Since u · v = ||u|| ||v|| cos(θ) and ||u||, ||v|| > 0, u · v = 0 implies cos(θ) = 0, so θ = 90°.'
+        correctIndex: 1,
+        explanation: 'Since u · v = ||u|| ||v|| cos(θ) and ||u||, ||v|| > 0, u · v = 0 implies cos(θ) = 0, so θ = 90° (orthogonal, sharing zero linear correlation).'
       }
     ],
     summary: [
@@ -5296,12 +5296,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'grad-q1',
         question: 'At your current weight vector w, the gradient of the loss is ∇L(w) = [0, 0, ..., 0]^T. What does this geometric condition mean?',
         options: [
-          'You are at a stationary (critical) point—which could be a local minimum, a global minimum, or a saddle point—where the tangent plane is completely flat.',
           'The loss L(w) must be equal to 0.',
+          'You are at a stationary (critical) point.',
           'All weights w_i must be equal to 0.',
           'The learning rate is 0.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'A zero gradient means the first-order slope in every direction is zero (a minimum, maximum, or saddle point).'
       },
       {
@@ -5397,24 +5397,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'cr-q1',
         question: 'In a computational graph, node x splits into two branches u = f(x) and v = g(x) that both feed into the final loss L(u, v). During backpropagation, if branch u sends back gradient δ_u = 3.5 and branch v sends back gradient δ_v = -1.5 to node x, what is the total gradient ∂L/∂x?',
         options: [
-          'δ_u + δ_v = 3.5 + (-1.5) = +2.0 (fan-out in the forward pass becomes addition of gradients in the backward pass).',
-          'δ_u × δ_v = -5.25',
           'max(δ_u, δ_v) = 3.5',
+          'δ_u × δ_v = -5.25',
+          'δ_u + δ_v = +2.0',
           '0.0'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'By the multivariate chain rule, when a variable feeds multiple consumers in the forward graph, its total sensitivity is the sum of sensitivities from each consumer.'
       },
       {
         id: 'cr-q2',
         question: 'For a multiply gate z = x · y where forward inputs were x = 3.0 and y = -4.0, and the upstream gradient arriving at z is ∂L/∂z = 2.0, what are the backward gradients (∂L/∂x, ∂L/∂y)?',
         options: [
-          '∂L/∂x = (∂L/∂z) · y = 2.0 × (-4.0) = -8.0, and ∂L/∂y = (∂L/∂z) · x = 2.0 × 3.0 = +6.0 (a multiply gate swaps its inputs and multiplies by the upstream gradient!).',
-          '∂L/∂x = 6.0 and ∂L/∂y = -8.0',
           '∂L/∂x = 2.0 and ∂L/∂y = 2.0',
+          '∂L/∂x = 6.0 and ∂L/∂y = -8.0',
+          '∂L/∂x = -8.0 and ∂L/∂y = +6.0',
           '∂L/∂x = -12.0 and ∂L/∂y = -12.0'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Since ∂(xy)/∂x = y and ∂(xy)/∂y = x, a multiplication node caches x and y during the forward pass so it can multiply upstream δ by y (for x) and by x (for y).'
       }
     ],
@@ -5510,24 +5510,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'prob-q1',
         question: 'Why do we maximize the SUM of log-probabilities Σ log P(y_i | x_i) instead of directly maximizing the PRODUCT of probabilities Π P(y_i | x_i)?',
         options: [
-          'Because multiplying thousands of probabilities in (0, 1) rapidly underflows 64-bit/32-bit floats to 0.0, whereas log turns products into sums (log(ab) = log a + log b) that are numerically stable and easy to differentiate!',
           'Because probabilities can be negative.',
+          'Because multiplying thousands of probabilities in (0, 1) rapidly underflows 64-bit/32-bit floats to 0.0.',
           'Because the logarithm is not a monotonic function.',
           'To make the dataset smaller.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Since log(·) is strictly increasing, argmax_θ log L(θ) = argmax_θ L(θ), while avoiding floating-point underflow and turning product-rule derivatives into simple sums.'
       },
       {
         id: 'prob-q2',
         question: 'Minimizing Mean Squared Error (MSE) on a regression target y is mathematically equivalent to Maximum Likelihood Estimation under what noise assumption?',
         options: [
-          'Zero-mean Gaussian (Normal) noise y = f_θ(x) + ε with ε ~ N(0, σ²).',
+          'Zero variance deterministic targets only.',
           'Bernoulli coin-flip noise.',
           'Uniform discrete noise.',
-          'Zero variance deterministic targets only.'
+          'Zero-mean Gaussian (Normal) noise y = f_θ(x) + ε with ε ~ N(0, σ²).'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'The exponent of the Gaussian density is -(y - f_θ(x))² / (2σ²), whose negative log is proportional to squared error (y - f_θ(x))².'
       }
     ],
@@ -5623,12 +5623,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'uat-q2',
         question: 'Can a 10-layer neural network with NO non-linear activation functions (i.e. purely linear layers h^(l) = W^(l) h^(l-1)) be a Universal Approximator?',
         options: [
-          'No! Because the product of matrices W^(10) W^(9) ... W^(1) collapses into a single matrix W_eff, a 10-layer linear network can only represent flat hyperplanes and cannot even fit XOR or a parabola.',
           'Yes, if width N > 1,000.',
+          'No! Because the product of matrices W^(10) W^(9) ... W^(1) collapses into a single matrix W_eff, a 10-layer linear network can only represent flat hyperplanes and cannot even fit XOR or a parabola.',
           'Yes, if trained with Adam.',
           'Only for 1D inputs.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Non-polynomial activation functions (like ReLU, GELU, Tanh) are mandatory to bend space and prevent multi-layer collapse.'
       }
     ],
@@ -5717,24 +5717,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'vgg-q1',
         question: 'Why did VGG replace every 5×5 convolutional filter with a stack of two 3×3 convolutional filters?',
         options: [
-          'Two stacked 3×3 filters cover the exact same 5×5 effective receptive field while using 28% fewer parameters (18C² vs 25C²) and applying two ReLU non-linearities instead of one.',
+          'To eliminate pooling layers.',
           'Because GPUs cannot multiply 5×5 matrices.',
           'Because a 5×5 filter has a smaller receptive field than a 3×3 filter.',
-          'To eliminate pooling layers.'
+          'Two stacked 3×3 filters cover the exact same 5×5 effective receptive field while using 28% fewer parameters (18C² vs 25C²) and applying two ReLU non-linearities instead of one.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Stacking smaller 3×3 kernels is strictly more expressive (more ReLUs) and more parameter-efficient (18C² < 25C²) for the same spatial context.'
       },
       {
         id: 'vgg-q2',
         question: 'In VGG-16, flattening the final 7×7×512 feature map into a 4096-unit Dense layer created 102 million parameters. How do ResNet and modern CNNs avoid this massive Dense parameter explosion?',
         options: [
-          'Global Average Pooling (GAP): averaging each 7×7 spatial channel into a single scalar produces a compact 512-dimensional vector that connects directly to the final classification layer!',
-          'They crop the input image to 8×8 pixels.',
           'They use 1×1 images.',
+          'They crop the input image to 8×8 pixels.',
+          'Global Average Pooling (GAP).',
           'They remove the final classification layer.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Global Average Pooling reduces (7, 7, 512) → (512,) with zero learnable parameters, cutting over 100M prone-to-overfit dense weights.'
       }
     ],
@@ -5818,7 +5818,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'tl-q1',
         question: 'Why should you ALWAYS freeze the pretrained backbone and warm up the newly attached random classification head for a few epochs BEFORE unfreezing the backbone for fine-tuning?',
         options: [
-          'Because at step 0 the new classification head has random weights that produce huge, noisy error gradients; if the backbone is unfrozen immediately, those random gradients propagate backward and wreck the delicate pretrained features!',
+          'Because at step 0 the new classification head has random weights that produce huge, noisy error gradients.',
           'Because PyTorch does not allow unfreezing layers at epoch 0.',
           'Because frozen layers run slower than unfrozen layers.',
           'To make the classification head weights zero.'
@@ -5830,12 +5830,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'tl-q2',
         question: 'You have only 300 labeled chest X-ray images (very small dataset, domain somewhat different from natural photos). Which transfer learning strategy is safest against overfitting?',
         options: [
-          'Freeze the early and middle convolutional blocks (which detect universal edges and textures), train the linear head (and at most fine-tune the final block with strong data augmentation and a tiny learning rate).',
+          'Remove all pooling layers.',
           'Re-initialize all 25 million ResNet weights randomly and train from scratch for 200 epochs.',
           'Unfreeze all layers and use a huge learning rate η = 1.0.',
-          'Remove all pooling layers.'
+          'Freeze the early and middle convolutional blocks (which detect universal edges and textures), train the linear head.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'On 300 images, training 25M parameters from scratch or with high LR rapidly memorizes the training set; freezing early universal features is essential.'
       }
     ],
@@ -5920,19 +5920,19 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'yolo-q1',
         question: 'Why is Non-Maximum Suppression (NMS) needed at the end of a YOLO object detection pass?',
         options: [
-          'Because multiple neighbouring grid cells/anchors often fire with high confidence on the exact same physical object; NMS keeps the highest-scoring box and removes overlapping duplicates with IoU ≥ τ_NMS.',
           'To resize the input image to 224×224.',
+          'Because multiple neighbouring grid cells/anchors often fire with high confidence on the exact same physical object.',
           'To replace ReLU activations during backpropagation.',
           'Because YOLO can only detect 1 object per image.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Without NMS, a single motorcycle at the gate would have 4–6 slightly shifted bounding boxes drawn on top of it.'
       },
       {
         id: 'yolo-q2',
         question: 'What happens in Non-Maximum Suppression if two genuinely DIFFERENT pedestrians are standing right next to each other in a crowded queue such that their true bounding boxes overlap with IoU = 0.70 (above τ_NMS = 0.50)?',
         options: [
-          'Standard greedy NMS will mistakenly suppress (delete) the second pedestrian\'s box because its IoU with the first pedestrian exceeds 0.50—a classic failure mode addressed by Soft-NMS or DETR!',
+          'Standard greedy NMS will mistakenly suppress (delete) the second pedestrian\'s box.',
           'NMS automatically splits them into 4 boxes.',
           'IoU becomes negative.',
           'Both boxes are deleted.'
@@ -6033,24 +6033,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'unet-q1',
         question: 'What happens to a U-Net\'s segmentation masks if you sever (delete) all the horizontal Skip Connections between the Encoder and the Decoder?',
         options: [
-          'The output masks become blurry blobs: the network still knows roughly what class is in the center of the image, but loses the fine-grained pixel borders that were discarded during Encoder Max-Pooling!',
-          'The output image becomes 1×1 pixel.',
           'The network can no longer compute Softmax.',
+          'The output image becomes 1×1 pixel.',
+          'The output masks become blurry blobs.',
           'Dice Loss becomes negative.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Skip connections carry high-spatial-frequency boundary details from early encoder layers directly to the decoder upsampling stages.'
       },
       {
         id: 'unet-q2',
         question: 'Why is Dice Loss (or Combo BCE + Dice Loss) strongly preferred over plain pixel-wise Accuracy when segmenting tiny retinal blood vessels that cover only 2% of the image?',
         options: [
-          'Because predicting 100% background scores 98% pixel Accuracy while catching 0% of the blood vessels, whereas the Dice numerator 2 Σ p_i g_i is 0 if the foreground vessel is missed—forcing the network to segment the 2% foreground!',
-          'Because Dice Loss does not use gradients.',
           'Because pixel accuracy is always 0%.',
+          'Because Dice Loss does not use gradients.',
+          'Because predicting 100% background scores 98% pixel Accuracy while catching 0% of the blood vessels.',
           'Because U-Net only outputs integers.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Dice Coefficient is mathematically identical to the harmonic F1 score at the pixel level, making it insensitive to massive True Negative background counts.'
       }
     ],
@@ -6134,24 +6134,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'pe-q1',
         question: 'What happens if you train a Transformer classifier on sentences WITHOUT any Positional Encoding (and without causal masking)?',
         options: [
-          'The Transformer becomes permutation-invariant (a "bag of words"): "The dog bit the man" and "The man bit the dog" produce the exact same pooled representation!',
           'The Transformer throws a syntax error.',
+          'The Transformer becomes permutation-invariant.',
           'Self-attention weights all become zero.',
           'It automatically behaves like an RNN.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'Without positional encodings (or causal masks), Self-Attention is permutation-equivariant: permuting input tokens simply permutes output rows identically.'
       },
       {
         id: 'pe-q2',
         question: 'Why do modern LLMs (like Llama-3, Mistral, and Qwen) use Rotary Position Embedding (RoPE) applied directly to Q and K in every attention layer instead of Learned Absolute Positional Embeddings?',
         options: [
-          'Because RoPE encodes relative token distance (n - m) via 2D rotation matrices R_m^T R_n = R_{n-m} and generalizes to longer sequence lengths, whereas learned absolute embeddings fail completely at any position index beyond the training max length!',
+          'Because learned embeddings cannot be differentiated.',
           'Because RoPE doubles the vocabulary size.',
           'Because RoPE removes the need for Value vectors V.',
-          'Because learned embeddings cannot be differentiated.'
+          'Because RoPE encodes relative token distance (n - m) via 2D rotation matrices R_m^T R_n = R_{n-m} and generalizes to longer sequence lengths.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'RoPE preserves exact relative distance invariants at every attention layer and supports context-window extension.'
       }
     ],
@@ -6246,12 +6246,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'bg-q2',
         question: 'Why is a BERT-style Bidirectional Encoder typically preferred over a causal decoder for computing dense document chunk embeddings in a RAG vector database?',
         options: [
-          'Because bidirectional attention allows every token in the paragraph to attend to both preceding and following words simultaneously, producing a richer holistic summary of the entire chunk.',
           'Because BERT does not use self-attention.',
+          'Because bidirectional attention allows every token in the paragraph to attend to both preceding and following words simultaneously, producing a richer holistic summary of the entire chunk.',
           'Because causal decoders cannot output vectors.',
           'Because BERT has no parameters.'
         ],
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: 'In a causal model, token 1 only sees token 1; in a bidirectional encoder, every token integrates context from the entire passage.'
       }
     ],
@@ -6341,24 +6341,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'vit-q1',
         question: 'Why does a Vision Transformer (ViT) split a 224×224 image into 16×16 patches (N = 196) instead of treating every individual pixel as a token (N = 50,176)?',
         options: [
-          'Because Self-Attention has O(N²) memory and compute complexity: 50,176² ≈ 2.5 billion pairs per layer (infeasible), whereas 196² = 38,416 pairs is 65,000× smaller and runs in milliseconds!',
+          'To avoid using positional encodings.',
           'Because Transformers can only accept inputs of length 196.',
           'Because individual pixels have no RGB values.',
-          'To avoid using positional encodings.'
+          'Because Self-Attention has O(N²) memory and compute complexity.'
         ],
-        correctIndex: 0,
+        correctIndex: 3,
         explanation: 'Patch tokenization reduces sequence length N by a factor of P² = 256×, which reduces quadratic O(N²) attention cost by 256² = 65,536×!'
       },
       {
         id: 'vit-q2',
         question: 'When training from scratch on a small dataset of only 3,000 images (without pretraining), why does a standard ResNet CNN usually outperform a Vision Transformer (ViT) trained from scratch?',
         options: [
-          'Because CNNs have strong built-in spatial inductive biases (local 3×3 neighborhoods and translation equivariance), whereas ViT has global attention with minimal spatial bias and needs large-scale pretraining (or strong augmentation) to learn 2D geometry.',
-          'Because ViT has zero learnable parameters.',
           'Because ViT cannot use backpropagation.',
+          'Because ViT has zero learnable parameters.',
+          'Because CNNs have strong built-in spatial inductive biases (local 3×3 neighborhoods and translation equivariance).',
           'Because ResNet uses 16×16 patches.'
         ],
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: 'Inductive bias acts as prior knowledge on small datasets; at large scale (or when fine-tuning a pretrained ViT/CLIP checkpoint), ViT\'s flexible global attention excels.'
       }
     ],

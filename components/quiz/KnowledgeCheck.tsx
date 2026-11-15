@@ -1,34 +1,62 @@
 'use client';
 
 import React, { useState } from 'react';
-import { QuizQuestion } from '@/lib/lesson-data/lessonContent';
 import { CheckCircle2, XCircle, HelpCircle, AlertCircle } from 'lucide-react';
 
+export interface PublicQuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+}
+
+interface VerifiedResult {
+  isCorrect: boolean;
+  correctIndex: number;
+  explanation: string;
+}
+
 interface KnowledgeCheckProps {
-  questions: QuizQuestion[];
+  lessonSlug: string;
+  questions: PublicQuizQuestion[];
   onAllCorrect?: () => void;
 }
 
-export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps) {
+export function KnowledgeCheck({ lessonSlug, questions, onAllCorrect }: KnowledgeCheckProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
-  const [submitted, setSubmitted] = useState<Record<string, boolean>>({});
+  const [verifiedResults, setVerifiedResults] = useState<Record<string, VerifiedResult>>({});
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
 
   const handleSelect = (qId: string, optIndex: number) => {
-    if (submitted[qId]) return;
+    if (verifiedResults[qId]) return;
     setSelectedAnswers(prev => ({ ...prev, [qId]: optIndex }));
   };
 
-  const handleSubmit = (qId: string) => {
-    if (selectedAnswers[qId] === undefined) return;
-    const nextSubmitted = { ...submitted, [qId]: true };
-    setSubmitted(nextSubmitted);
+  const handleSubmit = async (qId: string) => {
+    const selectedIndex = selectedAnswers[qId];
+    if (selectedIndex === undefined || verifyingId === qId) return;
 
-    // Check if all questions are now submitted and correct
-    if (onAllCorrect) {
-      const allDone = questions.every(q => {
-        return nextSubmitted[q.id] && selectedAnswers[q.id] === q.correctIndex;
+    setVerifyingId(qId);
+    try {
+      const res = await fetch('/api/quiz/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lessonSlug,
+          questionId: qId,
+          selectedIndex,
+        }),
       });
-      if (allDone) onAllCorrect();
+      if (!res.ok) return;
+      const result: VerifiedResult = await res.json();
+      const nextVerified = { ...verifiedResults, [qId]: result };
+      setVerifiedResults(nextVerified);
+
+      if (onAllCorrect) {
+        const allDone = questions.every(q => nextVerified[q.id]?.isCorrect);
+        if (allDone) onAllCorrect();
+      }
+    } finally {
+      setVerifyingId(null);
     }
   };
 
@@ -38,7 +66,7 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
       delete copy[qId];
       return copy;
     });
-    setSubmitted(prev => {
+    setVerifiedResults(prev => {
       const copy = { ...prev };
       delete copy[qId];
       return copy;
@@ -57,8 +85,9 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
       <div className="space-y-6">
         {questions.map((q, idx) => {
           const isAnswered = selectedAnswers[q.id] !== undefined;
-          const isSubmitted = submitted[q.id];
-          const isCorrect = isSubmitted && selectedAnswers[q.id] === q.correctIndex;
+          const verified = verifiedResults[q.id];
+          const isSubmitted = Boolean(verified);
+          const isCorrect = verified?.isCorrect ?? false;
 
           return (
             <div
@@ -80,10 +109,10 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
                   const isSelected = selectedAnswers[q.id] === optIdx;
                   let optionStyles = 'border-[#EAE2D5] hover:border-[#DFCDB6] bg-[#FDFBF7] text-[#1F191B]';
 
-                  if (isSubmitted) {
-                    if (optIdx === q.correctIndex) {
+                  if (isSubmitted && verified) {
+                    if (optIdx === verified.correctIndex) {
                       optionStyles = 'border-[#BBF7D0] bg-[#F0FDF4] text-[#166534] font-medium';
-                    } else if (isSelected && optIdx !== q.correctIndex) {
+                    } else if (isSelected && optIdx !== verified.correctIndex) {
                       optionStyles = 'border-[#FCA5A5] bg-[#FEF2F2] text-[#991B1B]';
                     } else {
                       optionStyles = 'border-[#EAE2D5] bg-white text-[#786970] opacity-60';
@@ -103,10 +132,10 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
                       className={`w-full text-left p-3.5 rounded-lg text-sm sm:text-base border transition-colors flex items-center justify-between ${optionStyles}`}
                     >
                       <span>{option}</span>
-                      {isSubmitted && optIdx === q.correctIndex && (
+                      {isSubmitted && verified && optIdx === verified.correctIndex && (
                         <CheckCircle2 className="w-4 h-4 text-[#166534] shrink-0 ml-2" aria-hidden="true" />
                       )}
-                      {isSubmitted && isSelected && optIdx !== q.correctIndex && (
+                      {isSubmitted && verified && isSelected && optIdx !== verified.correctIndex && (
                         <XCircle className="w-4 h-4 text-[#991B1B] shrink-0 ml-2" aria-hidden="true" />
                       )}
                     </button>
@@ -119,11 +148,11 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
                 {!isSubmitted ? (
                   <button
                     type="button"
-                    disabled={!isAnswered}
+                    disabled={!isAnswered || verifyingId === q.id}
                     onClick={() => handleSubmit(q.id)}
                     className="text-xs sm:text-sm font-bold px-4 py-2.5 rounded-lg bg-[#7A1C30] text-white hover:bg-[#5F1424] disabled:opacity-40 transition-colors shadow-2xs border border-[#9B2242]"
                   >
-                    Check Answer
+                    {verifyingId === q.id ? 'Checking...' : 'Check Answer'}
                   </button>
                 ) : (
                   <div className="space-y-3">
@@ -143,11 +172,11 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
                         ) : (
                           <>
                             <AlertCircle className="w-4 h-4 text-[#B8860B]" aria-hidden="true" />
-                            <span>Explanation & Correction</span>
+                            <span>Explanation &amp; Correction</span>
                           </>
                         )}
                       </div>
-                      <p>{q.explanation}</p>
+                      <p>{verified?.explanation}</p>
                     </div>
 
                     <button
@@ -165,6 +194,5 @@ export function KnowledgeCheck({ questions, onAllCorrect }: KnowledgeCheckProps)
         })}
       </div>
     </div>
-
   );
 }

@@ -3,26 +3,33 @@
 import React from 'react';
 import Link from 'next/link';
 import { CURRICULUM, ALL_LESSONS, getLessonBySlug } from '@/lib/lesson-data/curriculum';
-import { getProjectsByTrack } from '@/lib/lesson-data/projects';
+import { getProjectsByTrack, TRACK_PROJECTS } from '@/lib/lesson-data/projects';
 import { useLearningProgress } from '@/lib/progress/progressStore';
-import { CheckCircle2, Clock, Lock, ArrowRight, Layers, Compass, FolderGit2 } from 'lucide-react';
+import { CheckCircle2, Clock, Lock, ArrowRight, Layers, Compass, FolderGit2, Sparkles } from 'lucide-react';
 
 export default function LearnRoadmapPage() {
   const { isCompleted, totalCompleted, mounted } = useLearningProgress();
   const totalAvailableLessons = ALL_LESSONS.filter(l => l.status === 'available').length;
+  const totalFreePreviews = ALL_LESSONS.filter(l => l.isFreePreview).length;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-10">
       {/* Header */}
       <div className="border-b border-[#EAE2D5] pb-8 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#FAF2E6] text-[#7A1C30] text-xs font-mono-num font-semibold">
-            <Layers className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>10 Tracks • 57 Lessons • 18 Hands-On Projects</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#FAF2E6] text-[#7A1C30] text-xs font-mono-num font-semibold">
+              <Layers className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>10 Tracks • {totalAvailableLessons} Lessons • {TRACK_PROJECTS.length} Projects</span>
+            </div>
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#DCFCE7] border border-[#86EFAC] text-[#166534] text-xs font-mono-num font-bold">
+              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>{totalFreePreviews} Free Preview Lessons (1 Per Track)</span>
+            </div>
           </div>
 
           <div className="text-xs font-mono-num text-[#54484E] bg-[#FAF5EE] border border-[#EAE2D5] px-3 py-1.5 rounded">
-            Live Progress: <strong className="text-[#7A1C30]">{mounted ? `${totalCompleted} / ${totalAvailableLessons}` : `0 / ${totalAvailableLessons}`} Interactive Lessons Completed</strong>
+            Live Progress: <strong className="text-[#7A1C30]">{mounted ? `${totalCompleted} / ${totalAvailableLessons}` : `0 / ${totalAvailableLessons}`} Lessons Completed</strong>
           </div>
         </div>
 
@@ -30,7 +37,7 @@ export default function LearnRoadmapPage() {
           Learning Roadmap
         </h1>
         <p className="text-base text-[#54484E] max-w-3xl leading-relaxed">
-          Master machine learning and deep learning in the exact engineering order: start with the Math Toolkit (Track 0) and Data Preparation (Track 9) before training Classical ML (Track 1), Neural Foundations (Track 2), Optimization &amp; Debugging (Track 3), Vision (Track 4), Sequences (Track 5), Transformers (Track 6), Generative Models (Track 7), and Modern LLM Practice (Track 8).
+          Master machine learning and deep learning in the exact engineering order: start with the Math Toolkit (Track 0) and Data Preparation (Track 9) before training Classical ML (Track 1), Neural Foundations (Track 2), Optimization &amp; Debugging (Track 3), Vision (Track 4), Sequences (Track 5), Transformers (Track 6), Generative Models (Track 7), and Modern LLM Practice (Track 8). Every track includes a marked <strong>Free Preview</strong> lesson.
         </p>
       </div>
 
@@ -45,11 +52,13 @@ export default function LearnRoadmapPage() {
             moduleCompletedCount === availableLessonsInTrack.length &&
             availableLessonsInTrack.length === module.lessons.length;
           const trackProjects = getProjectsByTrack(module.number);
+          const freeLesson = module.lessons.find(l => l.isFreePreview);
 
           return (
             <section
               key={module.id}
-              className={`border rounded-lg overflow-hidden transition-all ${
+              id={`track-${module.number}`}
+              className={`border rounded-lg overflow-hidden transition-all scroll-mt-20 ${
                 hasAvailableLessons
                   ? 'border-[#EAE2D5] bg-white shadow-xs'
                   : 'border-[#EAE2D5] bg-[#FAF5EE]/60 opacity-90'
@@ -71,6 +80,15 @@ export default function LearnRoadmapPage() {
                         <Lock className="w-2.5 h-2.5" />
                         Upcoming Track
                       </span>
+                    )}
+                    {freeLesson && (
+                      <Link
+                        href={`/learn/${freeLesson.slug}`}
+                        className="inline-flex items-center gap-1 text-[10px] font-mono-num px-2 py-0.5 rounded bg-[#DCFCE7] border border-[#86EFAC] text-[#166534] font-bold hover:bg-[#BBF7D0] transition-colors"
+                      >
+                        <Sparkles className="w-2.5 h-2.5" />
+                        <span>Free Preview: Lesson {freeLesson.lessonCode}</span>
+                      </Link>
                     )}
                     {isModuleComplete && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-mono-num px-2 py-0.5 rounded bg-[#DCFCE7] text-[#166534] font-semibold">
@@ -116,6 +134,12 @@ export default function LearnRoadmapPage() {
                           <h3 className="text-sm font-bold text-[#1F191B]">
                             {lesson.title}
                           </h3>
+                          {lesson.isFreePreview && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono-num font-bold uppercase tracking-wider text-[#166534] bg-[#DCFCE7] border border-[#86EFAC] px-2 py-0.5 rounded">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              Free Preview
+                            </span>
+                          )}
                           {completed && (
                             <span className="inline-flex items-center gap-1 text-[11px] font-mono-num text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded">
                               <CheckCircle2 className="w-3 h-3" />
@@ -165,7 +189,13 @@ export default function LearnRoadmapPage() {
                             href={`/learn/${lesson.slug}`}
                             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#7A1C30] text-white hover:bg-[#5F1424] transition-colors"
                           >
-                            <span>{completed ? 'Review Lesson' : 'Start Lesson'}</span>
+                            <span>
+                              {completed
+                                ? 'Review Lesson'
+                                : lesson.isFreePreview
+                                ? 'Start Free Preview'
+                                : 'Start Lesson'}
+                            </span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </Link>
                         ) : (

@@ -48,4 +48,37 @@ describe('NeuroPlay PRD v2.1 Curriculum & Lesson Structure', () => {
     expect(xrayProject).toBeDefined();
     expect(xrayProject?.medicalDisclaimer).toMatch(/NOT FOR CLINICAL OR MEDICAL DIAGNOSIS/i);
   });
+
+  it('marks exactly 1 free preview lesson per track (10 total) and balances quiz correctIndex without giveaway options', () => {
+    const freePreviews = ALL_LESSONS.filter(l => l.isFreePreview);
+    expect(freePreviews.length).toBe(10);
+    for (const track of CURRICULUM) {
+      const trackFree = track.lessons.filter(l => l.isFreePreview);
+      expect(trackFree.length).toBe(1);
+    }
+
+    // Lesson 0.1 must not list the right answer first or attach explanations to options
+    const lesson01 = LESSON_DETAILS['vectors-matrices-and-dot-products'];
+    expect(lesson01.quiz[0].correctIndex).toBe(2);
+    expect(lesson01.quiz[1].correctIndex).toBe(1);
+    for (const q of lesson01.quiz) {
+      for (const opt of q.options) {
+        expect(opt).not.toContain('—');
+      }
+    }
+
+    // Across all 115 questions, correctIndex is evenly distributed across 0, 1, 2, 3
+    const counts = [0, 0, 0, 0];
+    let totalQuestions = 0;
+    for (const detail of Object.values(LESSON_DETAILS)) {
+      for (const q of detail.quiz) {
+        counts[q.correctIndex]++;
+        totalQuestions++;
+      }
+    }
+    for (const count of counts) {
+      expect(count).toBeGreaterThanOrEqual(Math.floor(totalQuestions * 0.2));
+      expect(count).toBeLessThanOrEqual(Math.ceil(totalQuestions * 0.3));
+    }
+  });
 });
