@@ -12,8 +12,13 @@ import {
   computeWeightedBCE,
   generateSmotePoint,
   computeCyclicalEncoding,
+  evaluateMissingDataStrategies,
+  compareEncodingExplosion,
+  simulateLeakageModelScore,
   type ImputationStrategy,
   type ScalingMethod,
+  type LabNumericStrategy,
+  type LabCategoricalStrategy,
 } from '@/lib/math/dataPrep';
 import { AlertTriangle, CheckCircle2, Database } from 'lucide-react';
 
@@ -61,6 +66,12 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
       ),
     [imputationResult, iqrMultiplier]
   );
+  const [labIncomeStrategy, setLabIncomeStrategy] = useState<LabNumericStrategy>('median_plus_flag');
+  const [labCityStrategy, setLabCityStrategy] = useState<LabCategoricalStrategy>('unknown');
+  const missingLabResult = useMemo(
+    () => evaluateMissingDataStrategies(labIncomeStrategy, labCityStrategy),
+    [labIncomeStrategy, labCityStrategy]
+  );
 
   // 9.3 Scaling State
   const [scalingMethod, setScalingMethod] = useState<ScalingMethod>('zscore');
@@ -76,6 +87,12 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
 
   // 9.4 Categorical Encoding State
   const [smoothingM, setSmoothingM] = useState<number>(5);
+  const [encodingCardinalityK, setEncodingCardinalityK] = useState<number>(500);
+  const [targetEncodingOutOfFold, setTargetEncodingOutOfFold] = useState<boolean>(true);
+  const encodingExplosion = useMemo(
+    () => compareEncodingExplosion(encodingCardinalityK, 32),
+    [encodingCardinalityK]
+  );
   const cityOrders = useMemo(
     () => [
       { category: 'Bengaluru (n=6)', target: 1 },
@@ -103,6 +120,10 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
   const testMarks = useMemo(() => [58, 64, testOutlierMagnitude], [testOutlierMagnitude]);
   const leakageResult = useMemo(
     () => compareCleanVsLeakedScaling(trainMarks, testMarks),
+    [trainMarks, testMarks]
+  );
+  const leakageScoreResult = useMemo(
+    () => simulateLeakageModelScore(trainMarks, testMarks),
     [trainMarks, testMarks]
   );
 
@@ -415,6 +436,97 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
                 </div>
               </div>
             </div>
+
+            {/* Interactive Per-Column Strategy & Accuracy Lab */}
+            <div className="lg:col-span-12 mt-2 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-4 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#1D1819]">
+                    Per-Column Missing-Data Lab: Credit Approval Dataset
+                  </h4>
+                  <p className="text-xs text-[#54484E]">
+                    Pick an imputation strategy for numeric <code>income</code> and categorical <code>city</code>, then watch retained training rows and held-out test accuracy change.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 font-mono-num text-xs">
+                  <span className="px-2.5 py-1 rounded bg-white border border-[#E8E2D9]">
+                    Retained Rows: <strong>{missingLabResult.retainedTrainRows}/{missingLabResult.totalTrainRows}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded bg-[#7A1C30] text-white font-bold">
+                    Test Accuracy: {missingLabResult.testAccuracyPct.toFixed(1)}% ({missingLabResult.correctCount}/{missingLabResult.totalTestRows})
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-[#E8E2D9] rounded-lg p-3 space-y-2">
+                  <label className="text-xs font-bold text-[#1D1819] block">
+                    Column 1: <code>income</code> (Numeric, MNAR when missing)
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {(
+                      [
+                        { id: 'drop_rows', label: 'Drop Rows' },
+                        { id: 'mean', label: 'Mean Fill' },
+                        { id: 'median', label: 'Median Fill' },
+                        { id: 'median_plus_flag', label: 'Median + Flag' },
+                      ] as const
+                    ).map(opt => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setLabIncomeStrategy(opt.id)}
+                        className={`px-2 py-1.5 rounded text-xs font-medium border transition-colors ${
+                          labIncomeStrategy === opt.id
+                            ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
+                            : 'bg-[#FAF8F5] text-[#4A3B3E] border-[#E8E2D9] hover:border-[#7A1C30]'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="text-[11px] font-mono-num text-[#54484E]">
+                    Fill value: {missingLabResult.fillIncome === null ? 'Dropped' : `₹${missingLabResult.fillIncome.toFixed(1)}k`}
+                  </div>
+                </div>
+
+                <div className="bg-white border border-[#E8E2D9] rounded-lg p-3 space-y-2">
+                  <label className="text-xs font-bold text-[#1D1819] block">
+                    Column 2: <code>city</code> (Categorical)
+                  </label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {(
+                      [
+                        { id: 'drop_rows', label: 'Drop Rows' },
+                        { id: 'mode', label: 'Most Frequent' },
+                        { id: 'unknown', label: '"Unknown"' },
+                      ] as const
+                    ).map(opt => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setLabCityStrategy(opt.id)}
+                        className={`px-2 py-1.5 rounded text-xs font-medium border transition-colors ${
+                          labCityStrategy === opt.id
+                            ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
+                            : 'bg-[#FAF8F5] text-[#4A3B3E] border-[#E8E2D9] hover:border-[#7A1C30]'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="text-[11px] font-mono-num text-[#54484E]">
+                    Fill value: {missingLabResult.fillCity}
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-xs text-[#4A3B3E] bg-white border border-[#E8E2D9] rounded px-3 py-2">
+                <strong>Diagnostic:</strong> {missingLabResult.diagnosticNote}
+              </div>
+            </div>
           </div>
         )}
 
@@ -557,6 +669,68 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
                   At m = 0, encoding equals raw category mean (memorizing rare categories). At m = 10, a category needs 10 samples to get 50% weight against the global mean.
                 </p>
               </div>
+
+              {/* Cardinality Explosion & CV Leakage Panel */}
+              <div className="bg-white border border-[#E8E2D9] rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <label htmlFor="cardinality-k-slider" className="font-bold text-[#1D1819]">
+                    Unique Categories (K)
+                  </label>
+                  <span className="font-mono-num font-bold text-[#7A1C30]">K = {encodingCardinalityK.toLocaleString()}</span>
+                </div>
+                <input
+                  id="cardinality-k-slider"
+                  type="range"
+                  min="4"
+                  max="10000"
+                  step="50"
+                  value={encodingCardinalityK}
+                  onChange={e => setEncodingCardinalityK(parseInt(e.target.value, 10))}
+                  className="w-full accent-[#7A1C30]"
+                />
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono-num">
+                  <div className="p-2 rounded bg-[#FDF2F2] border border-[#E8C5C5]">
+                    <div className="text-[10px] text-[#7A1C30]">One-Hot Columns</div>
+                    <strong className="text-sm text-[#7A1C30]">{encodingExplosion.oneHotColumns.toLocaleString()}</strong>
+                  </div>
+                  <div className="p-2 rounded bg-[#FAF8F5] border border-[#E8E2D9]">
+                    <div className="text-[10px] text-[#54484E]">Binary Encoding</div>
+                    <strong className="text-sm text-[#1D1819]">{encodingExplosion.binaryColumns} cols</strong>
+                  </div>
+                  <div className="p-2 rounded bg-[#FAF8F5] border border-[#E8E2D9]">
+                    <div className="text-[10px] text-[#54484E]">Hashing Trick</div>
+                    <strong className="text-sm text-[#1D1819]">{encodingExplosion.hashingColumns} cols</strong>
+                  </div>
+                  <div className="p-2 rounded bg-[#FAF8F5] border border-[#E8E2D9]">
+                    <div className="text-[10px] text-[#54484E]">Target Encoding</div>
+                    <strong className="text-sm text-[#1D1819]">{encodingExplosion.targetEncodingColumns} col</strong>
+                  </div>
+                </div>
+                <div className="text-[11px] text-[#54484E] font-mono-num">
+                  Binary compression ratio: <strong>{encodingExplosion.compressionRatio.toFixed(1)}×</strong> fewer columns than One-Hot.
+                </div>
+
+                <div className="pt-2 border-t border-[#EAE2D5] space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setTargetEncodingOutOfFold(v => !v)}
+                    className={`w-full px-3 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                      targetEncodingOutOfFold
+                        ? 'bg-[#EEF5F0] text-[#1D4E35] border-[#B6D4C2]'
+                        : 'bg-[#FDF2F2] text-[#7A1C30] border-[#E8C5C5]'
+                    }`}
+                  >
+                    {targetEncodingOutOfFold
+                      ? 'Mode: Out-of-Fold CV Target Encoding (Safe)'
+                      : 'Mode: In-Fold Target Encoding (Leakage!)'}
+                  </button>
+                  {!targetEncodingOutOfFold && (
+                    <div className="p-2.5 rounded bg-[#FDF2F2] border border-[#E8C5C5] text-[11px] text-[#7A1C30]">
+                      <strong>CV Leakage Warning:</strong> Computing target means on the same fold that trains the model leaks each row&apos;s own label into its feature, inflating CV score and failing on unseen data!
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -596,6 +770,26 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
                 <strong className="text-sm text-[#7A1C30]">
                   Δz = {leakageResult.maxAbsoluteDistortion.toFixed(3)} σ
                 </strong>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono-num">
+                <div className="p-3 rounded-lg bg-[#FDF2F2] border border-[#E8C5C5]">
+                  <div className="text-[10px] uppercase tracking-wider text-[#7A1C30]">Leaked Validation</div>
+                  <strong className="text-base text-[#7A1C30]">{leakageScoreResult.leakedValAccuracyPct.toFixed(1)}%</strong>
+                  <div className="text-[10px] text-[#54484E] mt-0.5">Fake high score (saw test stats)</div>
+                </div>
+                <div className="p-3 rounded-lg bg-[#EEF5F0] border border-[#B6D4C2]">
+                  <div className="text-[10px] uppercase tracking-wider text-[#1D4E35]">Clean Validation</div>
+                  <strong className="text-base text-[#1D4E35]">{leakageScoreResult.cleanValAccuracyPct.toFixed(1)}%</strong>
+                  <div className="text-[10px] text-[#54484E] mt-0.5">Honest train-only fit</div>
+                </div>
+                <div className="p-3 rounded-lg bg-[#FAF8F5] border border-[#E8E2D9]">
+                  <div className="text-[10px] uppercase tracking-wider text-[#54484E]">Real Production Score</div>
+                  <strong className="text-base text-[#1D1819]">{leakageScoreResult.realProdAccuracyPct.toFixed(1)}%</strong>
+                  <div className="text-[10px] text-[#7A1C30] mt-0.5">
+                    Inflation gap: +{leakageScoreResult.inflationGapPct.toFixed(1)}%
+                  </div>
+                </div>
               </div>
             </div>
 

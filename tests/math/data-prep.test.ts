@@ -10,6 +10,9 @@ import {
   computeWeightedBCE,
   generateSmotePoint,
   computeCyclicalEncoding,
+  evaluateMissingDataStrategies,
+  compareEncodingExplosion,
+  simulateLeakageModelScore,
 } from '../../lib/math/dataPrep';
 
 describe('Track 9 Math Engine: Data Preparation & Feature Engineering', () => {
@@ -120,5 +123,32 @@ describe('Track 9 Math Engine: Data Preparation & Feature Engineering', () => {
     // Hour 23 and Hour 1 are equidistant from midnight (Hour 0)
     expect(h23.distanceToZero).toBeCloseTo(h1.distanceToZero, 6);
     expect(h23.sinVal * h23.sinVal + h23.cosVal * h23.cosVal).toBeCloseTo(1.0, 6);
+  });
+
+  it('evaluates missing-data lab strategies and shows median_plus_flag + unknown preserves rows and boosts accuracy', () => {
+    const dropRes = evaluateMissingDataStrategies('drop_rows', 'drop_rows');
+    const flagRes = evaluateMissingDataStrategies('median_plus_flag', 'unknown');
+    expect(dropRes.retainedTrainRows).toBeLessThan(dropRes.totalTrainRows);
+    expect(flagRes.retainedTrainRows).toBe(flagRes.totalTrainRows);
+    expect(flagRes.testAccuracyPct).toBeGreaterThanOrEqual(dropRes.testAccuracyPct);
+    expect(flagRes.fillCity).toBe('Unknown');
+  });
+
+  it('compares encoding column explosion across One-Hot, Binary, Hashing, and Target encoding', () => {
+    const res = compareEncodingExplosion(1024, 32);
+    expect(res.oneHotColumns).toBe(1024);
+    expect(res.binaryColumns).toBe(10); // ceil(log2(1024))
+    expect(res.hashingColumns).toBe(32);
+    expect(res.targetEncodingColumns).toBe(1);
+    expect(res.compressionRatio).toBeCloseTo(102.4, 1);
+  });
+
+  it('simulates leakage model score showing leaked validation exceeds real production accuracy', () => {
+    const res = simulateLeakageModelScore([50, 55, 60, 65, 70], [58, 64, 180]);
+    expect(res.leakedValAccuracyPct).toBeGreaterThan(res.realProdAccuracyPct);
+    expect(res.inflationGapPct).toBeCloseTo(
+      res.leakedValAccuracyPct - res.realProdAccuracyPct,
+      4
+    );
   });
 });

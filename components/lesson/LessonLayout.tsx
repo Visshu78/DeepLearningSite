@@ -335,6 +335,53 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
           ))}
         </ul>
 
+        {content.cheatSheet && (
+          <div className="bg-[#FAF5EE] border border-[#E2D3BD] rounded-xl p-5 sm:p-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2D3BD] pb-3">
+              <h3 className="font-serif-editorial text-lg font-bold text-[#1D1819]">
+                {content.cheatSheet.title}
+              </h3>
+              <span className="text-[11px] font-mono-num uppercase tracking-wider px-2.5 py-0.5 rounded bg-white border border-[#E2D3BD] text-[#7A1C30] font-bold">
+                One-Page Cheat Sheet
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <div className="space-y-2">
+                <div className="font-bold uppercase tracking-wider text-[11px] text-[#166534]">
+                  Quick Rules of Thumb
+                </div>
+                <ul className="space-y-1.5 text-[#1D1819]">
+                  {content.cheatSheet.rules.map((r, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-[#166534] font-bold">✓</span>
+                      <span>{r}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="space-y-2">
+                <div className="font-bold uppercase tracking-wider text-[11px] text-[#991B1B]">
+                  Common Pitfalls to Avoid
+                </div>
+                <ul className="space-y-1.5 text-[#1D1819]">
+                  {content.cheatSheet.pitfalls.map((p, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-[#991B1B] font-bold">!</span>
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <pre className="p-3 rounded-lg bg-[#1D1819] text-[#FAF8F5] text-xs font-mono-num overflow-x-auto">
+              <code>{content.cheatSheet.codeSnippet}</code>
+            </pre>
+          </div>
+        )}
+
         {relatedProject && (
           <div className="bg-white border border-[#E8E2D9] rounded-xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
             <div className="space-y-1">

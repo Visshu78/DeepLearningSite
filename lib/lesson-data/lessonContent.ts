@@ -36,6 +36,12 @@ export interface DetailedLessonContent {
   };
   quiz: QuizQuestion[];
   summary: string[];
+  cheatSheet?: {
+    title: string;
+    rules: string[];
+    pitfalls: string[];
+    codeSnippet: string;
+  };
 }
 
 export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
@@ -1983,7 +1989,20 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Mean and standard deviation are sensitive to outliers because deviations are squared.',
       'Median and IQR (Q₃ - Q₁) remain stable even when up to 25% of values are extreme spikes.',
       'Strong positive skewness (γ₁ > 1) often benefits from log1p transformation or robust scaling.'
-    ]
+    ],
+    cheatSheet: {
+      title: '9.1 Quick EDA & Summary Stats Cheat Sheet',
+      rules: [
+        'Inspect df.info(), df.isna().mean(), and df.nunique() before writing any model.',
+        'Use Median (Q₂) + IQR (Q₃ - Q₁) whenever skewness |γ₁| > 1; use Mean + Std only on symmetric distributions.',
+        'Check object/string columns for hidden missing placeholders like " ", "?", or "-999".'
+      ],
+      pitfalls: [
+        'Running EDA on the test split and tuning hyperparameters based on test distributions causes subtle overfitting.',
+        'Assuming pandas float/object dtypes are clean without checking min/max quantiles.'
+      ],
+      codeSnippet: `df.info()\ndf.describe(percentiles=[0.05, 0.25, 0.5, 0.75, 0.95])\ndf.isna().mean().sort_values(ascending=False)`
+    }
   },
 
   // =========================================================================
@@ -2029,8 +2048,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'Neural networks and linear models cannot multiply NaN: a single missing value propagates NaN through every weight dot-product and gradient update.',
       'Before filling blanks, diagnose the mechanism: Missing Completely At Random (MCAR, safe to drop if <5% of rows), Missing At Random (MAR, predictable from other observed columns via KNN/IterativeImputer), or Missing Not At Random (MNAR, where the blank itself is a strong clue).',
+      'For categorical columns, fill missing entries with either the most frequent value (mode) or an explicit "Unknown" category so missingness becomes its own bucket.',
       'When a feature is structurally absent (such as "Existing Credit Card Limit" for an applicant who has never had a credit card), filling with 0 plus a binary indicator column m_i ∈ {0, 1} is far more accurate than filling with the median of cardholders.',
-      'For general skewed numeric columns, median imputation (fitted on the training split only!) resists high-income spikes that distort mean imputation.'
+      'For general skewed numeric columns, median imputation (fitted on the training split only!) resists high-income spikes that distort mean imputation. Note that gradient boosted tree libraries—XGBoost, LightGBM, and CatBoost—handle missing values natively by learning the optimal split direction for NaN without manual imputation.'
     ],
     mathFormulas: [
       {
@@ -2089,10 +2109,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     ],
     summary: [
       'Never blindly drop rows with missing values without checking if the absence itself is informative (MNAR).',
-      'Use structural 0 + a binary missingness flag (m_i) when a blank means "none" (e.g., no credit card), or training median + flag for general skewed numerics.',
-      'Drop a column altogether if more than ~60% of its values are missing and carry no special indicator signal.',
+      'Fill numeric columns with the training median (+ binary m_i flag) or structural 0; fill categorical columns with the most frequent mode or an "Unknown" category.',
+      'Drop a column altogether if more than ~60% of its values are missing and carry no special indicator signal; note that XGBoost, LightGBM, and CatBoost handle NaNs natively.',
       'Always fit imputers (Median, Mode, KNNImputer) strictly on the training split to prevent data leakage.'
-    ]
+    ],
+    cheatSheet: {
+      title: '9.2 Handling Missing Data Cheat Sheet',
+      rules: [
+        '<5% missing completely at random (MCAR): dropping rows is usually safe; >60% missing in a column: usually drop the column.',
+        'Numeric column: fill with training Median (or Mean if symmetric) + add_indicator=True when missingness carries signal.',
+        'Categorical column: fill with most_frequent (mode) or constant "Unknown" category.',
+        'XGBoost, LightGBM, and CatBoost handle NaN values natively at split time.'
+      ],
+      pitfalls: [
+        'Fitting SimpleImputer or KNNImputer before train_test_split leaks test medians into training.',
+        'Filling structural zeros (e.g. credit limit for non-cardholders) with the median of cardholders.'
+      ],
+      codeSnippet: `SimpleImputer(strategy="median", add_indicator=True)\nSimpleImputer(strategy="constant", fill_value="Unknown")`
+    }
   },
 
   // =========================================================================
@@ -2211,7 +2245,20 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'StandardScaler (Z-score) is the default for neural nets and linear models on clean distributions.',
       'Min-Max scaling maps training data to [0, 1], though unseen test values outside the training range can fall outside [0, 1].',
       'RobustScaler uses Median and IQR so extreme outliers cannot squash normal data points; Decision Trees and Random Forests do not require scaling.'
-    ]
+    ],
+    cheatSheet: {
+      title: '9.3 Outliers & Feature Scaling Cheat Sheet',
+      rules: [
+        'Linear models, SVMs, KNN, k-Means, PCA, and Neural Nets require scaling; Tree models (RF, XGBoost) do not.',
+        'StandardScaler for clean features; RobustScaler (Median/IQR) or log1p when outliers exist.',
+        'Min-Max gives [0, 1] only on training data; unseen test values outside [x_min,train, x_max,train] fall outside [0, 1].'
+      ],
+      pitfalls: [
+        'Using |Z| > 3 on small/skewed samples—an extreme outlier inflates σ and masks its own Z-score.',
+        'Forgetting to clip or use RobustScaler before Min-Max when a single outlier crushes normal points into [0, 0.05].'
+      ],
+      codeSnippet: `RobustScaler()\nStandardScaler()\nnp.clip(x, q1 - 1.5 * iqr, q3 + 1.5 * iqr)`
+    }
   },
 
   // =========================================================================
@@ -2258,7 +2305,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Machine learning models only understand numbers, so how you translate text categories into numbers determines what geometry the model sees.',
       'Use Ordinal Encoding (0, 1, 2) ONLY when the spacing and order are genuinely meaningful (e.g. Cold < Warm < Hot). Using integers for unordered cities (Delhi=1, Mumbai=2, Chennai=3) forces a linear layer to assume w·Mumbai = 0.5·(w·Delhi + w·Chennai).',
       'Use One-Hot Encoding for low-cardinality nominal categories (K ≤ 15). Each category gets an orthogonal unit vector [1, 0, 0], [0, 1, 0].',
-      'For high-cardinality categories (10,000 PIN codes or merchant IDs), One-Hot creates 10,000 sparse columns. Smoothed Out-of-Fold Target Encoding replaces each category with a shrinkage estimate between the category\'s training target average and the global prior.'
+      'For high-cardinality categories (10,000 PIN codes or merchant IDs), One-Hot creates 10,000 sparse columns. Smoothed Out-of-Fold Target Encoding replaces each category with a shrinkage estimate between the category\'s training target average and the global prior, while Binary / Hashing Encoding maps categories into log2(K) bits or fixed hash buckets when memory is tightly capped (trading off interpretability and rare hash collisions).',
+      'In deep neural networks with huge vocabularies (user IDs, item IDs), Learned Embeddings map each category index to a dense trainable vector trained via backpropagation. Meanwhile, CatBoost and LightGBM provide native categorical split handling without manual one-hot expansion.'
     ],
     mathFormulas: [
       {
@@ -2317,10 +2365,24 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     ],
     summary: [
       'Use Ordinal Encoding only when categories have a true monotonic rank order.',
-      'Use One-Hot Encoding for nominal features with modest cardinality.',
-      'Use Smoothed Out-of-Fold Target Encoding or learned Embeddings for high-cardinality categories.',
-      'Always handle unseen test categories gracefully by mapping them to the global prior or an <UNK> bucket.'
-    ]
+      'Use One-Hot Encoding for nominal features with modest cardinality (K ≤ 15).',
+      'Use Smoothed Out-of-Fold Target Encoding, Binary/Hashing Encoding (under strict memory limits), or Learned Embeddings (for neural nets with abundant data) on high-cardinality categories.',
+      'CatBoost and LightGBM support categorical columns natively; always map unseen test categories to the global prior or an <UNK> bucket.'
+    ],
+    cheatSheet: {
+      title: '9.4 Encoding Categorical Features Cheat Sheet',
+      rules: [
+        'Low cardinality unordered (K ≤ 15): OneHotEncoder(handle_unknown="ignore").',
+        'True rank order (Small < Med < Large): OrdinalEncoder(categories=[...]).',
+        'High cardinality (PIN codes, IDs): TargetEncoder (out-of-fold + smoothing), Binary/Hashing (tight RAM), or Learned Embeddings (neural nets).',
+        'CatBoost / LightGBM: pass categorical columns natively.'
+      ],
+      pitfalls: [
+        'Computing Target Encoding outside cross-validation leaks the label y into X.',
+        'Using integer Label Encoding on unordered cities for linear models or MLPs.'
+      ],
+      codeSnippet: `OneHotEncoder(handle_unknown="ignore", sparse_output=False)\nTargetEncoder(smooth="auto", cv=5)`
+    }
   },
 
   // =========================================================================
@@ -2428,7 +2490,20 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Wrap all imputers, encoders, and scalers inside a scikit-learn Pipeline so cross-validation never leaks.',
       'Use temporal splits for time-series data and GroupKFold for multi-record patient/user data.',
       'Never tune hyperparameters or thresholds on the final test split.'
-    ]
+    ],
+    cheatSheet: {
+      title: '9.5 Splits, Cross-Validation & Leakage Cheat Sheet',
+      rules: [
+        'Split first, preprocess second: .fit() only on X_train; .transform() on X_val and X_test.',
+        'Use StratifiedKFold for classification, GroupKFold when one user/patient has multiple rows, and TimeSeriesSplit for temporal data.',
+        'Always wrap preprocessing + estimator inside sklearn.pipeline.Pipeline before calling cross_val_score.'
+      ],
+      pitfalls: [
+        'Fitting StandardScaler, SimpleImputer, or SMOTE before cross_val_score inflates CV metrics and collapses in production.',
+        'Randomly splitting multi-visit patient scans puts the same patient in both train and test.'
+      ],
+      codeSnippet: `pipe = Pipeline([("prep", col_tx), ("clf", LogisticRegression())])\ncross_val_score(pipe, X_train, y_train, cv=StratifiedKFold(5))`
+    }
   },
 
   // =========================================================================
@@ -2530,7 +2605,20 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Always pass stratify=y when splitting imbalanced classification datasets.',
       'Balanced class weights (w_c = N / (2 N_c)) re-balance gradient magnitudes without duplicating data.',
       'If using oversampling or SMOTE, apply it strictly to X_train inside each training fold—never to validation or test.'
-    ]
+    ],
+    cheatSheet: {
+      title: '9.6 Imbalanced Data & Metrics Cheat Sheet',
+      rules: [
+        'Never judge a 99:1 dataset by Accuracy; evaluate Precision, Recall, F1, and PR-AUC.',
+        'Start with class_weight="balanced" (w_c = N / (2 * N_c)) and tune the decision threshold on validation probabilities.',
+        'If using SMOTE, wrap it in imblearn.pipeline.Pipeline so synthetic points are only created inside training folds.'
+      ],
+      pitfalls: [
+        'Running SMOTE before train_test_split leaks interpolated test points into training.',
+        'Tuning probability thresholds on the test set instead of validation folds.'
+      ],
+      codeSnippet: `LogisticRegression(class_weight="balanced")\naverage_precision_score(y_val, y_prob)  # PR-AUC`
+    }
   },
 
   // =========================================================================
@@ -2643,7 +2731,20 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Construct domain ratios and differences to give linear and shallow layers direct access to interactions.',
       'Use ColumnTransformer + Pipeline to bundle all numeric and categorical preprocessing with the estimator.',
       'Now put all 7 lessons of Track 9 into action in the Track 9 Project: Clean the Messy Dataset!'
-    ]
+    ],
+    cheatSheet: {
+      title: '9.7 Feature Engineering & Pipelines Cheat Sheet',
+      rules: [
+        'Encode cyclical features (hour, day, month) using BOTH sin(2πt/T) and cos(2πt/T).',
+        'Create domain ratios (EMI / (Income + ε)) to expose non-linear interactions to linear layers.',
+        'Serialize the full ColumnTransformer + model Pipeline with joblib so training and serving execute identical steps.'
+      ],
+      pitfalls: [
+        'Using sin(2πt/T) alone causes collisions (e.g. 3 AM and 9 AM both have sin ≈ 0.707).',
+        'Re-implementing scaling/imputation manually in production APIs causes training-serving skew.'
+      ],
+      codeSnippet: `ct = ColumnTransformer([("num", num_pipe, num_cols), ("cat", cat_pipe, cat_cols)])\nfull_pipe = Pipeline([("prep", ct), ("model", model)])`
+    }
   },
 
   // =========================================================================

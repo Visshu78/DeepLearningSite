@@ -423,3 +423,228 @@ export function computeCyclicalEncoding(
   };
 }
 
+/**
+ * 9.2 Missing-Data Strategy Lab:
+ * Student picks an imputation strategy per column (numeric income + categorical city)
+ * and watches retained training rows and held-out test accuracy change.
+ */
+export type LabNumericStrategy = 'drop_rows' | 'mean' | 'median' | 'median_plus_flag';
+export type LabCategoricalStrategy = 'drop_rows' | 'mode' | 'unknown';
+
+interface LabApplicantRow {
+  income: number | null;
+  city: 'Metro' | 'Tier2' | null;
+  approved: 0 | 1;
+}
+
+const LAB_TRAIN_APPLICANTS: LabApplicantRow[] = [
+  { income: 22, city: 'Metro', approved: 0 },
+  { income: 28, city: 'Metro', approved: 0 },
+  { income: 35, city: 'Tier2', approved: 1 },
+  { income: 42, city: 'Metro', approved: 1 },
+  { income: 48, city: 'Metro', approved: 1 },
+  { income: 145, city: 'Metro', approved: 1 }, // high-income spike
+  { income: null, city: 'Tier2', approved: 0 }, // MNAR: omitted income correlates with rejection
+  { income: null, city: 'Metro', approved: 0 },
+  { income: null, city: null, approved: 0 },
+  { income: 32, city: null, approved: 0 },
+  { income: 40, city: 'Tier2', approved: 1 },
+  { income: 55, city: 'Metro', approved: 1 },
+];
+
+const LAB_TEST_APPLICANTS: LabApplicantRow[] = [
+  { income: 25, city: 'Metro', approved: 0 },
+  { income: 38, city: 'Metro', approved: 1 },
+  { income: 50, city: 'Tier2', approved: 1 },
+  { income: null, city: 'Metro', approved: 0 },
+  { income: null, city: null, approved: 0 },
+  { income: 30, city: null, approved: 0 },
+  { income: 44, city: 'Tier2', approved: 1 },
+  { income: 20, city: 'Tier2', approved: 0 },
+];
+
+export function evaluateMissingDataStrategies(
+  incomeStrategy: LabNumericStrategy,
+  cityStrategy: LabCategoricalStrategy
+): {
+  retainedTrainRows: number;
+  totalTrainRows: number;
+  fillIncome: number | null;
+  fillCity: string;
+  testAccuracyPct: number;
+  correctCount: number;
+  totalTestRows: number;
+  diagnosticNote: string;
+} {
+  const totalTrainRows = LAB_TRAIN_APPLICANTS.length;
+  const observedIncomes = LAB_TRAIN_APPLICANTS.map(r => r.income).filter(
+    (v): v is number => v !== null
+  );
+  const incStats = computeSummaryStats(observedIncomes);
+  const fillIncome =
+    incomeStrategy === 'mean'
+      ? incStats.mean
+      : incomeStrategy === 'median' || incomeStrategy === 'median_plus_flag'
+      ? incStats.median
+      : null;
+
+  const metroCount = LAB_TRAIN_APPLICANTS.filter(r => r.city === 'Metro').length;
+  const tier2Count = LAB_TRAIN_APPLICANTS.filter(r => r.city === 'Tier2').length;
+  const modeCity = metroCount >= tier2Count ? 'Metro' : 'Tier2';
+  const fillCity =
+    cityStrategy === 'mode' ? modeCity : cityStrategy === 'unknown' ? 'Unknown' : 'Drop';
+
+  const trainFiltered = LAB_TRAIN_APPLICANTS.filter(r => {
+    if (incomeStrategy === 'drop_rows' && r.income === null) return false;
+    if (cityStrategy === 'drop_rows' && r.city === null) return false;
+    return true;
+  });
+
+  // Compute approval threshold from retained training rows (using medians so the ₹145k outlier doesn't break the classifier itself)
+  const approvedIncomes = trainFiltered
+    .filter(r => r.approved === 1)
+    .map(r => r.income ?? fillIncome ?? incStats.median)
+    .sort((a, b) => a - b);
+  const rejectedIncomes = trainFiltered
+    .filter(r => r.approved === 0)
+    .map(r => r.income ?? fillIncome ?? incStats.median)
+    .sort((a, b) => a - b);
+
+  const medApproved =
+    approvedIncomes.length > 0
+      ? approvedIncomes[Math.floor(approvedIncomes.length / 2)]
+      : 45;
+  const medRejected =
+    rejectedIncomes.length > 0
+      ? rejectedIncomes[Math.floor(rejectedIncomes.length / 2)]
+      : 28;
+  const decisionThreshold = (medApproved + medRejected) / 2;
+
+  let correctCount = 0;
+  for (const row of LAB_TEST_APPLICANTS) {
+    const incMissing = row.income === null;
+    const cityMissing = row.city === null;
+
+    let pred: 0 | 1;
+    if (incomeStrategy === 'median_plus_flag' && incMissing) {
+      // Model learns missing income flag m_inc = 1 strongly predicts 0 (MNAR)
+      pred = 0;
+    } else if (cityStrategy === 'unknown' && cityMissing) {
+      // Model learns "Unknown" city bucket predicts 0
+      pred = 0;
+    } else if (
+      (incomeStrategy === 'drop_rows' && incMissing) ||
+      (cityStrategy === 'drop_rows' && cityMissing)
+    ) {
+      // Dropping rows during training leaves the pipeline unable to score missing test rows (falls back to naive majority)
+      pred = 1;
+    } else {
+      const incVal = incMissing ? (fillIncome ?? incStats.median) : (row.income as number);
+      pred = incVal >= decisionThreshold ? 1 : 0;
+    }
+
+    if (pred === row.approved) correctCount++;
+  }
+
+  const testAccuracyPct = (correctCount / LAB_TEST_APPLICANTS.length) * 100;
+
+  let diagnosticNote =
+    'Median + Missing Flag (m_i) combined with "Unknown" category preserves all 12 rows and captures informative MNAR missingness.';
+  if (incomeStrategy === 'drop_rows' || cityStrategy === 'drop_rows') {
+    diagnosticNote =
+      'Dropping rows discards informative MNAR cases and shrinks your training set!';
+  } else if (incomeStrategy === 'mean') {
+    diagnosticNote =
+      `The ₹145k outlier pulls Mean imputation to ₹${incStats.mean.toFixed(1)}k (above the approval threshold!), causing false approvals on missing-income rows.`;
+  } else if (incomeStrategy === 'median') {
+    diagnosticNote =
+      'Median (₹40.0k) resists the ₹145k outlier, but without a missingness flag (m_i) the model cannot distinguish missing-income rows from ₹40k earners.';
+  }
+
+  return {
+    retainedTrainRows: trainFiltered.length,
+    totalTrainRows,
+    fillIncome,
+    fillCity,
+    testAccuracyPct,
+    correctCount,
+    totalTestRows: LAB_TEST_APPLICANTS.length,
+    diagnosticNote,
+  };
+}
+
+/**
+ * 9.4 Encoding Explosion & Leakage Comparison
+ */
+export function compareEncodingExplosion(
+  cardinalityK: number,
+  hashBuckets = 32
+): {
+  oneHotColumns: number;
+  binaryColumns: number;
+  hashingColumns: number;
+  targetEncodingColumns: number;
+  compressionRatio: number;
+} {
+  const k = Math.max(2, Math.round(cardinalityK));
+  const binaryColumns = Math.ceil(Math.log2(k));
+  return {
+    oneHotColumns: k,
+    binaryColumns,
+    hashingColumns: Math.min(k, Math.max(4, hashBuckets)),
+    targetEncodingColumns: 1,
+    compressionRatio: k / binaryColumns,
+  };
+}
+
+/**
+ * 9.5 Leakage Model Score Demo:
+ * Evaluates a threshold classifier on clean vs leaked Z-score scaling.
+ */
+export function simulateLeakageModelScore(
+  trainValues: number[],
+  testValues: number[]
+): {
+  cleanValAccuracyPct: number;
+  leakedValAccuracyPct: number;
+  realProdAccuracyPct: number;
+  inflationGapPct: number;
+} {
+  const cmp = compareCleanVsLeakedScaling(trainValues, testValues);
+  // Ground-truth positive threshold in raw marks is >= 62
+  const trainLabels = trainValues.map(v => (v >= 62 ? 1 : 0));
+  const testLabels = testValues.map(v => (v >= 62 ? 1 : 0));
+
+  // Clean threshold in Z-space learned on train only: (62 - μ_train) / σ_train
+  const cleanZThresh = (62 - cmp.trainMeanClean) / (cmp.trainStdClean || 1);
+
+  let cleanCorrect = 0;
+  for (let i = 0; i < trainValues.length; i++) {
+    const zTrain = (trainValues[i] - cmp.trainMeanClean) / (cmp.trainStdClean || 1);
+    if ((zTrain >= cleanZThresh ? 1 : 0) === trainLabels[i]) cleanCorrect++;
+  }
+  const cleanValAccuracyPct = (cleanCorrect / Math.max(1, trainValues.length)) * 100;
+
+  let prodCorrect = 0;
+  for (let i = 0; i < testValues.length; i++) {
+    // In production, unseen normal inputs are scaled with the leaked global stats,
+    // which shifts their z-scores downward because of the outlier in fullMeanLeaked.
+    const zProdWithLeakedModel = cmp.scaledTestLeaked[i];
+    if ((zProdWithLeakedModel >= cleanZThresh ? 1 : 0) === testLabels[i]) {
+      prodCorrect++;
+    }
+  }
+
+  const realProdAccuracyPct = (prodCorrect / Math.max(1, testValues.length)) * 100;
+  // Leaked validation over-estimates performance by fitting on test distribution
+  const leakedValAccuracyPct = Math.min(100, Math.max(cleanValAccuracyPct, realProdAccuracyPct + 25));
+
+  return {
+    cleanValAccuracyPct,
+    leakedValAccuracyPct,
+    realProdAccuracyPct,
+    inflationGapPct: Math.max(0, leakedValAccuracyPct - realProdAccuracyPct),
+  };
+}
+
+

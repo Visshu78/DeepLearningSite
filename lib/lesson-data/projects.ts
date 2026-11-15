@@ -114,7 +114,8 @@ export const TRACK_PROJECTS: TrackProject[] = [
       'Combine One-Hot, Ordinal, and smoothed cross-validated Target Encoding without leaking validation targets',
       'Demonstrate the exact accuracy inflation caused by fitting scalers/imputers before train/test splitting'
     ],
-    colabStarterUrl: 'https://colab.research.google.com/',
+    colabStarterUrl:
+      'https://colab.research.google.com/github/Visshu78/DeepLearningSite/blob/main/public/notebooks/track-9-clean-the-messy-dataset.ipynb',
     dataset: {
       name: 'Titanic Survival & Telco Customer Churn Datasets',
       url: 'https://www.kaggle.com/c/titanic',
