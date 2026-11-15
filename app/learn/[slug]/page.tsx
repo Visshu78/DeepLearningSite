@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import { getLessonBySlug, ALL_LESSONS } from '@/lib/lesson-data/curriculum';
+import { getLessonBySlug, ALL_LESSONS, type LessonMeta } from '@/lib/lesson-data/curriculum';
 import { LESSON_DETAILS } from '@/lib/lesson-data/lessonContent';
+import { hasServerPaidAccess } from '@/lib/auth/session';
 import { LessonLayout } from '@/components/lesson/LessonLayout';
+import { LockedLessonPaywall } from '@/components/lesson/LockedLessonPaywall';
 import { NeuronVisualizer } from '@/components/visualizers/NeuronVisualizer';
 import { ActivationGraphVisualizer } from '@/components/visualizers/ActivationGraphVisualizer';
 import { ForwardPassVisualizer } from '@/components/visualizers/ForwardPassVisualizer';
@@ -30,7 +32,7 @@ import type { Metadata } from 'next';
 
 export async function generateStaticParams() {
   return ALL_LESSONS.filter(l => l.status === 'available').map(l => ({
-    slug: l.slug
+    slug: l.slug,
   }));
 }
 
@@ -44,204 +46,145 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!lesson) return { title: 'Lesson Not Found — NeuroPlay' };
   return {
     title: `${lesson.title} — NeuroPlay`,
-    description: lesson.subtitle
+    description: lesson.subtitle,
   };
 }
 
-export default async function LessonPage({ params }: PageProps) {
-  const { slug } = await params;
-  const meta = getLessonBySlug(slug);
-  const content = LESSON_DETAILS[slug];
-
-  if (!meta || !content) {
-    notFound();
-  }
-
-  // Select the appropriate visualizer
-  let visualizer: React.ReactNode = null;
+function getVisualizerForSlug(slug: string): React.ReactNode {
   switch (slug) {
     case 'what-is-an-artificial-neuron':
-      visualizer = <NeuronVisualizer />;
-      break;
+      return <NeuronVisualizer />;
     case 'activation-functions':
-      visualizer = <ActivationGraphVisualizer />;
-      break;
+      return <ActivationGraphVisualizer />;
     case 'forward-propagation':
-      visualizer = <ForwardPassVisualizer />;
-      break;
+      return <ForwardPassVisualizer />;
     case 'loss-functions':
-      visualizer = <LossLandscapeVisualizer />;
-      break;
+      return <LossLandscapeVisualizer />;
     case 'gradient-descent':
-      visualizer = <GradientDescentVisualizer />;
-      break;
+      return <GradientDescentVisualizer />;
     case 'backpropagation-fundamentals':
-      visualizer = <BackpropagationVisualizer />;
-      break;
+      return <BackpropagationVisualizer />;
     case 'convolutional-filters':
-      visualizer = <ConvolutionVisualizer />;
-      break;
+      return <ConvolutionVisualizer />;
     case 'pooling-and-receptive-fields':
-      visualizer = <PoolingVisualizer />;
-      break;
+      return <PoolingVisualizer />;
     case 'cnn-inference-pipeline':
-      visualizer = <CNNInferencePipelineVisualizer />;
-      break;
+      return <CNNInferencePipelineVisualizer />;
     case 'cnn-backpropagation':
-      visualizer = <CNNBackpropagationVisualizer />;
-      break;
+      return <CNNBackpropagationVisualizer />;
     case 'resnet-architectures':
-      visualizer = <ResNetVisualizer />;
-      break;
+      return <ResNetVisualizer />;
     case 'efficientnet-compound-scaling':
-      visualizer = <EfficientNetVisualizer />;
-      break;
+      return <EfficientNetVisualizer />;
     case 'regularization-dropout':
-      visualizer = <RegularizationVisualizer />;
-      break;
+      return <RegularizationVisualizer />;
     case 'adaptive-optimizers':
-      visualizer = <AdaptiveOptimizersVisualizer />;
-      break;
+      return <AdaptiveOptimizersVisualizer />;
     case 'self-attention-scaled-dot-product':
     case 'transformer-block-multihead-attention':
-      visualizer = <SelfAttentionVisualizer />;
-      break;
+      return <SelfAttentionVisualizer />;
     case 'first-look-at-data-eda':
-      visualizer = <DataPrepVisualizer defaultTab="eda" />;
-      break;
+      return <DataPrepVisualizer defaultTab="eda" />;
     case 'handling-missing-data':
-      visualizer = <DataPrepVisualizer defaultTab="missing-outliers" />;
-      break;
+      return <DataPrepVisualizer defaultTab="missing-outliers" />;
     case 'outliers-and-feature-scaling':
-      visualizer = <DataPrepVisualizer defaultTab="scaling" />;
-      break;
+      return <DataPrepVisualizer defaultTab="scaling" />;
     case 'encoding-categorical-features':
-      visualizer = <DataPrepVisualizer defaultTab="encoding" />;
-      break;
+      return <DataPrepVisualizer defaultTab="encoding" />;
     case 'splits-cross-validation-and-leakage':
-      visualizer = <DataPrepVisualizer defaultTab="leakage" />;
-      break;
+      return <DataPrepVisualizer defaultTab="leakage" />;
     case 'imbalanced-data-and-metrics':
-      visualizer = <DataPrepVisualizer defaultTab="imbalance" />;
-      break;
+      return <DataPrepVisualizer defaultTab="imbalance" />;
     case 'feature-engineering-and-pipelines':
-      visualizer = <DataPrepVisualizer defaultTab="pipelines" />;
-      break;
+      return <DataPrepVisualizer defaultTab="pipelines" />;
     // Track 0: Math Toolkit
     case 'vectors-matrices-and-dot-products':
-      visualizer = <MathToolkitVisualizer defaultTab="vectors" />;
-      break;
+      return <MathToolkitVisualizer defaultTab="vectors" />;
     case 'derivatives-and-gradients':
-      visualizer = <MathToolkitVisualizer defaultTab="gradients" />;
-      break;
+      return <MathToolkitVisualizer defaultTab="gradients" />;
     case 'the-chain-rule':
-      visualizer = <MathToolkitVisualizer defaultTab="chainrule" />;
-      break;
+      return <MathToolkitVisualizer defaultTab="chainrule" />;
     case 'probability-and-distributions':
-      visualizer = <MathToolkitVisualizer defaultTab="probability" />;
-      break;
+      return <MathToolkitVisualizer defaultTab="probability" />;
     // Track 1: Classical ML
     case 'linear-regression':
-      visualizer = <ClassicalMLVisualizer defaultTab="linreg" />;
-      break;
+      return <ClassicalMLVisualizer defaultTab="linreg" />;
     case 'logistic-regression':
-      visualizer = <ClassicalMLVisualizer defaultTab="logreg" />;
-      break;
+      return <ClassicalMLVisualizer defaultTab="logreg" />;
     case 'bias-variance-and-evaluation-metrics':
-      visualizer = <ClassicalMLVisualizer defaultTab="biasvar" />;
-      break;
+      return <ClassicalMLVisualizer defaultTab="biasvar" />;
     case 'decision-trees-and-random-forests':
-      visualizer = <ClassicalMLVisualizer defaultTab="trees" />;
-      break;
+      return <ClassicalMLVisualizer defaultTab="trees" />;
     case 'kmeans-and-pca':
-      visualizer = <ClassicalMLVisualizer defaultTab="kmeans-pca" />;
-      break;
+      return <ClassicalMLVisualizer defaultTab="kmeans-pca" />;
     // Track 2.7: Universal Approximation
     case 'universal-approximation-and-depth':
-      visualizer = <VisionAndTransformerExtendedVisualizer defaultTab="universal" />;
-      break;
+      return <VisionAndTransformerExtendedVisualizer defaultTab="universal" />;
     // Track 3: Training Neural Networks Well (3.1, 3.2, 3.5, 3.6)
     case 'weight-initialization':
-      visualizer = <TrainingDynamicsVisualizer defaultTab="init" />;
-      break;
+      return <TrainingDynamicsVisualizer defaultTab="init" />;
     case 'batch-and-layer-normalization':
-      visualizer = <TrainingDynamicsVisualizer defaultTab="norm" />;
-      break;
+      return <TrainingDynamicsVisualizer defaultTab="norm" />;
     case 'learning-rate-schedules-and-warmup':
-      visualizer = <TrainingDynamicsVisualizer defaultTab="schedule" />;
-      break;
+      return <TrainingDynamicsVisualizer defaultTab="schedule" />;
     case 'reading-loss-curves-and-debugging':
-      visualizer = <TrainingDynamicsVisualizer defaultTab="debugging" />;
-      break;
+      return <TrainingDynamicsVisualizer defaultTab="debugging" />;
     // Track 4 Extended (4.5, 4.8, 4.9, 4.10)
     case 'from-lenet-to-vgg':
-      visualizer = <VisionAndTransformerExtendedVisualizer defaultTab="vgg" />;
-      break;
+      return <VisionAndTransformerExtendedVisualizer defaultTab="vgg" />;
     case 'transfer-learning':
-      visualizer = <VisionAndTransformerExtendedVisualizer defaultTab="transfer" />;
-      break;
+      return <VisionAndTransformerExtendedVisualizer defaultTab="transfer" />;
     case 'object-detection-yolo':
-      visualizer = <VisionAndTransformerExtendedVisualizer defaultTab="yolo" />;
-      break;
+      return <VisionAndTransformerExtendedVisualizer defaultTab="yolo" />;
     case 'image-segmentation-unet':
-      visualizer = <VisionAndTransformerExtendedVisualizer defaultTab="unet" />;
-      break;
+      return <VisionAndTransformerExtendedVisualizer defaultTab="unet" />;
     // Track 5: Sequence Models
     case 'embeddings-and-word-vectors':
-      visualizer = <SequenceModelsVisualizer defaultTab="embeddings" />;
-      break;
+      return <SequenceModelsVisualizer defaultTab="embeddings" />;
     case 'recurrent-neural-networks':
-      visualizer = <SequenceModelsVisualizer defaultTab="rnn" />;
-      break;
+      return <SequenceModelsVisualizer defaultTab="rnn" />;
     case 'bptt-and-vanishing-gradients':
-      visualizer = <SequenceModelsVisualizer defaultTab="bptt" />;
-      break;
+      return <SequenceModelsVisualizer defaultTab="bptt" />;
     case 'lstm-networks':
-      visualizer = <SequenceModelsVisualizer defaultTab="lstm" />;
-      break;
+      return <SequenceModelsVisualizer defaultTab="lstm" />;
     case 'gru-and-seq2seq':
-      visualizer = <SequenceModelsVisualizer defaultTab="gru-seq2seq" />;
-      break;
+      return <SequenceModelsVisualizer defaultTab="gru-seq2seq" />;
     // Track 6 Extended (6.3, 6.4, 6.5)
     case 'positional-encoding':
-      visualizer = <VisionAndTransformerExtendedVisualizer defaultTab="pos-encoding" />;
-      break;
+      return <VisionAndTransformerExtendedVisualizer defaultTab="pos-encoding" />;
     case 'bert-vs-gpt':
-      visualizer = <VisionAndTransformerExtendedVisualizer defaultTab="bert-gpt" />;
-      break;
+      return <VisionAndTransformerExtendedVisualizer defaultTab="bert-gpt" />;
     case 'vision-transformer-vit':
-      visualizer = <VisionAndTransformerExtendedVisualizer defaultTab="vit" />;
-      break;
+      return <VisionAndTransformerExtendedVisualizer defaultTab="vit" />;
     // Track 7: Generative Models
     case 'autoencoders':
-      visualizer = <GenerativeModelsVisualizer defaultTab="autoencoder" />;
-      break;
+      return <GenerativeModelsVisualizer defaultTab="autoencoder" />;
     case 'variational-autoencoders':
-      visualizer = <GenerativeModelsVisualizer defaultTab="vae" />;
-      break;
+      return <GenerativeModelsVisualizer defaultTab="vae" />;
     case 'generative-adversarial-networks':
-      visualizer = <GenerativeModelsVisualizer defaultTab="gan" />;
-      break;
+      return <GenerativeModelsVisualizer defaultTab="gan" />;
     case 'diffusion-models':
-      visualizer = <GenerativeModelsVisualizer defaultTab="diffusion" />;
-      break;
+      return <GenerativeModelsVisualizer defaultTab="diffusion" />;
     // Track 8: Modern LLM Practice
     case 'tokenization-and-llm-pretraining':
-      visualizer = <ModernLLMVisualizer defaultTab="tokenization" />;
-      break;
+      return <ModernLLMVisualizer defaultTab="tokenization" />;
     case 'finetuning-and-lora':
-      visualizer = <ModernLLMVisualizer defaultTab="lora" />;
-      break;
+      return <ModernLLMVisualizer defaultTab="lora" />;
     case 'retrieval-augmented-generation-rag':
-      visualizer = <ModernLLMVisualizer defaultTab="rag" />;
-      break;
+      return <ModernLLMVisualizer defaultTab="rag" />;
     case 'reinforcement-learning-and-rlhf':
-      visualizer = <ModernLLMVisualizer defaultTab="rlhf" />;
-      break;
+      return <ModernLLMVisualizer defaultTab="rlhf" />;
     default:
-      visualizer = <div className="p-8 text-center text-sm text-[#5C626B]">Interactive visualizer initializing...</div>;
+      return (
+        <div className="p-8 text-center text-sm text-[#5C626B]">
+          Interactive visualizer initializing...
+        </div>
+      );
   }
+}
 
+function renderFullLesson(slug: string, meta: LessonMeta) {
+  const content = LESSON_DETAILS[slug];
   const clientContent = {
     ...content,
     quiz: content.quiz.map(q => ({
@@ -255,7 +198,45 @@ export default async function LessonPage({ params }: PageProps) {
     <LessonLayout
       meta={meta}
       content={clientContent}
-      visualizer={visualizer}
+      visualizer={getVisualizerForSlug(slug)}
     />
+  );
+}
+
+async function PaidLessonGate({
+  slug,
+  meta,
+  sceneTitle,
+}: {
+  slug: string;
+  meta: LessonMeta;
+  sceneTitle: string;
+}) {
+  const unlocked = await hasServerPaidAccess();
+  if (!unlocked) {
+    return <LockedLessonPaywall meta={meta} sceneTitle={sceneTitle} />;
+  }
+  return renderFullLesson(slug, meta);
+}
+
+export default async function LessonPage({ params }: PageProps) {
+  const { slug } = await params;
+  const meta = getLessonBySlug(slug);
+  const content = LESSON_DETAILS[slug];
+
+  if (!meta || !content) {
+    notFound();
+  }
+
+  // Free preview lessons (1 per track = 10 lessons) render immediately
+  if (meta.isFreePreview) {
+    return renderFullLesson(slug, meta);
+  }
+
+  // Paid lessons are gated on the server after an access check
+  return (
+    <Suspense fallback={<LockedLessonPaywall meta={meta} sceneTitle={content.scene.title} />}>
+      <PaidLessonGate slug={slug} meta={meta} sceneTitle={content.scene.title} />
+    </Suspense>
   );
 }

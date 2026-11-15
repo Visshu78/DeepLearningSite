@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LESSON_DETAILS } from '@/lib/lesson-data/lessonContent';
+import { PRACTICE_CHALLENGES } from '@/lib/lesson-data/practiceChallenges';
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,6 +16,18 @@ export async function POST(req: NextRequest) {
         { error: 'Missing lessonSlug, questionId, or selectedIndex' },
         { status: 400 }
       );
+    }
+
+    if (lessonSlug === '__practice__') {
+      const challenge = PRACTICE_CHALLENGES.find(c => c.id === questionId);
+      if (!challenge) {
+        return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
+      }
+      return NextResponse.json({
+        isCorrect: selectedIndex === challenge.correctIndex,
+        correctIndex: challenge.correctIndex,
+        explanation: challenge.explanation,
+      });
     }
 
     const lesson = LESSON_DETAILS[lessonSlug];

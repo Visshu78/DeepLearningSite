@@ -374,18 +374,22 @@ export function SequenceModelsVisualizer({
             <div className="lg:col-span-7 space-y-4">
               <div className="p-4 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg space-y-2 text-xs font-mono-num">
                 <div className="font-bold text-[#1D1819]">
-                  GRU Coupled Interpolation: h_t = (1 - z_t) h_{'{t-1}'} + z_t h̃_t
+                  GRU Coupled Interpolation (Cho et al. 2014): h_t = (1 - z_t) h_{'{t-1}'} + z_t h̃_t
                 </div>
-                <div className="flex justify-between">
-                  <span>Keep Old Weight (1 - z_t) = {gruOut.retentionWeight.toFixed(3)}</span>
-                  <span>Write New Weight z_t = {gruOut.updateGate.toFixed(3)}</span>
+                <div className="flex flex-wrap justify-between gap-2">
+                  <span>Reset Gate r_t = {gruOut.resetGate.toFixed(3)}</span>
+                  <span>Keep Old (1 - z_t) = {gruOut.retentionWeight.toFixed(3)}</span>
+                  <span>Write New z_t = {gruOut.updateGate.toFixed(3)}</span>
                   <strong className="text-[#7A1C30]">h_t = {gruOut.hNew.toFixed(3)}</strong>
+                </div>
+                <div className="text-[11px] text-[#786970]">
+                  Note: PyTorch&apos;s nn.GRU swaps z_t and (1 - z_t): h_t = (1 - z_t) n_t + z_t h_{'{t-1}'}.
                 </div>
               </div>
 
               <div className="p-4 bg-white border border-[#E8E2D9] rounded-lg space-y-2 text-xs">
                 <div className="font-bold text-[#1D1819]">
-                  Seq2Seq Cross-Attention Alignment Weights (α_ts)
+                  Seq2Seq Luong Dot-Product Cross-Attention Weights (α_ti)
                 </div>
                 <div className="grid grid-cols-3 gap-2 font-mono-num text-center">
                   {['"Main" (I)', '"Chai" (Tea)', '"Piyunga" (Will Drink)'].map((word, idx) => (

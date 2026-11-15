@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLearningProgress } from '@/lib/progress/progressStore';
 import { ALL_LESSONS } from '@/lib/lesson-data/curriculum';
-import { BookOpen, Sliders, CheckSquare, Info, Menu, X, FolderGit2 } from 'lucide-react';
+import { BookOpen, Sliders, CheckSquare, Info, Menu, X, FolderGit2, UserCheck } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -65,13 +65,21 @@ export function Navbar() {
           <Link
             href="/learn"
             className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[#E8E2D9] bg-white text-[11px] font-mono-num text-[#1D1819] hover:border-[#C28E38] transition-colors shadow-2xs"
-            title="Completed lessons out of available foundational modules"
+            title="Completed lessons out of 57 lessons across 10 tracks"
           >
             <span className="w-2 h-2 rounded-full bg-[#C28E38]" aria-hidden="true"></span>
             <span>Progress:</span>
             <strong className="text-[#6E1A2B]">
               {mounted ? `${totalCompleted}/${availableCount}` : `0/${availableCount}`}
             </strong>
+          </Link>
+
+          <Link
+            href="/login"
+            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#6E1A2B] text-white text-[11px] font-semibold hover:bg-[#54111F] transition-colors"
+          >
+            <UserCheck className="w-3 h-3" aria-hidden="true" />
+            <span>Sign In</span>
           </Link>
 
           {/* Mobile Menu Button */}

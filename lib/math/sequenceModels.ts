@@ -132,23 +132,28 @@ export function computeLstmCellStep(params: {
 
 /**
  * 5.5 GRU Cell & Seq2Seq Dot-Product Cross-Attention
- * GRU:
+ * GRU (Cho et al., 2014 convention):
  * z_t = σ(logit_z), r_t = σ(logit_r)
+ * h̃_t = tanh(W_h x_t + U_h (r_t ⊙ h_{t-1}) + b_h)
  * h_t = (1 - z_t) * h_{t-1} + z_t * h̃_t
+ * (Note: PyTorch's nn.GRU swaps z_t and 1 - z_t: h_t = (1 - z_t) * n_t + z_t * h_{t-1})
  */
 export function computeGruCellStep(
   hPrev: number,
   updateLogit: number,
-  candidateVal: number
+  candidateVal: number,
+  resetLogit = 1.0
 ): {
   updateGate: number;
+  resetGate: number;
   retentionWeight: number;
   hNew: number;
 } {
   const z_t = sigmoidScalar(updateLogit);
+  const r_t = sigmoidScalar(resetLogit);
   const retentionWeight = 1 - z_t;
   const hNew = retentionWeight * hPrev + z_t * candidateVal;
-  return { updateGate: z_t, retentionWeight, hNew };
+  return { updateGate: z_t, resetGate: r_t, retentionWeight, hNew };
 }
 
 export function computeSeq2SeqAttention(

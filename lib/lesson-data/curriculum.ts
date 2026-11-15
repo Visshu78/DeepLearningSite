@@ -212,9 +212,9 @@ export const CURRICULUM: ModuleMeta[] = [
         status: 'available',
         relatedProjectSlug: 'clean-the-messy-dataset',
         keyTakeaways: [
-          'Standardization z = (x - μ)/σ centers features for linear models, SVMs, k-means, PCA, and neural networks',
-          'Min-Max scaling maps bounded inputs like pixels into [0, 1], while Robust scaling uses median and IQR to resist outliers',
-          'Tree-based models (Random Forests, XGBoost) split on rank thresholds and do not require feature scaling'
+          'Tukey IQR fences [Q₁ - 1.5·IQR, Q₃ + 1.5·IQR] detect outliers without the masking effect that inflates Z-score standard deviations',
+          'Standardization z = (x - μ)/σ centers features for linear models, SVMs, k-means, PCA, and neural networks; RobustScaler uses median and IQR to resist outliers',
+          'Min-Max scaling maps training values into [0, 1] (though unseen test values outside the training range can fall outside [0, 1]), while tree models do not require scaling'
         ]
       },
       {
@@ -1072,7 +1072,7 @@ export const CURRICULUM: ModuleMeta[] = [
         relatedProjectSlug: 'lstm-food-review-sentiment',
         keyTakeaways: [
           'Backpropagation Through Time (BPTT) unrolls the RNN and sums parameter gradients across all time steps',
-          'Transporting error from step T back to step 1 multiplies by (W_hh^T · diag(1 - h_k²))^(T-1)',
+          'Each recurrent Jacobian step is ∂h_k/∂h_{k-1} = diag(1 - h_k²) · W_hh, so transporting gradients across (T-1) steps multiplies these matrices repeatedly',
           'When the spectral radius is <1, long-range gradients vanish exponentially; when >1, they explode (cured via gradient norm clipping)'
         ]
       },

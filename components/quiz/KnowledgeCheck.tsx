@@ -21,14 +21,34 @@ interface KnowledgeCheckProps {
   onAllCorrect?: () => void;
 }
 
+export function getShuffledOptionOrder(seedKey: string, length: number, attempt = 0): number[] {
+  const arr = Array.from({ length }, (_, i) => i);
+  let seed = 2166136261 ^ (attempt * 16777619);
+  for (let i = 0; i < seedKey.length; i++) {
+    seed ^= seedKey.charCodeAt(i);
+    seed = Math.imul(seed, 16777619);
+  }
+  for (let i = arr.length - 1; i > 0; i--) {
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    const j = Math.abs(seed) % (i + 1);
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+  }
+  return arr;
+}
+
 export function KnowledgeCheck({ lessonSlug, questions, onAllCorrect }: KnowledgeCheckProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [verifiedResults, setVerifiedResults] = useState<Record<string, VerifiedResult>>({});
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const [attemptCounts, setAttemptCounts] = useState<Record<string, number>>({});
 
-  const handleSelect = (qId: string, optIndex: number) => {
+  const handleSelect = (qId: string, originalIndex: number) => {
     if (verifiedResults[qId]) return;
-    setSelectedAnswers(prev => ({ ...prev, [qId]: optIndex }));
+    setSelectedAnswers(prev => ({ ...prev, [qId]: originalIndex }));
   };
 
   const handleSubmit = async (qId: string) => {
@@ -71,6 +91,10 @@ export function KnowledgeCheck({ lessonSlug, questions, onAllCorrect }: Knowledg
       delete copy[qId];
       return copy;
     });
+    setAttemptCounts(prev => ({
+      ...prev,
+      [qId]: (prev[qId] ?? 0) + 1,
+    }));
   };
 
   return (
@@ -88,6 +112,11 @@ export function KnowledgeCheck({ lessonSlug, questions, onAllCorrect }: Knowledg
           const verified = verifiedResults[q.id];
           const isSubmitted = Boolean(verified);
           const isCorrect = verified?.isCorrect ?? false;
+          const displayOrder = getShuffledOptionOrder(
+            `${lessonSlug}:${q.id}`,
+            q.options.length,
+            attemptCounts[q.id] ?? 0
+          );
 
           return (
             <div
@@ -103,16 +132,17 @@ export function KnowledgeCheck({ lessonSlug, questions, onAllCorrect }: Knowledg
                 </p>
               </div>
 
-              {/* Options */}
+              {/* Options (shuffled at render time) */}
               <div role="radiogroup" aria-label={q.question} className="space-y-2.5 pl-9">
-                {q.options.map((option, optIdx) => {
-                  const isSelected = selectedAnswers[q.id] === optIdx;
+                {displayOrder.map(originalIdx => {
+                  const option = q.options[originalIdx];
+                  const isSelected = selectedAnswers[q.id] === originalIdx;
                   let optionStyles = 'border-[#EAE2D5] hover:border-[#DFCDB6] bg-[#FDFBF7] text-[#1F191B]';
 
                   if (isSubmitted && verified) {
-                    if (optIdx === verified.correctIndex) {
+                    if (originalIdx === verified.correctIndex) {
                       optionStyles = 'border-[#BBF7D0] bg-[#F0FDF4] text-[#166534] font-medium';
-                    } else if (isSelected && optIdx !== verified.correctIndex) {
+                    } else if (isSelected && originalIdx !== verified.correctIndex) {
                       optionStyles = 'border-[#FCA5A5] bg-[#FEF2F2] text-[#991B1B]';
                     } else {
                       optionStyles = 'border-[#EAE2D5] bg-white text-[#786970] opacity-60';
@@ -123,19 +153,19 @@ export function KnowledgeCheck({ lessonSlug, questions, onAllCorrect }: Knowledg
 
                   return (
                     <button
-                      key={optIdx}
+                      key={originalIdx}
                       type="button"
                       role="radio"
                       aria-checked={isSelected}
                       disabled={isSubmitted}
-                      onClick={() => handleSelect(q.id, optIdx)}
+                      onClick={() => handleSelect(q.id, originalIdx)}
                       className={`w-full text-left p-3.5 rounded-lg text-sm sm:text-base border transition-colors flex items-center justify-between ${optionStyles}`}
                     >
                       <span>{option}</span>
-                      {isSubmitted && verified && optIdx === verified.correctIndex && (
+                      {isSubmitted && verified && originalIdx === verified.correctIndex && (
                         <CheckCircle2 className="w-4 h-4 text-[#166534] shrink-0 ml-2" aria-hidden="true" />
                       )}
-                      {isSubmitted && verified && isSelected && optIdx !== verified.correctIndex && (
+                      {isSubmitted && verified && isSelected && originalIdx !== verified.correctIndex && (
                         <XCircle className="w-4 h-4 text-[#991B1B] shrink-0 ml-2" aria-hidden="true" />
                       )}
                     </button>
@@ -150,42 +180,37 @@ export function KnowledgeCheck({ lessonSlug, questions, onAllCorrect }: Knowledg
                     type="button"
                     disabled={!isAnswered || verifyingId === q.id}
                     onClick={() => handleSubmit(q.id)}
-                    className="text-xs sm:text-sm font-bold px-4 py-2.5 rounded-lg bg-[#7A1C30] text-white hover:bg-[#5F1424] disabled:opacity-40 transition-colors shadow-2xs border border-[#9B2242]"
+                    className="text-sm font-bold px-5 py-2.5 rounded-lg bg-[#7A1C30] text-white hover:bg-[#611525] disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs"
                   >
                     {verifyingId === q.id ? 'Checking...' : 'Check Answer'}
                   </button>
                 ) : (
                   <div className="space-y-3">
                     <div
-                      className={`p-3.5 rounded-lg text-xs sm:text-sm leading-relaxed border ${
+                      className={`p-4 rounded-lg text-sm sm:text-base leading-relaxed border flex items-start gap-2.5 ${
                         isCorrect
                           ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
-                          : 'bg-[#FEF9EE] border-[#EEDAA2] text-[#996515]'
+                          : 'bg-[#FFFDF5] border-[#FCD34D] text-[#854D0E]'
                       }`}
                     >
-                      <div className="flex items-center gap-1.5 font-bold mb-1 text-sm sm:text-base">
-                        {isCorrect ? (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 text-[#166534]" aria-hidden="true" />
-                            <span>Correct Concept Application</span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="w-4 h-4 text-[#B8860B]" aria-hidden="true" />
-                            <span>Explanation &amp; Correction</span>
-                          </>
-                        )}
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                      <div>
+                        <span className="font-semibold block mb-0.5">
+                          {isCorrect ? 'Correct!' : 'Not quite right.'}
+                        </span>
+                        {verified?.explanation}
                       </div>
-                      <p>{verified?.explanation}</p>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleReset(q.id)}
-                      className="text-xs sm:text-sm font-medium text-[#786970] hover:text-[#7A1C30] underline transition-colors"
-                    >
-                      Try Again
-                    </button>
+                    {!isCorrect && (
+                      <button
+                        type="button"
+                        onClick={() => handleReset(q.id)}
+                        className="text-xs font-medium text-[#54484E] hover:text-[#1F191B] underline"
+                      >
+                        Try Again
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

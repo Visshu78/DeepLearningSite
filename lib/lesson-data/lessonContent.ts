@@ -127,7 +127,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         options: [
           'It normalizes the input features to zero mean and unit variance.',
           'It acts as the learning rate during backward propagation.',
-          'It shifts the neuron\'s activation threshold independently of the inputs so the decision boundary does not have to pass through the origin.',
+          'It shifts the decision threshold independently of the input features.',
           'It forces the output of the neuron to remain between 0 and 1.'
         ],
         correctIndex: 2,
@@ -232,10 +232,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q1',
         question: 'Suppose a student builds a deep network with Sigmoid hidden units, and one neuron receives a very strong pre-activation z = 8.0 ("already 99.97% convinced"). What happens to its gradient during backpropagation?',
         options: [
-          'The gradient explodes towards infinity.',
-          'The gradient oscillates between positive and negative.',
-          'The gradient remains exactly 1.0.',
-          'The gradient becomes nearly zero (vanishing gradient).'
+          'The local derivative explodes rapidly toward positive infinity.',
+          'The local derivative oscillates between positive and negative.',
+          'The local derivative remains constant at 1.0 across all inputs.',
+          'The local derivative shrinks to nearly zero (vanishing gradient).'
         ],
         correctIndex: 3,
         explanation: 'At z = 8.0, σ(8) ≈ 0.9997, and σ\'(8) ≈ 0.0003. When backpropagating, multiplying upstream gradients by 0.0003 practically annihilates the learning signal.'
@@ -244,10 +244,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'If a large negative bias update pushes a standard ReLU neuron so that z < 0 for every training example in the dataset, what happens to that neuron and how does Leaky ReLU fix it?',
         options: [
-          'It becomes a "dead ReLU" with derivative 0 forever.',
-          'It restricts all outputs strictly between -1 and 1.',
-          'It computes faster than before.',
-          'It eliminates the need for bias parameters.'
+          'It becomes a dead ReLU with zero gradient for negative inputs.',
+          'It restricts all neuron activations to the interval [-1, +1].',
+          'It doubles the matrix multiplication speed on the forward pass.',
+          'It removes the need for learnable bias parameters in the layer.'
         ],
         correctIndex: 0,
         explanation: 'When a standard ReLU neuron gets stuck in the negative region, its derivative is 0, so no gradient ever updates its weights again ("dying ReLU"). Leaky ReLU keeps a small slope α > 0 when z < 0 to keep the neuron trainable.'
@@ -355,8 +355,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         options: [
           'Because the loss function requires adding all hidden activations together.',
           'They are only kept during test-time inference, not during training.',
-          'To display them on the monitor.',
-          'Because backpropagation needs a^[l-1] and φ\'(z^[l]) to compute exact weight gradients ∂L/∂W^[l] without re-running the forward pass.'
+          'Because the optimizer requires sorting all hidden layer activations by magnitude.',
+          'Because backpropagation needs cached a^[l-1] and z^[l] values to compute gradients.'
         ],
         correctIndex: 3,
         explanation: 'By the chain rule, ∂L/∂W^[l] = δ^[l] · (a^[l-1])ᵀ where δ^[l] depends on φ\'(z^[l]). Caching z^[l] and a^[l] during the forward pass is what makes reverse-mode autodiff fast.'
@@ -464,10 +464,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'Why does Mean Squared Error react much more strongly to a single corrupt outlier in a dataset than Mean Absolute Error |ŷ - y|?',
         options: [
-          'Because squaring an error of size 10 produces a penalty of 100 (and gradient 10).',
-          'Because MSE ignores errors smaller than 1.',
-          'Because MSE cannot be differentiated.',
-          'Because MSE divides by N² instead of N.'
+          'Because squaring the residual amplifies large errors quadratically.',
+          'Because Mean Squared Error ignores any residual smaller than 1.0.',
+          'Because Mean Absolute Error has an undefined derivative everywhere.',
+          'Because Mean Squared Error divides the total penalty by N squared.'
         ],
         correctIndex: 0,
         explanation: 'The derivative of ½(ŷ - y)² is proportional to the residual (ŷ - y), so a 10× larger outlier pulls the model parameters with 10× more gradient force.'
@@ -554,9 +554,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'On the parabolic valley L(θ) = 0.5(θ - 2)² where curvature (second derivative) is 1.0, what happens if you set your stride length / learning rate to η = 2.30?',
         options: [
           'The hiker stops immediately because the gradient becomes 0.',
-          'The weights freeze and stop changing.',
-          'The hiker reaches θ = 2 in a single step.',
-          'Each step overshoots the valley center θ = 2 and lands higher up the opposite wall (|1 - η| = 1.3 > 1), causing growing oscillations and divergence.'
+          'The weights freeze in place and stop updating after the first iteration.',
+          'The parameter reaches the exact minimum θ = 2 in a single update step.',
+          'Each step overshoots the valley minimum and diverges with growing oscillations.'
         ],
         correctIndex: 3,
         explanation: 'Because η = 2.30 exceeds the stability threshold 2 / curvature = 2.0, the distance to the minimum multiplies by |1 - 2.30| = 1.30 on every step, exploding to infinity.'
@@ -565,10 +565,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'When switching the landscape to "Double-Well" (non-convex), why can two hikers with the exact same learning rate η end up at different final loss values?',
         options: [
-          'Because derivatives do not exist on non-convex curves.',
-          'Because gradient descent is a local optimizer that follows the slope from its starting point θ₀ and can settle into whichever local valley basin it starts in.',
-          'Because the learning rate changes randomly.',
-          'Because convex functions have no minimum.'
+          'Because first-order derivatives do not exist on non-convex loss surfaces.',
+          'Because gradient descent follows local slopes and settles into nearby basins.',
+          'Because the learning rate hyperparameter changes randomly at every epoch.',
+          'Because non-convex functions never possess any stationary points or minima.'
         ],
         correctIndex: 1,
         explanation: 'At any local minimum, the first derivative dL/dθ = 0, so standard gradient descent stops even if a deeper global valley exists across a ridge.'
@@ -676,10 +676,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'How do ML engineers mathematically verify that their analytical backpropagation code is 100% bug-free?',
         options: [
-          'By running more training epochs until accuracy improves.',
-          'By removing all non-linear activation functions.',
-          'By comparing analytical gradients against numerical finite differences [L(θ + ε) - L(θ - ε)] / (2ε).',
-          'By setting the learning rate to zero.'
+          'By running additional training epochs until validation accuracy improves.',
+          'By temporarily removing all non-linear activation functions from the network.',
+          'By comparing analytical gradients against centered finite-difference estimates.',
+          'By setting the optimizer learning rate and weight decay parameters to zero.'
         ],
         correctIndex: 2,
         explanation: 'Central finite difference approximation [L(θ + ε) - L(θ - ε)] / (2ε) calculates numerical derivatives directly from forward loss evaluations. Matching within ~1e-5 verifies the backward code.'
@@ -735,7 +735,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'A neural network with millions of parameters has sufficient expressive power to memorize individual training samples, including idiosyncratic noise.',
       'When a model fits training noise, its training loss reaches near-zero while test loss explodes—a state termed Overfitting or High Variance.',
-      'L2 Regularization (Weight Decay) discourages large weights by penalizing their squared magnitudes, ensuring individual neurons cannot develop overly brittle sensitivities.',
+      'L2 Regularization (Weight Decay) discourages large weights by penalizing their squared magnitudes, ensuring individual neurons cannot develop overly brittle sensitivities. Note that while L2 regularization and weight decay are identical under vanilla SGD, they differ under adaptive optimizers like Adam because L2 gradients get rescaled by the second-moment estimate—which is why AdamW (Loshchilov & Hutter, 2019) decouples weight decay from the gradient step.',
       'Dropout temporarily disables random subsets of neurons during each training step, breaking co-dependencies and acting like an ensemble of exponentially many thinned networks.'
     ],
     mathFormulas: [
@@ -787,10 +787,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'In terms of model parameter distributions, what is the primary difference between L1 (Lasso) and L2 (Ridge) weight penalties?',
         options: [
-          'L2 causes weights to grow exponentially large.',
-          'L1 forces many unimportant weights to become strictly zero (feature selection).',
-          'L1 can only be applied to convolutional layers.',
-          'L2 is incompatible with backpropagation.'
+          'L2 regularization forces all network weights to grow exponentially large.',
+          'L1 regularization drives unimportant weights to exact zero for sparsity.',
+          'L1 regularization can only be applied to 2D spatial convolutional layers.',
+          'L2 regularization is mathematically incompatible with backpropagation.'
         ],
         correctIndex: 1,
         explanation: 'L1 penalty |w| has a constant gradient ±λ everywhere except zero, driving uninformative weights strictly to 0. L2 penalty (λ/2)w² has gradient λw, which shrinks large weights aggressively and small weights gently.'
@@ -898,10 +898,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'In our narrow gully scene (steep y-walls, gentle x-floor), why is standard SGD forced to make agonizingly slow progress along the x-floor?',
         options: [
-          'Because a single learning rate η must be kept tiny to avoid exploding across the steep y-walls.',
-          'It converges exponentially fast.',
-          'It automatically computes second derivatives.',
-          'It immediately finds the global optimum.'
+          'A single learning rate must stay tiny to avoid diverging on the steep axis.',
+          'Vanilla SGD converges exponentially fast along both canyon axes at once.',
+          'Vanilla SGD automatically computes the inverse Hessian matrix at each step.',
+          'Vanilla SGD jumps straight to the global minimum in a single iteration.'
         ],
         correctIndex: 0,
         explanation: 'In ill-conditioned ravines, the maximum stable learning rate for SGD is dictated by the steepest direction η < 2/λ_max. That tiny η makes updates along the flat direction (small λ_min) crawl.'
@@ -998,10 +998,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q1',
         question: 'Why does sliding a single shared 3×3 stencil across a 256×256 photo work vastly better than connecting every pixel to 100 dense neurons?',
         options: [
-          'It forces every neuron to have zero bias.',
-          'Weight sharing uses only 9 weights + 1 bias (instead of 6.5 million) and detects the same edge whether it appears in the top-left or bottom-right.',
-          'It eliminates the need for non-linear activation functions.',
-          'It guarantees the loss surface is strictly convex.'
+          'It forces every hidden neuron in the feature map to use a zero bias term.',
+          'Weight sharing slashes parameter counts and detects features anywhere in space.',
+          'It completely eliminates the need for non-linear activation functions like ReLU.',
+          'It guarantees that the multi-layer convolutional loss surface is strictly convex.'
         ],
         correctIndex: 1,
         explanation: 'A dense layer on 256×256 with 100 units needs 6.55M weights and memorizes pixel positions. A 3×3 filter uses 10 parameters and provides translation equivariance.'
@@ -1098,10 +1098,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q1',
         question: 'Why is Max Pooling generally preferred over Average Pooling in early feature-extraction layers of a visual classifier?',
         options: [
-          'Average pooling requires learnable weights, while max pooling has none.',
-          'Max pooling guarantees the output matrix has odd dimensions.',
-          'Max pooling preserves sharp, high-contrast feature detections ("did the edge appear in this 2×2 patch?").',
-          'Average pooling cannot be used with ReLU activations.'
+          'Average pooling requires learnable weights, whereas max pooling uses none.',
+          'Max pooling guarantees that every output feature map has odd spatial dimensions.',
+          'Max pooling preserves strong peak activations instead of diluting them with zeros.',
+          'Average pooling is mathematically incompatible with ReLU activation functions.'
         ],
         correctIndex: 2,
         explanation: 'Max pooling acts as a logical OR detector over a small patch. Average pooling washes out a strong edge activation by averaging it with three background zeros.'
@@ -1244,10 +1244,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'In our cheque-scanner pipeline, what is the exact role of the Flatten stage between Max Pooling (3×3×3) and the Dense layer?',
         options: [
-          'To average all pixel values into a single scalar brightness.',
-          'To unroll the 3D spatial tensor [3 channels, 3 rows, 3 cols] into a 27-element 1D vector so standard matrix multiplication W · f + b can score each digit class.',
-          'To remove all zero activations created by ReLU.',
-          'To normalize the gradient magnitudes during backpropagation.'
+          'To average all spatial pixel intensities into a single scalar brightness value.',
+          'To unroll the 3D feature maps into a 1D vector for the dense linear classifier.',
+          'To prune away all zero activations produced by preceding ReLU layers.',
+          'To normalize the backpropagated gradient magnitudes across all output classes.'
         ],
         correctIndex: 1,
         explanation: 'Dense layers expect a 1D feature vector per sample. Flatten reshapes (3, 3, 3) → (27,) without changing any numbers.'
@@ -1282,7 +1282,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'Tracing Which Stencil Square Caused a Misread Cheque',
       narrative:
-        'Suppose our cheque scanner misreads a "7" as a "1". How do we fix the 2×2 stencil (K)? Because that same top-left stencil corner K[0,0] touched 9 different patches as it slid across the photo, its total blame (∂L/∂K[0,0]) is the sum of (photo pixel it touched × error at that output spot) across all 9 stops! And what about Max Pooling, where only the loudest student in each 2×2 bench was recorded? During the blame pass, 100% of the error goes back to that single winning seat (argmax), while the other 3 seats get 0 blame!'
+        'Suppose our cheque scanner misreads a "7" as a "1". How do we fix the 2×2 stencil (K)? Because that same top-left stencil corner K[0,0] touched 4 different patches as it slid across the 3×3 photo, its total blame (∂L/∂K[0,0]) is the sum of (photo pixel it touched × error at that output spot) across all 4 stops! And what about Max Pooling, where only the loudest student in each 2×2 bench was recorded? During the blame pass, 100% of the error goes back to that single winning seat (argmax), while the other 3 seats get 0 blame!'
     },
     mapping: [
       {
@@ -1364,7 +1364,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         options: [
           'Because gradient descent always moves in the reverse direction of the loss.',
           'To invert all negative weights into positive weights.',
-          'Because in the forward pass X(r, c) was multiplied by K(m, n) to produce output Y(r - m, c - n).',
+          'Each weight K(m, n) multiplied shifted coordinates during forward pass.',
           'It is only needed when using ReLU activations.'
         ],
         correctIndex: 2,
@@ -1481,7 +1481,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'What is the "degradation problem" discovered by He et al. (2015) that motivated ResNet?',
         options: [
           'Deeper networks consistently overfit the training dataset and fail only on test data.',
-          'Adding more layers to a plain CNN (e.g. 56 layers vs 20 layers) caused TRAINING error itself to get worse.',
+          'Adding more layers to a plain CNN caused the training error itself to worsen.',
           'Convolutional kernels degrade in quality due to GPU floating-point precision issues.',
           'Activation functions become linear after 10 layers.'
         ],
@@ -1492,10 +1492,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'In a ResNet block H(x) = F(x) + x, even if all weights inside the residual branch F(x) temporarily have zero gradient (∂F/∂x = 0), what happens to the upstream gradient ∂L/∂H flowing back to earlier layers?',
         options: [
-          'It removes the need for backpropagation entirely.',
-          'It becomes zero and stops learning.',
-          'It forces every weight in the network to be strictly positive.',
-          'Because ∂L/∂x = ∂L/∂H · (0 + I) = ∂L/∂H, 100% of the upstream gradient still rides the identity skip highway to earlier layers.'
+          'It removes the need for running backward pass gradient updates entirely.',
+          'The upstream gradient becomes strictly zero and earlier layers stop learning.',
+          'It forces every convolutional weight in the residual block to stay positive.',
+          'The upstream gradient ∂L/∂H flows unimpeded through the +I identity shortcut.'
         ],
         correctIndex: 3,
         explanation: 'The derivative of x with respect to x is the identity matrix I (+1), so the addition gate passes ∂L/∂H backward unimpeded.'
@@ -1558,7 +1558,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'Traditionally, scaling convolutional networks involves arbitrarily tuning a single dimension: making the network deeper (like ResNet-101), wider (like WideResNet), or feeding higher resolution images.',
       'However, scaling any single dimension exhibits diminishing returns: extremely deep networks encounter optimization limits; extremely wide shallow networks struggle with complex hierarchical abstractions; and high-resolution images increase FLOPs quadratically without proportional accuracy gains.',
-      'EfficientNet introduces Compound Model Scaling: systematically balancing network Depth (d), Width (w), and Resolution (r) using a principled compound scaling coefficient φ: d = α^φ, w = β^φ, r = γ^φ.',
+      'EfficientNet introduces Compound Model Scaling: systematically balancing network Depth (d), Width (w), and Resolution (r) using a principled compound scaling coefficient φ: d = α^φ, w = β^φ, r = γ^φ. In practice, EfficientNet B0–B7 follow these φ scaling equations approximately (due to integer rounding of layer counts and channel widths).',
       'Under the constraint α · β² · γ² ≈ 2, scaling by φ roughly doubles total FLOPs while preserving the optimal balance across all three dimensions.',
       'At the architectural level, EfficientNet utilizes Mobile Inverted Bottleneck Convolutions (MBConv) with Depthwise Separable Convolutions—cutting parameters and FLOPs by ~8× compared to standard 2D convolutions—combined with Squeeze-and-Excitation (SE) channel attention.'
     ],
@@ -1616,10 +1616,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'In the MBConv block used by EfficientNet, what does the Squeeze-and-Excitation (SE) sub-block do?',
         options: [
-          'It downsamples the spatial resolution by 50%.',
-          'It averages each channel into a single number (Global Average Pooling) and passes that vector through a tiny 2-layer bottleneck to output a 0-to-1 importance gate for every channel.',
-          'It replaces the convolutional weights with random noise during training.',
-          'It calculates the second derivatives of the loss.'
+          'It downsamples the spatial height and width of every feature map by half.',
+          'It pools each channel globally and learns a 0-to-1 sigmoid gate per channel.',
+          'It replaces convolutional kernel weights with Gaussian noise during training.',
+          'It computes the exact second-order Hessian derivatives of the classification loss.'
         ],
         correctIndex: 1,
         explanation: 'Squeeze-and-Excitation introduces lightweight channel attention: GAP squeezes H×W×C into 1×1×C, and a small MLP + Sigmoid excites the most informative channels for the current image.'
@@ -1724,7 +1724,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
           'Because it reduces the computational complexity from O(N²) to O(N).',
           'Because GPUs cannot compute matrix multiplications without dividing by square roots.',
           'Because dividing by √d_k guarantees that all dot products are integers.',
-          'Because when head dimension d_k is large, the dot product variance grows as d_k, pushing Softmax into flat saturated extremes where gradients vanish to zero.'
+          'Large d_k inflates dot-product variance and saturates the Softmax gradients.'
         ],
         correctIndex: 3,
         explanation: 'Vaswani et al. (2017) showed that when d_k is large, dot products grow in magnitude with standard deviation √d_k, pushing Softmax into near-one-hot saturation where ∂Softmax/∂z ≈ 0.'
@@ -1733,10 +1733,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'q2',
         question: 'In the sentence "The robot saw the battery and charged it", what allows self-attention to link "it" to "battery" in a single step?',
         options: [
-          'Backpropagation zeroes out all other words in the sentence.',
-          'The network uses an explicit dictionary lookup table stored on disk.',
-          'The learned Query projection q("it") has a high dot product with the Key projection k("battery"), assigning a large Softmax weight to v.',
-          'Convolutional pooling selects the maximum word length.'
+          'Backpropagation permanently zeroes out all other token embeddings in the sentence.',
+          'The network queries a hard-coded symbolic grammar lookup table stored on disk.',
+          'The learned Query vector for "it" aligns strongly with the Key vector for "battery".',
+          'Spatial max-pooling layers select the noun token with the longest character count.'
         ],
         correctIndex: 2,
         explanation: 'Learned projection matrices W_Q and W_K align the query vector of "it" with the key vector of its semantic antecedent, routing "battery"\'s value vector directly into "it".'
@@ -1758,7 +1758,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'Four Friends Watching the Same Movie, Each Tracking a Different Clue',
       narrative:
-        'When you and three friends watch a mystery thriller together, instead of all four staring at the exact same thing, you split up the job: Friend 1 tracks grammar ("who did the action?"), Friend 2 tracks pronouns ("who is \'it\'?"), Friend 3 tracks tone and emotion, and Friend 4 tracks adjacent words. Even though each friend only takes 1/4th of the notebook pages (d_k = d_model / h), when you staple all four notes together at the interval and summarize them (Concat · W^O), the group catches four relationships at once for the exact same total notebook cost as one person writing everything!'
+        'When you and three friends watch a mystery thriller together, instead of all four staring at the exact same thing, you split up the job: Friend 1 tracks grammar ("who did the action?"), Friend 2 tracks pronouns ("who is \'it\'?"), Friend 3 tracks tone and emotion, and Friend 4 tracks adjacent words. Even though each friend only takes 1/4th of the notebook pages (d_k = d_model / h), when you staple all four notes together at the intermission and summarize them (Concat · W^O), the group catches four relationships at once for the exact same total notebook cost as one person writing everything!'
     },
     mapping: [
       {
@@ -1795,7 +1795,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Multi-Head Attention (MHA) solves this by splitting the model dimension d_model into h parallel heads, where each head operates on dimension d_k = d_model / h. This allows the model to jointly attend to information from different representation subspaces at different positions.',
       'The outputs from all h heads are concatenated and linearly transformed: MHA(Q, K, V) = Concat(head₁, …, head_h) W^O. Crucially, because each head has reduced dimension d_k, total computational cost is identical to single-head attention with full dimensionality!',
       'The complete Transformer Encoder Block packages Multi-Head Attention with residual skip connections (x + Sublayer(x)), Layer Normalization, and a point-wise Feed-Forward Network (FFN).',
-      'Modern architectures (like LLaMA, GPT-4, and ViT) utilize Pre-Layer Normalization (Pre-LN), applying LayerNorm before each sublayer so gradients can pass completely unattenuated through the residual stream.'
+      'Modern architectures (like GPT-2/3, LLaMA, and ViT) utilize Pre-Layer Normalization (Pre-LN), applying LayerNorm before each sublayer so gradients can pass completely unattenuated through the residual stream.'
     ],
     mathFormulas: [
       {
@@ -1810,8 +1810,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       },
       {
         name: 'Position-Wise Feed-Forward Network (FFN)',
-        latex: '\\text{FFN}(x) = \\max(0, x W_1 + b_1) W_2 + b_2 = \\text{GELU}(x W_1 + b_1) W_2 + b_2',
-        explanation: 'Applies two linear transformations with non-linearity to each position separately, typically expanding to 4·d_model.'
+        latex: '\\text{FFN}(x) = \\sigma(x W_1 + b_1) W_2 + b_2',
+        explanation: 'Applies two linear projections with an element-wise activation σ in between (ReLU in the original paper, GELU in many modern models), typically expanding to 4·d_model.'
       },
       {
         name: 'Pre-Layer Normalization (Pre-LN) Residual Stream',
@@ -1849,12 +1849,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       },
       {
         id: 'q2',
-        question: 'Why do modern foundation models (such as GPT-3/4 and LLaMA) prefer Pre-Layer Normalization x + Sublayer(LN(x)) over the original Post-LN LN(x + Sublayer(x))?',
+        question: 'Why do modern foundation models (such as GPT-2/3 and LLaMA) prefer Pre-Layer Normalization x + Sublayer(LN(x)) over the original Post-LN LN(x + Sublayer(x))?',
         options: [
-          'Pre-LN replaces non-linear activations with linear identity mappings.',
-          'Pre-LN eliminates the need for matrix multiplications entirely.',
-          'Post-LN cannot be executed on Nvidia GPUs.',
-          'Pre-LN places LayerNorm inside the residual branch, leaving the main identity stream x completely unblocked so gradients flow from output to Layer 1 with a +I highway.'
+          'Pre-LN replaces all non-linear FFN activations with linear identity mappings.',
+          'Pre-LN eliminates the need for query-key matrix multiplications during training.',
+          'Post-LN normalization layers cannot be parallelized on modern GPU tensor cores.',
+          'Pre-LN applies LayerNorm on the branch so the main residual highway stays unblocked.'
         ],
         correctIndex: 3,
         explanation: 'In Pre-LN, the identity shortcut connects directly from layer input to output (x_next = x + Sublayer(LN(x))), ensuring that dL/dx includes an unattenuated +1 term, just like ResNet.'
@@ -1957,8 +1957,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'eda-q1',
         question: 'You inspect a delivery-time column in an app dataset and find Mean = 48 minutes, Median = 24 minutes, and Skewness γ₁ = +4.2. What does this tell you immediately?',
         options: [
-          'Exactly half of the deliveries took 48 minutes.',
-          'Most deliveries arrive around 24 minutes, but a long right tail of delayed/stuck orders is pulling the mean up to 48 minutes.',
+          'Exactly half of all customer food deliveries took 48 minutes or longer to arrive.',
+          'Most orders arrive near 24 minutes, while a right tail of delays pulls the mean up.',
           'The dataset has zero outliers and follows a perfect bell curve.',
           'The median calculation is broken because median must always equal the mean.'
         ],
@@ -1970,9 +1970,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'In Kaggle\'s Telco Customer Churn dataset, the TotalCharges column looks numeric in Excel, but pandas loads it as object/string dtype. Why must EDA catch this before modeling?',
         options: [
           'New customers with tenure = 0 have a blank space " " in TotalCharges.',
-          'Strings train 10x faster than float32 tensors on GPUs.',
-          'Neural networks automatically parse whitespace strings into medians.',
-          'Object columns have zero variance.'
+          'String columns train ten times faster than float32 tensors on modern GPUs.',
+          'Neural networks automatically parse whitespace strings into median values.',
+          'Object dtype columns always have zero statistical variance across rows.'
         ],
         correctIndex: 0,
         explanation: 'Real CSVs often encode missing values as whitespace, "?", or "-999". Auditing dtypes and unique non-numeric tokens is the first step of EDA.'
@@ -1987,77 +1987,78 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
   },
 
   // =========================================================================
-  // TRACK 9 — LESSON 9.2: HANDLING MISSING DATA AND OUTLIERS
+  // TRACK 9 — LESSON 9.2: HANDLING MISSING DATA
   // =========================================================================
   'handling-missing-data': {
     slug: 'handling-missing-data',
     scene: {
-      title: 'A Attendance Sheet with Blank Cells and One Impossible "350%" Score',
+      title: 'An Attendance Sheet with Blank Cells: Medical Leave vs Skipped Questions',
       narrative:
-        'You are compiling lab marks for 60 students. Three cells are blank because those students missed the test due to medical leave, and one cell says "950/100" because a TA\'s finger slipped on the numpad. If you delete every student with a blank cell, you throw away valuable data; if you fill the blank with a median mark AND add a "was_absent = 1" checkbox, the model keeps the student and learns whether absence itself matters. And for that 950/100 typo, Tukey\'s IQR fence catches and clips it before it wrecks your regression line.'
+        'You are compiling lab marks and scholarship forms for 60 students. Three lab cells are blank because those students missed the test on medical leave, and 11 students left "Existing Credit Card Limit" blank because they do not own a credit card. If you delete every student with a blank cell, you throw away valuable data and bias your sample! Instead, you fill continuous blanks with a training-set median (or domain-specific 0 when absence means zero) AND add a binary "was_missing = 1" checkbox so the model learns when the blank itself carries signal.'
     },
     mapping: [
       {
         scenePart: 'Filling a blank test cell with the class median',
         modelPart: 'Median Imputation',
-        symbol: 'x̂_i = Q_2(x_obs)',
-        role: 'Replaces NaN with a typical observed value so matrix operations don\'t crash'
+        symbol: 'x̂_i = Q_2(x_train)',
+        role: 'Replaces NaN with a robust typical value computed strictly on the training split'
       },
       {
-        scenePart: 'Adding a "student was absent" tick mark next to the filled cell',
+        scenePart: 'Adding a "value was blank" tick mark next to the filled cell',
         modelPart: 'Missingness Indicator Column',
         symbol: 'm_i ∈ {0, 1}',
-        role: 'Lets the model learn when the fact that a value was missing is itself predictive'
+        role: 'Lets the model learn when the fact that a value was missing is itself predictive (MNAR)'
       },
       {
-        scenePart: 'Reasonable lower and upper boundaries for normal marks',
-        modelPart: 'Tukey IQR Outlier Fences',
-        symbol: '[Q_1 - k·IQR, Q_3 + k·IQR]',
-        role: 'Flags extreme values beyond k = 1.5 (mild) or k = 3.0 (extreme) IQRs'
+        scenePart: 'Filling "Existing Credit Limit" with ₹0 for students without a card',
+        modelPart: 'Domain-Specific Constant Imputation',
+        symbol: 'x̂_i = 0, m_i = 1',
+        role: 'Uses structural domain knowledge when NaN literally represents zero quantity'
       },
       {
-        scenePart: 'Capping an impossible 950 score at the upper boundary',
-        modelPart: 'Winsorization / Clipping',
-        symbol: 'clip(x_i, L, U)',
-        role: 'Bounds extreme tails without dropping the entire row'
+        scenePart: 'Estimating a blank from the 5 most similar students',
+        modelPart: 'KNN / Iterative Imputation',
+        symbol: 'x̂_i = (1/k) Σ_{j∈N(i)} x_j',
+        role: 'Uses correlated features from training neighbors to reconstruct missing entries'
       }
     ],
     playWithItPrompt:
-      'Switch to Tab 9.2 ("Missing & Outliers"). Toggle the Blank-Cell Fill Rule between Median and Mean—notice how the ₹140k outlier inflates Mean imputation to ₹42.2k while Median stays at ₹23.5k! Then adjust the Fence Width k to see where the outlier threshold lands.',
+      'Switch to Tab 9.2 ("Missing"). Toggle the Blank-Cell Fill Rule between Median and Mean on the income table—notice how one high earner (₹140k) pulls Mean imputation up to ₹42.2k while Median imputation stays anchored at ₹23.5k alongside the binary m_i = 1 indicator flag!',
     analogyBreaks:
-      'In a small classroom you can call the TA to ask if "950" was a typo for "95", whereas in production ML you rarely know if an extreme value is a sensor error or a genuine billionaire customer—clipping genuine extremes can blind a fraud or luxury-tier model.',
+      'In a small classroom you can call the student to ask why a box was left blank, whereas in production ML you must infer whether missingness is MCAR (random glitch), MAR (explained by other columns), or MNAR (informative absence) and preserve that signal with an indicator column.',
     intuition: [
-      'Neural networks cannot multiply `NaN`: a single missing value propagates `NaN` through every weight dot-product and gradient update.',
-      'Missingness is rarely completely random (MCAR). Often, a missing credit score or skipped medical test is "Missing Not At Random" (MNAR)—the absence itself carries signal! Pairing median imputation with a binary indicator column `m_i ∈ {0, 1}` gives the model both a safe number and the missingness clue.',
-      'For outliers, using Z-scores `|x - μ| / σ > 3` can fail on small or skewed samples because the outlier itself inflates σ! Tukey\'s IQR fence `[Q₁ - 1.5·IQR, Q₃ + 1.5·IQR]` uses quartiles that the outlier cannot corrupt.'
+      'Neural networks and linear models cannot multiply NaN: a single missing value propagates NaN through every weight dot-product and gradient update.',
+      'Before filling blanks, diagnose the mechanism: Missing Completely At Random (MCAR, safe to drop if <5% of rows), Missing At Random (MAR, predictable from other observed columns via KNN/IterativeImputer), or Missing Not At Random (MNAR, where the blank itself is a strong clue).',
+      'When a feature is structurally absent (such as "Existing Credit Card Limit" for an applicant who has never had a credit card), filling with 0 plus a binary indicator column m_i ∈ {0, 1} is far more accurate than filling with the median of cardholders.',
+      'For general skewed numeric columns, median imputation (fitted on the training split only!) resists high-income spikes that distort mean imputation.'
     ],
     mathFormulas: [
       {
         name: 'Imputation with Missingness Indicator',
-        latex: '\\hat{x}_i = \\begin{cases} x_i & \\text{if observed} \\\\ \\text{median}(x_{\\text{train}}) & \\text{if missing} \\end{cases}, \\quad m_i = \\mathbb{I}(x_i \\text{ is missing})',
-        explanation: 'Appending binary feature m_i preserves informative missingness while keeping x̂_i finite.'
+        latex: '\\hat{x}_i = \\begin{cases} x_i & \\text{if observed} \\\\ c_{\\text{fill}} & \\text{if missing} \\end{cases}, \\quad m_i = \\mathbb{I}(x_i \\text{ is missing})',
+        explanation: 'Replaces missing entries with c_fill (training median, mode, or structural 0) while appending binary indicator m_i ∈ {0, 1}.'
       },
       {
-        name: 'Tukey IQR Outlier Fences',
-        latex: 'L = Q_1 - k \\cdot \\text{IQR}, \\quad U = Q_3 + k \\cdot \\text{IQR} \\quad (k = 1.5)',
-        explanation: 'Observations outside [L, U] are flagged as outliers and can be inspected or clipped (Winsorized).'
+        name: 'Linear Layer with Missingness Flag',
+        latex: 'z_i = w_1 \\hat{x}_i + w_2 m_i + b',
+        explanation: 'Allows a linear or neural layer to learn a dedicated baseline shift w_2 whenever a feature was originally missing.'
       }
     ],
     workedExample: {
-      scenario: 'Imputing and checking outliers on observed incomes [18, 21, 22, 25, 27, 140] (₹k) where Row 2 is NaN.',
+      scenario: 'Comparing Median vs Mean imputation on observed training incomes [18, 21, 22, 25, 27, 140] (₹k) where Row 2 and Row 5 are NaN.',
       steps: [
         {
-          label: 'Step 1: Compute Median vs Mean on observed values',
+          label: 'Step 1: Compute Training Median vs Mean on the 6 observed values',
           math: '\\text{median} = \\frac{22 + 25}{2} = 23.5, \\quad \\text{mean} = \\frac{253}{6} = 42.17',
-          note: 'Median (23.5) is unaffected by the 140 spike, making it a much safer imputation value than 42.17.'
+          note: 'Median (₹23.5k) reflects typical earners, whereas the mean (₹42.17k) is distorted by the ₹140k earner.'
         },
         {
-          label: 'Step 2: Compute IQR and Upper Fence (k = 1.5)',
-          math: 'Q_1 = 21.25, \\; Q_3 = 26.5 \\implies \\text{IQR} = 5.25 \\implies U = 26.5 + 1.5(5.25) = 34.375',
-          note: '140 > 34.375, so 140 is flagged as an outlier and clipped to 34.38 if Winsorized.'
+          label: 'Step 2: Construct imputed feature and missingness indicator pair',
+          math: '(\\hat{x}_2, m_2) = (23.5, 1), \\quad (\\hat{x}_1, m_1) = (18.0, 0)',
+          note: 'Observed rows get m_i = 0; imputed rows get m_i = 1 so no information is lost.'
         }
       ],
-      result: 'Row 2 is imputed to ₹23.5k with indicator m₂ = 1, and the ₹140k spike is flagged above U = ₹34.38k.',
+      result: 'Missing rows are imputed to ₹23.5k (median) with indicator m_i = 1, keeping all rows valid for matrix multiplication.',
       params: {}
     },
     quiz: [
@@ -2065,69 +2066,69 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'miss-q1',
         question: 'In a loan-default dataset, 18% of applicants left "Existing Credit Card Limit" blank because they have never owned a credit card. What is the best way to handle those blanks?',
         options: [
-          'Fill the blanks with the maximum credit limit in the dataset.',
-          'Drop all 18% of applicants from the dataset so the model never sees a blank.',
-          'Impute the blank with the training median (or 0) AND add a binary column credit_limit_was_missing ∈ {0, 1}.',
-          'Leave NaN values in the tensor and let ReLU set them to zero.'
+          'Fill the blanks with the maximum credit limit found in the training dataset so the model stays conservative.',
+          'Drop all 18% of applicants without credit cards from the dataset so the model never encounters a blank cell.',
+          'Fill the blanks with 0 AND add a binary indicator column credit_limit_was_missing ∈ {0, 1}.',
+          'Leave raw NaN values inside the input feature tensor and rely on ReLU activations to zero them out.'
         ],
         correctIndex: 2,
-        explanation: 'Having no credit card is strongly informative for loan risk! Imputing + adding a binary missingness indicator preserves every row and lets the model weight the absence signal.'
+        explanation: 'An applicant with no credit card has an actual credit limit of 0 (not the median limit of cardholders!), and adding credit_limit_was_missing = 1 lets the model distinguish "no card" from a card with zero limit.'
       },
       {
         id: 'miss-q2',
-        question: 'Why does Tukey\'s IQR fence (Q₃ + 1.5·IQR) catch a single huge typo in a 10-row sample more reliably than a Z-score threshold (|z| > 3)?',
+        question: 'When using Median Imputation or KNNImputer on a dataset, why must you fit the imputer ONLY on the training split (X_train) rather than on the full dataset before splitting?',
         options: [
-          'Because IQR requires training a neural network first.',
-          'Because Z-scores can only be computed on integers.',
-          'Because a single huge typo inflates the sample standard deviation σ so much that its own Z-score (x - μ)/σ is masked below 3.',
-          'Because standard deviation is always zero when outliers exist.'
+          'Because fitting on the full dataset leaks test-set statistics into the training features.',
+          'Because scikit-learn raises a syntax error if SimpleImputer is called on more than 1,000 rows at once.',
+          'Because test sets in production never contain any missing values or blank cells.',
+          'Because computing the median of the combined dataset always produces a negative number.'
         ],
-        correctIndex: 2,
-        explanation: 'In small samples, a single extreme outlier explodes σ in the denominator of (x - μ)/σ, capping the Z-score ("masking"). Quartiles are order statistics and remain uncorrupted.'
+        correctIndex: 0,
+        explanation: 'Computing statistics across the combined train+test table leaks future test distribution information into training features (data leakage). Always fit on X_train and transform X_test.'
       }
     ],
     summary: [
-      'Never blindly drop rows with missing values without checking if missingness itself is informative.',
-      'Median imputation + a binary missingness flag (m_i) is a strong, leak-free default for tabular ML.',
-      'Tukey IQR fences resist outlier masking better than mean/std Z-scores on skewed data.',
-      'Always compute imputation medians and outlier fences on the training split only.'
+      'Never blindly drop rows with missing values without checking if the absence itself is informative (MNAR).',
+      'Use structural 0 + a binary missingness flag (m_i) when a blank means "none" (e.g., no credit card), or training median + flag for general skewed numerics.',
+      'Drop a column altogether if more than ~60% of its values are missing and carry no special indicator signal.',
+      'Always fit imputers (Median, Mode, KNNImputer) strictly on the training split to prevent data leakage.'
     ]
   },
 
   // =========================================================================
-  // TRACK 9 — LESSON 9.3: FEATURE SCALING AND NORMALIZATION
+  // TRACK 9 — LESSON 9.3: OUTLIERS AND FEATURE SCALING
   // =========================================================================
   'outliers-and-feature-scaling': {
     slug: 'outliers-and-feature-scaling',
     scene: {
-      title: 'Comparing Exam Marks Out of 100 with Annual Family Income in Lakhs',
+      title: 'One Typo or Billionaire in the List, and Comparing Marks Out of 100 with Income in Lakhs',
       narrative:
-        'Suppose a scholarship model takes two inputs: Entrance Score (0 to 100) and Family Income in Rupees (₹1,00,000 to ₹50,00,000). Because income is measured in लाखों (hundreds of thousands) and exam marks in tens, the gradient ∂L/∂w = x · δ on the income weight is 50,000 times steeper than on the exam weight! Gradient descent zig-zags violently across a narrow canyon unless you put both features on a fair, comparable yardstick using Standardization, Min-Max, Robust, or Log scaling.'
+        'Suppose a scholarship dataset has two issues: first, one entry says "950/100" because a data-entry clerk\'s finger slipped, and one applicant\'s family income is ₹2.5 Crore while everyone else earns ₹2–5 Lakhs. Second, Entrance Score is measured in tens (0 to 100) while Family Income is measured in lakhs (₹1,00,000 to ₹50,00,000), making the income gradient 50,000× steeper! Tukey\'s IQR fences catch and Winsorize extreme outliers without getting fooled by inflated standard deviations, and Feature Scaling (StandardScaler, Min-Max, RobustScaler, or Log1p) puts every column on a fair yardstick.'
     },
     mapping: [
       {
-        scenePart: 'Centering around the class average and measuring in standard-deviation steps',
-        modelPart: 'Z-Score Standardization (StandardScaler)',
-        symbol: 'x̃ = (x - μ) / σ',
-        role: 'Gives every feature mean 0 and unit variance 1'
+        scenePart: 'Quartile boundaries that catch a 950/100 typo without getting fooled by it',
+        modelPart: 'Tukey IQR Outlier Fences & Winsorization',
+        symbol: '[Q_1 - 1.5·IQR, Q_3 + 1.5·IQR]',
+        role: 'Flags and clips extreme values using order statistics immune to outlier masking'
       },
       {
-        scenePart: 'Mapping the lowest score to 0.0 and highest to 1.0',
+        scenePart: 'Centering around the class average and measuring in standard-deviation steps',
+        modelPart: 'Z-Score Standardization (StandardScaler)',
+        symbol: 'x̃ = (x - μ_train) / σ_train',
+        role: 'Gives every training feature mean 0 and unit variance 1'
+      },
+      {
+        scenePart: 'Mapping the lowest training score to 0.0 and highest training score to 1.0',
         modelPart: 'Min-Max Normalization',
-        symbol: 'x̃ = (x - x_min) / (x_max - x_min)',
-        role: 'Bounds values strictly in [0, 1], ideal for bounded pixel intensities'
+        symbol: 'x̃ = (x - x_min,tr) / (x_max,tr - x_min,tr)',
+        role: 'Maps training data to [0, 1] (note: unseen test values outside train range can fall outside [0, 1]!)'
       },
       {
         scenePart: 'Measuring distance from the median in IQR units so one billionaire doesn\'t squash everyone else',
         modelPart: 'Robust Scaling (RobustScaler)',
         symbol: 'x̃ = (x - Q_2) / IQR',
         role: 'Scales heavy-tailed features without outlier compression'
-      },
-      {
-        scenePart: 'Compressing orders of magnitude (₹1k, ₹10k, ₹100k, ₹10L) into equal steps',
-        modelPart: 'Log1p Transform',
-        symbol: 'x̃ = ln(1 + x)',
-        role: 'Tames power-law and right-skewed positive variables'
       }
     ],
     playWithItPrompt:
@@ -2135,75 +2136,81 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Rescaling exam marks and rupees makes gradient descent and distance-based models (KNN, SVM, Neural Nets) vastly happier, but tree-based models (Decision Trees, Random Forests, XGBoost) only split on rank thresholds (x > c)—so monotone feature scaling does not change a tree\'s splits at all!',
     intuition: [
-      'In a linear or neural layer `z = w₁x₁ + w₂x₂ + b`, the gradient with respect to weight `w_j` is proportional to `x_j`. If `x₁ ∈ [0, 1]` and `x₂ ∈ [0, 100000]`, the loss landscape is an elongated needle-like ravine: any learning rate η small enough not to explode along `w₂` will crawl at a snail\'s pace along `w₁`.',
-      'Z-Score Standardization (`StandardScaler`) centers each feature at 0 and divides by σ, making the Hessian better conditioned so gradient descent points straight toward the minimum.',
-      'However, if a feature contains extreme outliers, `x_max` (in Min-Max) or `σ` (in Z-Score) blows up and compresses all normal observations into a tiny band. `RobustScaler` (`(x - median)/IQR`) or `ln(1 + x)` prevents this compression.'
+      'For outlier detection, using a Z-score rule |x - μ| / σ > 3 often fails on small or skewed samples because a single huge outlier inflates σ in the denominator ("masking" its own Z-score!). Tukey\'s IQR fences [Q₁ - 1.5·IQR, Q₃ + 1.5·IQR] rely on quartiles that a single extreme typo cannot corrupt, and Winsorization clips values at [L, U] without throwing away the row.',
+      'In a linear or neural layer z = w₁x₁ + w₂x₂ + b, the gradient ∂L/∂w_j is proportional to x_j. If x₁ ∈ [0, 1] and x₂ ∈ [0, 100000], the loss surface is an elongated ravine where gradient descent zig-zags violently.',
+      'Z-Score Standardization (StandardScaler) centers each feature at 0 and divides by σ_train. Min-Max Scaling maps the training range [x_min,train, x_max,train] to [0, 1]—important note: Min-Max gives [0, 1] ONLY on training data! If an unseen test sample is smaller than x_min,train or larger than x_max,train, its Min-Max scaled value will be < 0 or > 1.',
+      'When genuine outliers must be kept, RobustScaler ((x - median)/IQR) or Log1p compression ln(1 + x) prevents outliers from squashing normal data points into a tiny band.'
     ],
     mathFormulas: [
       {
-        name: 'Z-Score Standardization (StandardScaler)',
-        latex: '\\tilde{x} = \\frac{x - \\mu_{\\text{train}}}{\\sigma_{\\text{train}}}',
-        explanation: 'Transforms features to zero mean and unit variance. Standard choice for MLPs, Logistic Regression, and SVMs.'
+        name: 'Tukey IQR Outlier Fences & Winsorization',
+        latex: 'L = Q_1 - 1.5\\,\\text{IQR}, \\quad U = Q_3 + 1.5\\,\\text{IQR}, \\quad x_{\\text{clip}} = \\min(\\max(x, L), U)',
+        explanation: 'Flags observations outside [L, U] using training quartiles and optionally clips (Winsorizes) extreme tails.'
       },
       {
-        name: 'Robust Quartile Scaling (RobustScaler)',
-        latex: '\\tilde{x} = \\frac{x - Q_2(x_{\\text{train}})}{Q_3(x_{\\text{train}}) - Q_1(x_{\\text{train}})}',
-        explanation: 'Centers at the median and scales by the Interquartile Range, immune to extreme tail outliers.'
+        name: 'Z-Score Standardization & Min-Max Normalization',
+        latex: '\\tilde{x}_{\\text{z}} = \\frac{x - \\mu_{\\text{train}}}{\\sigma_{\\text{train}}}, \\qquad \\tilde{x}_{\\text{mm}} = \\frac{x - x_{\\min,\\text{train}}}{x_{\\max,\\text{train}} - x_{\\min,\\text{train}}}',
+        explanation: 'StandardScaler gives zero mean and unit variance on train; Min-Max gives [0, 1] on train (test values outside [x_min,train, x_max,train] map outside [0, 1]).'
       },
       {
-        name: 'Log1p Compression for Skewed Counts & Currency',
-        latex: '\\tilde{x} = \\ln(1 + x), \\quad x \\ge 0',
-        explanation: 'Maps [0, ∞) smoothly while handling exact zeros (ln(1+0) = 0) and pulling heavy right tails into a near-Gaussian shape.'
+        name: 'Robust Quartile Scaling & Log1p Compression',
+        latex: '\\tilde{x}_{\\text{rob}} = \\frac{x - Q_2(x_{\\text{train}})}{\\text{IQR}(x_{\\text{train}})}, \\qquad \\tilde{x}_{\\log} = \\ln(1 + x)',
+        explanation: 'RobustScaler scales by the Interquartile Range; log1p(x) compresses heavy right tails while safely mapping x = 0 to 0.'
       }
     ],
     workedExample: {
-      scenario: 'Comparing Min-Max vs RobustScaler on rents [10, 14, 18, 22, 26, 30, 150] (in ₹k).',
+      scenario: 'Detecting outliers and comparing Min-Max vs RobustScaler on rents [10, 14, 18, 22, 26, 30, 150] (in ₹k).',
       steps: [
         {
-          label: 'Step 1: Min-Max scaling of a ₹22k room',
-          math: '\\tilde{x}_{\\text{minmax}}(22) = \\frac{22 - 10}{150 - 10} = \\frac{12}{140} = 0.0857',
-          note: 'The ₹150k outlier crushes 6 out of 7 rooms into [0, 0.14]!'
+          label: 'Step 1: Compute Tukey IQR Upper Fence (k = 1.5)',
+          math: 'Q_1 = 16, \\; Q_2 = 22, \\; Q_3 = 28 \\implies \\text{IQR} = 12 \\implies U = 28 + 1.5(12) = 46',
+          note: 'The ₹150k penthouse exceeds U = ₹46k and is immediately flagged as an outlier.'
         },
         {
-          label: 'Step 2: RobustScaler of the same ₹22k and ₹30k rooms',
-          math: 'Q_2 = 22, \\; Q_1 = 16, \\; Q_3 = 28 \\implies \\text{IQR} = 12 \\implies \\tilde{x}_{\\text{robust}}(30) = \\frac{30 - 22}{12} = +0.667',
-          note: 'Normal rooms span [-1.0, +0.67] with healthy resolution.'
+          label: 'Step 2: Min-Max scaling of a ₹22k room (and a new ₹180k test room)',
+          math: '\\tilde{x}_{\\text{mm}}(22) = \\frac{22 - 10}{150 - 10} = 0.0857, \\quad \\tilde{x}_{\\text{mm}}(180) = \\frac{180 - 10}{140} = 1.214 > 1',
+          note: 'The ₹150k outlier crushes normal rooms into [0, 0.14], and an unseen ₹180k test room lands at 1.214 (outside [0, 1]!).'
+        },
+        {
+          label: 'Step 3: RobustScaler of the ₹22k and ₹30k rooms',
+          math: '\\tilde{x}_{\\text{robust}}(30) = \\frac{30 - 22}{12} = +0.667',
+          note: 'Normal rooms span [-1.0, +0.67] with full resolution.'
         }
       ],
-      result: 'RobustScaler preserves full separation among normal observations while allowing the outlier to sit at +10.67.',
+      result: 'Tukey fences flag 150 > 46, and RobustScaler preserves full separation among normal observations without outlier compression.',
       params: {}
     },
     quiz: [
       {
         id: 'scale-q1',
-        question: 'Which family of models is completely invariant to monotone feature scaling (like Z-Score or Min-Max) and why?',
+        question: 'Why does Tukey\'s IQR fence (Q₃ + 1.5·IQR) catch a single huge typo in a 10-row sample more reliably than a Z-score threshold (|z| > 3)?',
         options: [
-          'Multi-Layer Perceptrons trained with SGD, because weights automatically invert any scale.',
-          'Decision Trees and Random Forests,.',
-          'K-Nearest Neighbors (KNN) with Euclidean distance.',
-          'Ridge and Lasso Regression with L2/L1 weight penalties.'
+          'Because IQR fences require training a deep neural network before inspecting the column.',
+          'Because Z-scores can only be computed when every value in the column is a whole integer.',
+          'Because a huge typo inflates the sample standard deviation σ and masks its own Z-score.',
+          'Because the sample standard deviation σ automatically becomes zero whenever an outlier is present.'
         ],
-        correctIndex: 1,
-        explanation: 'Linear/affine rescaling preserves order: if x_i ≤ t, then (x_i - μ)/σ ≤ (t - μ)/σ, yielding the exact same tree split and Gini impurity reduction.'
+        correctIndex: 2,
+        explanation: 'In small samples, a single extreme outlier explodes σ in the denominator of (x - μ)/σ, capping the Z-score ("masking"). Quartiles are order statistics and remain uncorrupted.'
       },
       {
         id: 'scale-q2',
-        question: 'Why do we use np.log1p(x) = ln(1 + x) instead of np.log(x) when compressing a right-skewed "number of app orders" feature?',
+        question: 'Which family of models is completely invariant to monotone feature scaling (like Z-Score or Min-Max) and why?',
         options: [
-          'Because log1p guarantees outputs between -1 and +1.',
-          'Because ln(1 + x) is a linear function.',
-          'Because GPUs cannot evaluate natural logarithms without adding 1.',
-          'Because many users have x = 0 orders, and ln(0) = -∞ whereas ln(1 + 0) = 0.'
+          'Multi-Layer Perceptrons trained with SGD, because weights automatically invert any scale on step 1.',
+          'Decision Trees and Random Forests, because rank-order split thresholds are scale-invariant.',
+          'K-Nearest Neighbors (KNN), because Euclidean distance ignores the numeric magnitude of coordinates.',
+          'Ridge and Lasso Regression, because L2 and L1 weight penalties are scale-invariant.'
         ],
-        correctIndex: 3,
-        explanation: 'Count and currency features frequently include zero; log1p(0) = 0 avoids -Infinity while behaving like ln(x) for large x.'
+        correctIndex: 1,
+        explanation: 'Affine rescaling preserves order: if x_i ≤ t, then (x_i - μ)/σ ≤ (t - μ)/σ, yielding the exact same tree split and Gini impurity reduction.'
       }
     ],
     summary: [
-      'Unscaled features create ill-conditioned, elongated loss ravines that slow gradient descent.',
+      'Tukey IQR fences [Q₁ - 1.5·IQR, Q₃ + 1.5·IQR] detect outliers without suffering from Z-score standard-deviation masking.',
       'StandardScaler (Z-score) is the default for neural nets and linear models on clean distributions.',
-      'RobustScaler uses Median and IQR so extreme outliers cannot squash normal data points.',
-      'Decision trees and Random Forests do not require feature scaling.'
+      'Min-Max scaling maps training data to [0, 1], though unseen test values outside the training range can fall outside [0, 1].',
+      'RobustScaler uses Median and IQR so extreme outliers cannot squash normal data points; Decision Trees and Random Forests do not require scaling.'
     ]
   },
 
@@ -2249,9 +2256,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'A human delivery manager knows two adjacent PIN codes (560001 and 560002) are physically next door in Bengaluru even if 560002 is brand new, whereas Target Encoding treats every PIN code string as an isolated island unless you add geographic latitude/longitude features.',
     intuition: [
       'Machine learning models only understand numbers, so how you translate text categories into numbers determines what geometry the model sees.',
-      'Use **Ordinal Encoding** (`0, 1, 2`) ONLY when the spacing and order are genuinely meaningful (e.g. `Cold < Warm < Hot`). Using integers for unordered cities (`Delhi=1, Mumbai=2, Chennai=3`) forces a linear layer to assume `w·Mumbai = 0.5·(w·Delhi + w·Chennai)`.',
-      'Use **One-Hot Encoding** for low-cardinality nominal categories (`K ≤ 15`). Each category gets an orthogonal unit vector `[1, 0, 0]`, `[0, 1, 0]`.',
-      'For high-cardinality categories (10,000 PIN codes or merchant IDs), One-Hot creates 10,000 sparse columns. **Smoothed Out-of-Fold Target Encoding** replaces each category with a shrinkage estimate between the category\'s training target average and the global prior.'
+      'Use Ordinal Encoding (0, 1, 2) ONLY when the spacing and order are genuinely meaningful (e.g. Cold < Warm < Hot). Using integers for unordered cities (Delhi=1, Mumbai=2, Chennai=3) forces a linear layer to assume w·Mumbai = 0.5·(w·Delhi + w·Chennai).',
+      'Use One-Hot Encoding for low-cardinality nominal categories (K ≤ 15). Each category gets an orthogonal unit vector [1, 0, 0], [0, 1, 0].',
+      'For high-cardinality categories (10,000 PIN codes or merchant IDs), One-Hot creates 10,000 sparse columns. Smoothed Out-of-Fold Target Encoding replaces each category with a shrinkage estimate between the category\'s training target average and the global prior.'
     ],
     mathFormulas: [
       {
@@ -2357,9 +2364,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Even if you never touch D_test with .fit(), looking at D_test 50 times to pick the best model architecture still leaks 1-2 bits of information through human selection ("adaptive overfitting to the test set")—which is why competitions use a separate private leaderboard.',
     intuition: [
-      'The Golden Rule of ML Preprocessing: **`fit()` on `X_train` ONLY; `transform()` on `X_train`, `X_val`, and `X_test`.**',
-      'Why do we need **three** splits (Train / Validation / Test) instead of two? Because every time you tweak a learning rate, add a layer, or pick a threshold based on validation accuracy, you are fitting hyperparameters to the validation set! The test set must stay locked in a vault until the very end.',
-      'For **time-series or longitudinal data** (stock prices, UPI transactions over months, patient visits), random `train_test_split` leaks the future into the past! You must use a **temporal split** (`train < T_cutoff ≤ test`) or `GroupKFold` by `user_id` so the same user\'s records don\'t straddle train and test.'
+      'The Golden Rule of ML Preprocessing: fit() on X_train ONLY; transform() on X_train, X_val, and X_test.',
+      'Why do we need three splits (Train / Validation / Test) instead of two? Because every time you tweak a learning rate, add a layer, or pick a threshold based on validation accuracy, you are fitting hyperparameters to the validation set! The test set must stay locked in a vault until the very end.',
+      'For time-series or longitudinal data (stock prices, UPI transactions over months, patient visits), random train_test_split leaks the future into the past! You must use a temporal split (train < T_cutoff ≤ test) or GroupKFold by user_id so the same user\'s records don\'t straddle train and test.'
     ],
     mathFormulas: [
       {
@@ -2395,10 +2402,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'leak-q1',
         question: 'A student writes: X_scaled = StandardScaler().fit_transform(X); cross_val_score(model, X_scaled, y, cv=5). Why is this code subtly buggy?',
         options: [
-          'fit_transform only works on test sets.',
-          'cross_val_score requires at least 100 folds.',
-          'StandardScaler deletes 20% of the rows.',
-          'StandardScaler was fit on all 5 folds before cross-validation started, leaking each validation fold\'s mean and variance into its training folds. Wrapping StandardScaler + model inside sklearn.pipeline.Pipeline fixes it.'
+          'Because fit_transform can only be called on held-out test tensors in scikit-learn.',
+          'Because cross_val_score requires at least 100 validation folds to estimate variance.',
+          'Because StandardScaler randomly deletes 20% of rows when called before splitting.',
+          'Fitting StandardScaler before splitting leaks validation fold statistics into training.'
         ],
         correctIndex: 3,
         explanation: 'Passing a Pipeline to cross_val_score guarantees that StandardScaler.fit() is called only on the 4 training folds inside each iteration.'
@@ -2407,10 +2414,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'leak-q2',
         question: 'You have 10,000 chest X-rays from 2,000 patients (5 X-rays per patient taken on different days). If you do a random image-level 80/20 split, why will your test accuracy be artificially inflated?',
         options: [
-          'Because 10,000 images is too large for a validation set.',
-          'Because 80/20 splits only work on RGB images.',
-          'Images from the exact same patient will appear in both train and test.',
-          'Because random splits invert pixel intensities.'
+          'Because 2,000 validation images exceed standard GPU batch memory limits.',
+          'Because random 80/20 splits are only valid on three-channel RGB images.',
+          'Images from the same patient will appear in both train and test splits.',
+          'Because random row shuffling inverts grayscale X-ray pixel intensities.'
         ],
         correctIndex: 2,
         explanation: 'Whenever multiple rows belong to the same entity (patient, customer, device), splitting must be grouped by entity ID to prevent entity-memorization leakage.'
@@ -2459,9 +2466,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Drawing a straight line between two fraud cases in SMOTE works well in low-dimensional continuous tables, but in high-dimensional spaces or across non-convex manifolds (like images), the midpoint between two minority points can land right in the middle of the majority class!',
     intuition: [
-      'In standard Binary Cross-Entropy `L = -(1/N) Σ [y_i ln(p_i) + (1 - y_i) ln(1 - p_i)]`, if 99% of examples have `y_i = 0`, then 99% of mini-batch gradient updates push the bias `b` toward `-∞` so `p_i → 0`.',
-      '**Cost-Sensitive / Class-Weighted Loss** (`class_weight="balanced"` or `pos_weight` in PyTorch `BCEWithLogitsLoss`) scales the positive term by `w₁ = N / (2 N_pos)` and the negative term by `w₀ = N / (2 N_neg)`. Now the total gradient magnitude from all positive examples equals the total gradient magnitude from all negative examples!',
-      '**SMOTE (Synthetic Minority Over-sampling Technique)** oversamples the minority class by picking a minority point `x_i`, finding one of its k-nearest minority neighbors `x_nn`, and generating `x_new = x_i + λ(x_nn - x_i)` with `λ ~ Uniform(0, 1)`. Crucially, oversampling must ONLY be applied to `X_train`—never to validation or test!'
+      'In standard Binary Cross-Entropy L = -(1/N) Σ [y_i ln(p_i) + (1 - y_i) ln(1 - p_i)], if 99% of examples have y_i = 0, then 99% of mini-batch gradient updates push the bias b toward -∞ so p_i → 0.',
+      'Cost-Sensitive / Class-Weighted Loss (class_weight="balanced" or pos_weight in PyTorch BCEWithLogitsLoss) scales the positive term by w₁ = N / (2 N_pos) and the negative term by w₀ = N / (2 N_neg). Now the total gradient magnitude from all positive examples equals the total gradient magnitude from all negative examples!',
+      'SMOTE (Synthetic Minority Over-sampling Technique) oversamples the minority class by picking a minority point x_i, finding one of its k-nearest minority neighbors x_nn, and generating x_new = x_i + λ(x_nn - x_i) with λ ~ Uniform(0, 1). Crucially, oversampling must ONLY be applied to X_train—never to validation or test!'
     ],
     mathFormulas: [
       {
@@ -2497,10 +2504,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'imb-q1',
         question: 'What happens if you apply SMOTE oversampling to your full dataset (X, y) BEFORE calling train_test_split?',
         options: [
-          'Severe data leakage: synthetic copies interpolated from test points end up in the training set (and vice versa), producing fake near-100% validation F1 that collapses in production!',
-          'The test set becomes smaller.',
-          'Class weights become negative.',
-          'SMOTE automatically stratifies the test split without leakage.'
+          'Synthetic points interpolated from test rows leak into training and inflate F1.',
+          'The held-out evaluation test set shrinks to half of its original row count.',
+          'The balanced loss class weights automatically flip from positive to negative.',
+          'SMOTE stratifies the train and test splits cleanly without any data leakage.'
         ],
         correctIndex: 0,
         explanation: 'Oversampling (random or SMOTE) must ONLY happen inside the training split (or via imblearn.pipeline.Pipeline inside each CV fold); validation and test sets must reflect the real-world unmodified distribution.'
@@ -2509,10 +2516,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'imb-q2',
         question: 'When evaluating a classifier on a 99%-negative / 1%-positive dataset, why is the Precision-Recall Curve (PR-AUC) much more informative than raw Accuracy?',
         options: [
-          'Because Precision ignores False Positives.',
-          'Because PR-AUC is always equal to 1.0.',
-          'Because Accuracy cannot be computed on binary labels.',
-          'Because Precision and Recall focus directly on the minority positive predictions without letting the 99% True Negatives wash out the metric.'
+          'Because Precision completely ignores the number of False Positive alerts.',
+          'Because the Area Under the PR Curve is guaranteed to equal 1.0 on any dataset.',
+          'Because standard classification Accuracy is undefined on binary 0/1 targets.',
+          'Because Precision and Recall focus on minority positives without TN dilution.'
         ],
         correctIndex: 3,
         explanation: 'Accuracy (TP + TN)/N is dominated by TN when negatives are 99% of the data. Precision TP/(TP+FP) and Recall TP/(TP+FN) do not include TN at all.'
@@ -2567,9 +2574,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A kitchen recipe never changes once printed, whereas real production data drifts over months (inflation shifts salaries, new PIN codes appear)—so even a leak-free Pipeline must be monitored and periodically re-fitted.',
     intuition: [
-      'Raw columns are rarely in the coordinates that make learning easiest. Two numbers (`Monthly_EMI` and `Monthly_Income`) are far more predictive when combined into a domain ratio `Debt_to_Income = EMI / (Income + ε)`.',
-      'Periodic features—hour of day (`T = 24`), day of week (`T = 7`), month (`T = 12`), or wind direction (`T = 360°`)—have a wrap-around boundary where `T` meets `0`. Note that you need **both** `sin(2πt/T)` and `cos(2πt/T)`: `sin` alone is not injective because `sin(θ) = sin(π - θ)` (e.g. 6 AM and 6 PM would collide without `cos`!).',
-      'Finally, wiring every imputation, encoding, and scaling step into a single `ColumnTransformer` + `Pipeline` object prevents training-serving skew and eliminates cross-validation leakage.'
+      'Raw columns are rarely in the coordinates that make learning easiest. Two numbers (Monthly_EMI and Monthly_Income) are far more predictive when combined into a domain ratio Debt_to_Income = EMI / (Income + ε).',
+      'Periodic features—hour of day (T = 24), day of week (T = 7), month (T = 12), or wind direction (T = 360°)—have a wrap-around boundary where T meets 0. Note that you need both sin(2πt/T) and cos(2πt/T): sin alone is not injective because sin(θ) = sin(π - θ) (for example, 3 AM and 9 AM both have sin(45°) = sin(135°) ≈ 0.707 and would collide without cos!).',
+      'Finally, wiring every imputation, encoding, and scaling step into a single ColumnTransformer + Pipeline object prevents training-serving skew and eliminates cross-validation leakage.'
     ],
     mathFormulas: [
       {
@@ -2622,10 +2629,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'pipe-q2',
         question: 'What is "training-serving skew" in production ML, and how does serializing a single fitted Pipeline prevent it?',
         options: [
-          'Training-serving skew happens when production API code re-implements preprocessing slightly differently (or uses different means/medians) than the training notebook.',
-          'It means the GPU runs faster during training than during inference.',
-          'It refers to the skewness γ₁ of the target variable.',
-          'It happens when batch size is 1.'
+          'Mismatch between training and production preprocessing; a saved Pipeline prevents it.',
+          'Hardware latency gap where GPUs run faster during training than in production.',
+          'Statistical third-moment skewness γ₁ of the regression target distribution.',
+          'Numerical instability that occurs when production inference uses batch size 1.'
         ],
         correctIndex: 0,
         explanation: 'A single serialized Pipeline guarantees that raw production inputs undergo the exact same transformations and fitted parameters as training data.'
@@ -2729,10 +2736,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'emb-q1',
         question: 'Why do we measure word similarity using Cosine Similarity (u · v)/(||u|| ||v||) instead of the unnormalized dot product u · v?',
         options: [
-          'Because Cosine Similarity does not require multiplication.',
-          'Because the dot product is always negative.',
-          'Because frequent words undergo more gradient updates during training and develop larger vector norms ||u||.',
-          'Because one-hot vectors have a cosine similarity of 1.'
+          'Because Cosine Similarity avoids performing any coordinate multiplications.',
+          'Because raw dot products between word vectors are always negative numbers.',
+          'Frequent words receive more gradient updates and grow larger vector norms ||u||.',
+          'Because raw one-hot word vectors always have a pairwise cosine similarity of 1.'
         ],
         correctIndex: 2,
         explanation: 'Without L2 normalization, a common word with a huge norm ||u|| = 10 would have a large dot product with almost everything; dividing by ||u|| ||v|| isolates directional alignment.'
@@ -2843,10 +2850,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'rnn-q1',
         question: 'Why does an RNN use the exact same weight matrices (W_xh, W_hh) at every time step t = 1, 2, ..., T instead of having a separate matrix for each word position?',
         options: [
-          'Because computers cannot store more than two matrices in RAM.',
-          'Temporal weight sharing allows the RNN to process sequences of any length and recognize a phrase like "not good" whether it appears at the start or end of a review, with a fixed parameter budget.',
-          'Because W_hh is always the identity matrix.',
-          'To force the output to be linear.'
+          'Because GPU memory cannot store separate weight matrices for different time steps.',
+          'Weight sharing generalizes across sequence lengths and positions with fixed parameters.',
+          'Because the recurrent matrix W_hh is constrained to remain the identity matrix.',
+          'To force the recurrent hidden state trajectory to remain strictly linear over time.'
         ],
         correctIndex: 1,
         explanation: 'Just as CNNs share weights across 2D space for translation equivariance, RNNs share weights across time steps for temporal invariance and variable-length generalization.'
@@ -2855,10 +2862,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'rnn-q2',
         question: 'Why is tanh(z) historically preferred over unbounded linear activation z inside a vanilla RNN recurrence h_t = φ(W_hh h_{t-1} + W_xh x_t)?',
         options: [
-          'Because linear activations cannot be multiplied by matrices.',
-          'Because tanh has a constant derivative of 1 everywhere.',
-          'Because tanh outputs only positive integers.',
-          'Because repeated multiplication by W_hh across decenas of time steps can rapidly blow up unbounded activations to infinity.'
+          'Because unbounded linear activations cannot be multiplied by weight matrices.',
+          'Because the hyperbolic tangent has a constant derivative of 1.0 everywhere.',
+          'Because the hyperbolic tangent outputs only non-negative integer activations.',
+          'Repeated multiplication by W_hh across steps can blow up unbounded states.'
         ],
         correctIndex: 3,
         explanation: 'Squashing h_t into (-1, +1) prevents forward activations from exploding to ±∞ over long sequences.'
@@ -2891,8 +2898,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       {
         scenePart: 'Volume multiplier at a single student step k',
         modelPart: 'Single-step Temporal Jacobian',
-        symbol: '∂h_k / ∂h_{k-1} = (1 - h_k²) W_hh',
-        role: 'Local chain-rule factor combining tanh derivative and recurrent weight'
+        symbol: '∂h_k / ∂h_{k-1} = diag(1 - h_k²) · W_hh',
+        role: 'Local chain-rule Jacobian combining tanh derivative and recurrent weight matrix'
       },
       {
         scenePart: 'Total whisper decay from step T back to step t',
@@ -2912,16 +2919,16 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'In human Chinese Whispers, people distort the words into funny new sentences, whereas in BPTT the gradient signal is a precise mathematical vector whose magnitude either shrinks exponentially toward 0.0000 or overflows to NaN.',
     intuition: [
-      'Because the same matrix W_hh is applied at every time step during the forward pass, computing gradients via the chain rule (Backpropagation Through Time, or BPTT) requires multiplying by W_hh^T and the activation derivative diag(1 - h_k²) at every step backward.',
-      'Across(T - t) steps, the gradient ∂h_T / ∂h_t contains a product of (T - t) Jacobian matrices. Just like raising a scalar r to the power (T - t), if the largest singular value (spectral radius) is < 1, the product shrinks exponentially toward zero (Vanishing Gradients).',
+      'Because the same matrix W_hh is applied at every time step during the forward pass (h_k = tanh(W_hh h_{k-1} + W_xh x_k + b_h)), the single-step Jacobian is ∂h_k / ∂h_{k-1} = diag(1 - h_k²) · W_hh.',
+      'Across (T - t) steps, the temporal Jacobian ∂h_T / ∂h_t is the product of (T - t) matrices diag(1 - h_k²) · W_hh. Just like raising a scalar r to the power (T - t), if the largest singular value (spectral radius) is < 1, the product shrinks exponentially toward zero (Vanishing Gradients).',
       'Because tanh\'(z) = 1 - tanh²(z) ≤ 1 everywhere (and approaches 0 whenever activations saturate near ±1), vanilla RNN gradients almost always vanish over 15–30 steps—meaning early tokens in a paragraph receive near-zero gradient updates!',
       'Conversely, if W_hh has eigenvalues > 1, gradients can explode to infinity, destabilizing weights in a single step. Exploding gradients are cured easily with Gradient Norm Clipping, whereas vanishing gradients require architectural change (LSTMs, GRUs, or Self-Attention).'
     ],
     mathFormulas: [
       {
         name: 'Temporal Chain Rule Product (BPTT)',
-        latex: '\\frac{\\partial \\mathbf{h}_T}{\\partial \\mathbf{h}_t} = \\prod_{k=t+1}^{T} \\frac{\\partial \\mathbf{h}_k}{\\partial \\mathbf{h}_{k-1}} = \\prod_{k=t+1}^{T} \\text{diag}(1 - \\mathbf{h}_k^2)\\,\\mathbf{W}_{hh}^\\top',
-        explanation: 'Transporting sensitivity across T - t steps multiplies T - t local Jacobian matrices together.'
+        latex: '\\frac{\\partial \\mathbf{h}_T}{\\partial \\mathbf{h}_t} = \\prod_{k=t+1}^{T} \\frac{\\partial \\mathbf{h}_k}{\\partial \\mathbf{h}_{k-1}} = \\prod_{k=t+1}^{T} \\text{diag}(1 - \\mathbf{h}_k^2)\\,\\mathbf{W}_{hh}',
+        explanation: 'Each single-step Jacobian is ∂h_k/∂h_{k-1} = diag(1 - h_k²) · W_hh; transporting sensitivity across (T - t) steps multiplies these (T - t) Jacobians together.'
       },
       {
         name: 'Global Gradient Norm Clipping',
@@ -2968,10 +2975,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'bptt-q2',
         question: 'Why does Gradient Clipping NOT solve the Vanishing Gradient problem?',
         options: [
-          'Because clipping sets all gradients to zero.',
-          'Because vanishing gradients have tiny norms (||g||₂ ≪ c) where long-range derivatives ∂h_T/∂h_1 have already decayed to ~0 relative to short-range derivatives.',
-          'Because vanishing gradients only happen in linear regression.',
-          'Because tanh derivatives are always greater than 10.'
+          'Because gradient norm clipping resets all parameter gradients to exact zero.',
+          'Vanishing gradients already have tiny norms below threshold c and stay decayed.',
+          'Because vanishing gradients only occur in single-layer linear regression models.',
+          'Because the hyperbolic tangent derivative is strictly greater than 10 everywhere.'
         ],
         correctIndex: 1,
         explanation: 'Total parameter gradient ∂L/∂W_hh sums short-term and long-term contributions. When long-term terms vanish, ∂L/∂W_hh is dominated by the last 2–3 words regardless of global scaling.'
@@ -2979,7 +2986,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     ],
     summary: [
       'BPTT unrolls the recurrent network across time and accumulates gradients over all steps.',
-      'Repeated multiplication by W_hh^T · diag(1 - h_k²) causes long-range gradients to vanish (when < 1) or explode (when > 1).',
+      'Repeated multiplication by the step Jacobian diag(1 - h_k²) · W_hh causes long-range gradients to vanish (when < 1) or explode (when > 1).',
       'Gradient Norm Clipping cures exploding gradients; additive gated memory (LSTM/GRU) cures vanishing gradients.'
     ]
   },
@@ -3005,7 +3012,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         scenePart: 'Erase / Keep dial (0 = wipe clean, 1 = keep 100%)',
         modelPart: 'Forget Gate',
         symbol: 'f_t = σ(W_f [h_{t-1}, x_t] + b_f)',
-        role: 'Controls fraction of previous cell memory C_{t-1} retained'
+        role: 'Controls fraction of previous cell memory C_{t-1} retained (added by Gers et al., 2000)'
       },
       {
         scenePart: 'Write button controlling how much new note is added',
@@ -3025,8 +3032,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A physical whiteboard has fixed square inches that fill up when you write too much, whereas an LSTM cell vector C_t ∈ R^H adds numbers coordinate-wise and uses continuous sigmoid gates rather than discrete on/off switches.',
     intuition: [
-      'Hochreiter & Schmidhuber (1997) designed the Long Short-Term Memory (LSTM) architecture around a Constant Error Carousel: an **additive** cell state update C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t.',
-      'Notice the structural parallel to ResNet skip connections! In a vanilla RNN, h_t overwrites h_{t-1} multiplicatively inside tanh. In an LSTM, new information i_t ⊙ C̃_t is **added** to f_t ⊙ C_{t-1}.',
+      'Hochreiter & Schmidhuber (1997) originally designed the Long Short-Term Memory (LSTM) around a Constant Error Carousel (C_t = C_{t-1} + i_t ⊙ C̃_t) with input and output gates, and Gers, Schmidhuber, & Cummins (2000) added the crucial Forget Gate (f_t) so the cell can also reset obsolete memories: C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t.',
+      'Notice the structural parallel to ResNet skip connections! In a vanilla RNN, h_t overwrites h_{t-1} multiplicatively inside tanh. In an LSTM, new information i_t ⊙ C̃_t is added to f_t ⊙ C_{t-1}.',
       'Consequently, the direct backward derivative along the cell conveyor belt is ∂C_t / ∂C_{t-1} = f_t. Whenever the network learns to set the forget gate f_t ≈ 1 for an important token (like the word "NOT" at the start of a movie review), gradients travel backward across dozens of steps virtually unattenuated!',
       'Why do gates use Sigmoid σ(z) ∈ (0, 1) while candidate values use tanh(z) ∈ (-1, +1)? Because a gate acts as a valve percentage (between 0% closed and 100% open), whereas content updates need to be able to both increase (+) and decrease (-) cell state values.'
     ],
@@ -3069,10 +3076,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'lstm-q1',
         question: 'What is the fundamental mathematical reason an LSTM can propagate gradients across 100 time steps much better than a vanilla RNN?',
         options: [
-          'The forget gate is always fixed at 2.0.',
-          'LSTMs do not use backpropagation.',
-          'LSTMs have fewer parameters than vanilla RNNs.',
-          'The cell state C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t updates ADDITIVELY rather than wrapping C_{t-1} inside a matrix multiplication and tanh.'
+          'The sigmoid forget gate f_t is permanently fixed at a constant value of 2.0.',
+          'LSTM networks train via random search rather than backpropagation through time.',
+          'An LSTM layer contains four times fewer trainable parameters than a vanilla RNN.',
+          'The cell state C_t updates additively so gradients flow along an unblocked highway.'
         ],
         correctIndex: 3,
         explanation: 'Just like ResNet\'s H(x) = F(x) + x creates an additive spatial highway, the LSTM cell state creates an additive temporal highway controlled by f_t.'
@@ -3106,32 +3113,32 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'A Bilingual Interpreter Who Listens First, Then Glances Back at Key Source Words While Speaking',
       narrative:
-        'First, can we simplify the 4-gate LSTM? Cho et al. (2014) created the Gated Recurrent Unit (GRU): it merges the cell and hidden states into a single vector h_t and links erasing and writing with a single Update dial z_t: h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t (25% fewer parameters!). Second, how do we translate Hindi ("Main chai piyunga") to English ("I will drink tea") where word orders and lengths differ? A Seq2Seq Encoder reads the Hindi words, and as the Decoder speaks each English word, Cross-Attention lets it glance back at all Encoder states to focus on the exact Hindi word it is translating right now!'
+        'First, can we simplify the 4-gate LSTM? Cho et al. (2014) created the Gated Recurrent Unit (GRU): it merges the cell and hidden states into a single vector h_t, uses a Reset Gate r_t to decide how much past state h_{t-1} enters the new candidate h̃_t, and links erasing and writing with a single Update dial z_t: h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t (25% fewer parameters!). Second, how do we translate Hindi ("Main chai piyunga") to English ("I will drink tea") where word orders and lengths differ? A Seq2Seq Encoder reads the Hindi words, and as the Decoder speaks each English word, Cross-Attention lets it glance back at all Encoder states to focus on the exact Hindi word it is translating right now!'
     },
     mapping: [
+      {
+        scenePart: 'Filter deciding how much past context feeds into today\'s new draft note',
+        modelPart: 'GRU Reset Gate & Candidate',
+        symbol: 'r_t = σ(W_r[h_{t-1}, x_t]), h̃_t = tanh(W_h x_t + U_h(r_t ⊙ h_{t-1}))',
+        role: 'Allows the candidate state h̃_t to ignore irrelevant prior history when r_t ≈ 0'
+      },
       {
         scenePart: 'Single linked dial balancing old memory (1 - z_t) vs new note (z_t)',
         modelPart: 'GRU Coupled Update Gate',
         symbol: 'h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t',
-        role: 'Replaces separate Forget and Input gates with a convex interpolation'
+        role: 'Replaces separate Forget and Input gates with a convex interpolation (note: PyTorch swaps z_t and 1 - z_t)'
       },
       {
-        scenePart: 'Interpreter listening to the full Hindi sentence',
-        modelPart: 'Seq2Seq Encoder',
-        symbol: '(h_1, ..., h_S) = Encoder(x_1, ..., x_S)',
-        role: 'Produces contextual hidden representations for every source token'
-      },
-      {
-        scenePart: 'Interpreter speaking the English translation word by word',
-        modelPart: 'Autoregressive Decoder',
-        symbol: 's_t = Decoder(s_{t-1}, y_{t-1}, c_t)',
-        role: 'Generates one target token at a time conditioned on prior outputs'
+        scenePart: 'Interpreter listening to the full Hindi sentence and speaking English word by word',
+        modelPart: 'Seq2Seq Encoder–Decoder',
+        symbol: '(h_1, ..., h_S) → s_t = Decoder(s_{t-1}, y_{t-1}, c_t)',
+        role: 'Maps variable-length input sequence to variable-length output sequence'
       },
       {
         scenePart: 'Glancing back at specific source words while translating step t',
-        modelPart: 'Bahdanau / Luong Attention Context',
+        modelPart: 'Luong / Bahdanau Attention Context',
         symbol: 'c_t = Σ_i α_{ti} h_i',
-        role: 'Eliminates the single-vector bottleneck by dynamically weighting source states'
+        role: 'Eliminates the single-vector bottleneck by dynamically weighting all source encoder states'
       }
     ],
     playWithItPrompt:
@@ -3139,38 +3146,43 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A human interpreter understands cultural idioms and world knowledge from decades of life experience, whereas a Seq2Seq model only maps statistical patterns learned from parallel sentence pairs and can hallucinate fluent-sounding nonsense on out-of-domain text.',
     intuition: [
-      'The **Gated Recurrent Unit (GRU)** streamlines the LSTM: it eliminates the separate cell state C_t and uses just two gates—the **Update Gate** z_t (which acts as both forget and input gate via 1 - z_t and z_t) and the **Reset Gate** r_t. A GRU uses 3(Hd + H² + H) parameters instead of 4(Hd + H² + H) (25% smaller and faster) while matching LSTM accuracy on most tasks.',
-      'For tasks where input and output sequences have different lengths—like Machine Translation, Summarization, or Speech-to-Text—**Seq2Seq (Encoder-Decoder)** pairs an Encoder RNN with a Decoder RNN.',
-      'During training, Seq2Seq uses **Teacher Forcing**: feeding the ground-truth previous target token y_{t-1} into the decoder at step t (rather than the model\'s own noisy prediction ŷ_{t-1}) so the decoder learns rapidly without compounding early mistakes.',
-      'Crucially, cramming an entire 40-word sentence into a single fixed encoder vector h_S creates an information bottleneck. Adding **Attention** (Bahdanau 2014 / Luong 2015) lets the decoder compute a fresh context vector c_t = Σ α_{ti} h_i at every output step—the direct bridge to Track 6 (Transformers)!'
+      'The Gated Recurrent Unit (GRU, Cho et al. 2014) streamlines the LSTM: it eliminates the separate cell state C_t and uses two gates—the Reset Gate r_t (which gates how much of h_{t-1} enters the candidate h̃_t = tanh(W_h x_t + U_h(r_t ⊙ h_{t-1}) + b_h)) and the Update Gate z_t (which couples forgetting and writing via h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t). Note that PyTorch\'s torch.nn.GRU implementation swaps the roles of z_t and (1 - z_t), writing h_t = (1 - z_t) ⊙ n_t + z_t ⊙ h_{t-1}. A GRU uses 3(Hd + H² + H) parameters instead of 4(Hd + H² + H) (25% smaller).',
+      'For tasks where input and output sequences have different lengths—like Machine Translation, Summarization, or Speech-to-Text—Seq2Seq (Encoder-Decoder) pairs an Encoder RNN with a Decoder RNN.',
+      'During training, Seq2Seq uses Teacher Forcing: feeding the ground-truth previous target token y_{t-1} into the decoder at step t (rather than the model\'s own noisy prediction ŷ_{t-1}) so the decoder learns rapidly without compounding early mistakes.',
+      'Crucially, cramming an entire 40-word sentence into a single fixed encoder vector h_S creates an information bottleneck. Adding Attention lets the decoder compute a fresh context vector c_t = Σ α_{ti} h_i at every step—either via Bahdanau (2014) additive attention e_{ti} = v^T tanh(W_1 h_i + W_2 s_t) or Luong (2015) dot-product attention e_{ti} = s_t^T h_i, the direct bridge to Track 6 (Transformers)!'
     ],
     mathFormulas: [
       {
-        name: 'GRU Coupled Interpolation',
-        latex: '\\mathbf{z}_t = \\sigma(\\mathbf{W}_z[\\mathbf{h}_{t-1}, \\mathbf{x}_t]), \\quad \\mathbf{h}_t = (1 - \\mathbf{z}_t) \\odot \\mathbf{h}_{t-1} + \\mathbf{z}_t \\odot \\tilde{\\mathbf{h}}_t',
-        explanation: 'Couples forgetting (1 - z_t) and writing (z_t) so the hidden state is a convex combination of past state and new candidate.'
+        name: 'GRU Reset Gate, Candidate, and Coupled Update (Cho et al. 2014)',
+        latex: '\\mathbf{r}_t = \\sigma(\\mathbf{W}_r[\\mathbf{h}_{t-1}, \\mathbf{x}_t]), \\;\\; \\tilde{\\mathbf{h}}_t = \\tanh(\\mathbf{W}_h \\mathbf{x}_t + \\mathbf{U}_h(\\mathbf{r}_t \\odot \\mathbf{h}_{t-1})), \\;\\; \\mathbf{h}_t = (1 - \\mathbf{z}_t) \\odot \\mathbf{h}_{t-1} + \\mathbf{z}_t \\odot \\tilde{\\mathbf{h}}_t',
+        explanation: 'Reset gate r_t filters past state inside the candidate h̃_t, and update gate z_t interpolates between h_{t-1} and h̃_t. (Note: PyTorch nn.GRU swaps z_t and 1 - z_t.)'
       },
       {
-        name: 'Seq2Seq Attention Alignment & Context Vector',
+        name: 'Luong Dot-Product Attention & Context Vector (vs Bahdanau Additive Score)',
         latex: '\\alpha_{ti} = \\frac{\\exp(\\mathbf{s}_t^\\top \\mathbf{h}_i)}{\\sum_{k=1}^S \\exp(\\mathbf{s}_t^\\top \\mathbf{h}_k)}, \\quad \\mathbf{c}_t = \\sum_{i=1}^S \\alpha_{ti}\\,\\mathbf{h}_i',
-        explanation: 'Decoder state s_t scores every encoder state h_i via dot product, normalizes with Softmax into weights α_{ti}, and takes the weighted sum.'
+        explanation: 'In Luong dot-product attention, decoder state s_t scores encoder state h_i via s_t^T h_i (whereas Bahdanau attention uses an additive MLP score v^T tanh(W_1 h_i + W_2 s_t)).'
       }
     ],
     workedExample: {
-      scenario: 'Computing a GRU state update with h_{t-1} = 1.20, update gate z_t = 0.60, and candidate h̃_t = -0.50.',
+      scenario: 'Computing a scalar GRU step with h_{t-1} = 1.20, input term w_h x_t = -0.82, recurrent weight u_h = 0.50, reset gate r_t = 0.50, and update gate z_t = 0.60.',
       steps: [
         {
-          label: 'Step 1: Compute retention weight (1 - z_t)',
-          math: '1 - z_t = 1.00 - 0.60 = 0.40',
-          note: '40% of old hidden state is preserved; 60% comes from the new candidate.'
+          label: 'Step 1: Apply Reset Gate r_t to compute candidate h̃_t',
+          math: '\\tilde{h}_t = \\tanh(w_h x_t + u_h(r_t \\cdot h_{t-1})) = \\tanh(-0.82 + 0.50(0.50 \\times 1.20)) = \\tanh(-0.52) = -0.4777',
+          note: 'Reset gate r_t = 0.50 halves the contribution of h_{t-1} inside the candidate nonlinearity.'
         },
         {
-          label: 'Step 2: Interpolate old state and new candidate',
-          math: 'h_t = (0.40)(1.20) + (0.60)(-0.50) = 0.480 - 0.300 = 0.180',
-          note: 'Single gate performs both selective forgetting and writing.'
+          label: 'Step 2: Compute retention weight (1 - z_t)',
+          math: '1 - z_t = 1.00 - 0.60 = 0.40',
+          note: '40% of old hidden state is preserved; 60% comes from the new candidate h̃_t.'
+        },
+        {
+          label: 'Step 3: Interpolate old state and new candidate',
+          math: 'h_t = (1 - z_t)h_{t-1} + z_t\\tilde{h}_t = (0.40)(1.20) + (0.60)(-0.4777) = 0.480 - 0.2866 = 0.1934',
+          note: 'Under PyTorch\'s swapped convention (z_t on h_{t-1}), the same weights would correspond to z_t = 0.40.'
         }
       ],
-      result: 'Updated GRU hidden state h_t = 0.180.',
+      result: 'Candidate h̃_t = -0.4777 and updated GRU hidden state h_t = 0.1934.',
       params: {}
     },
     quiz: [
@@ -3178,10 +3190,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'gru-q1',
         question: 'How does a GRU achieve long-term memory without using a separate Cell State vector C_t or separate Forget and Input gates?',
         options: [
-          'It couples forgetting and writing with a single Update Gate z_t via h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t.',
-          'It removes all non-linearities.',
-          'It uses 8 gates instead of 4.',
-          'It only processes 2 words at a time.'
+          'It couples forgetting and writing with a single Update Gate z_t on hidden state h_t.',
+          'It removes all non-linear activation functions from the recurrent state update.',
+          'It expands the recurrence to use 8 independent sigmoid gates at every time step.',
+          'It restricts the encoder to processing at most 2 input tokens per sentence.'
         ],
         correctIndex: 0,
         explanation: 'The convex combination (1 - z_t)h_{t-1} + z_t h̃_t creates an additive highway directly on h_t while cutting parameter count by 25%.'
@@ -3190,10 +3202,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'gru-q2',
         question: 'What was the core architectural limitation of vanilla Seq2Seq (without Attention) on long 50-word sentences that directly inspired the Attention mechanism?',
         options: [
-          'Teacher forcing was impossible without Attention.',
-          'Vanilla Seq2Seq could only output numbers, not words.',
-          'Vanilla Seq2Seq required both sentences to have the exact same word count.',
-          'Forcing the Encoder to compress the entire variable-length source sentence into a single fixed-size vector h_S created an information bottleneck where early words were forgotten.'
+          'Teacher forcing could not be applied during training without an attention matrix.',
+          'Vanilla Seq2Seq decoders could only output continuous scalars rather than tokens.',
+          'Vanilla Seq2Seq required source and target sentences to have identical lengths.',
+          'Compressing the whole source sentence into one fixed vector h_S lost early words.'
         ],
         correctIndex: 3,
         explanation: 'Allowing the decoder to attend over all encoder states (h_1, ..., h_S) via dynamic weights α_{ti} removed the fixed-vector bottleneck and led directly to the Transformer.'
@@ -3248,10 +3260,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A physical suitcase can only hold a subset of physical clothes, whereas a non-linear neural autoencoder compresses correlated numbers into abstract continuous coordinates that reconstruct the whole image approximately.',
     intuition: [
-      'An **Undercomplete Autoencoder** is a self-supervised neural network trained to copy its input to its output (`x̂ ≈ x`), but with a catch: the hidden layer in the middle (`z ∈ R^d`) is much narrower than the input (`d ≪ D`).',
-      'If the encoder and decoder are purely linear (`z = W_enc x`, `x̂ = W_dec z`) and trained with Mean Squared Error, the bottleneck `z` learns to span the **exact same principal subspace as PCA**!',
+      'An Undercomplete Autoencoder is a self-supervised neural network trained to copy its input to its output (x̂ ≈ x), but with a catch: the hidden layer in the middle (z ∈ R^d) is much narrower than the input (d ≪ D).',
+      'If the encoder and decoder are purely linear (z = W_enc x, x̂ = W_dec z) and trained with Mean Squared Error, the bottleneck z learns to span the exact same principal subspace as PCA!',
       'Adding non-linear activation functions (like ReLU, GELU, or tanh) in the encoder and decoder enables the autoencoder to curve its coordinate system along non-linear data manifolds.',
-      'In a **Denoising Autoencoder (DAE)**, we intentionally corrupt the input (`x̃ = x + ε`) before feeding it to the encoder, but still demand the clean target `x` at the decoder output (`||x - g(f(x̃))||²`), forcing the bottleneck to strip away noise.'
+      'In a Denoising Autoencoder (DAE), we intentionally corrupt the input (x̃ = x + ε) before feeding it to the encoder, but still demand the clean target x at the decoder output (||x - g(f(x̃))||²), forcing the bottleneck to strip away noise.'
     ],
     mathFormulas: [
       {
@@ -3292,10 +3304,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'ae-q1',
         question: 'What happens if you build an autoencoder where the hidden bottleneck dimension d is LARGER than the input dimension D (d ≥ D) without any regularization or noise?',
         options: [
-          'The loss becomes infinite.',
-          'The network can learn the trivial identity function (copying x straight through to x̂ with zero error) without learning any meaningful features or structure.',
-          'It automatically becomes a Variational Autoencoder.',
-          'Backpropagation stops working when d > D.'
+          'The Mean Squared Error reconstruction loss immediately diverges to infinity.',
+          'The network can memorize the trivial identity copy without learning features.',
+          'The deterministic bottleneck automatically turns into a Variational Autoencoder.',
+          'Backpropagation derivatives become undefined whenever latent size d exceeds D.'
         ],
         correctIndex: 1,
         explanation: 'Without a narrow bottleneck (d < D) or denoising/sparsity constraints, an overcomplete autoencoder simply memorizes the identity map I.'
@@ -3304,10 +3316,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'ae-q2',
         question: 'Why is a standard deterministic Autoencoder poor at generating brand-new realistic images when you sample a random point z ~ N(0, I) in its bottleneck space?',
         options: [
-          'Because a deterministic autoencoder leaves arbitrary "dead zones" or gaps between clusters in latent space.',
-          'Because the decoder cannot run without the encoder.',
-          'Because z is always an integer.',
-          'Because MSE loss only works on text.'
+          'Unregularized latent spaces have empty gaps between clusters that decode poorly.',
+          'The decoder network cannot execute a forward pass without the encoder present.',
+          'Deterministic bottleneck coordinates are constrained to discrete integer values.',
+          'Mean Squared Error reconstruction loss can only be optimized on discrete text.'
         ],
         correctIndex: 0,
         explanation: 'A standard autoencoder only cares that training points reconstruct well; it does not regularize the geometry of the space between training encodings.'
@@ -3362,10 +3374,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Adding random noise to a real kitchen recipe usually ruins the dish, whereas in a VAE the decoder specifically trains to map every nearby point in the Gaussian cloud N(μ, σ²) back to a valid, coherent image.',
     intuition: [
-      'A Variational Autoencoder maximizes the **Evidence Lower Bound (ELBO)** on the data log-likelihood `log p(x)`. Minimizing the negative ELBO gives a two-part loss: **Reconstruction Loss** + **KL Divergence**.',
-      'Why does the encoder output `s = log(σ²)` instead of `σ` directly? Because variance `σ²` must be strictly positive (`> 0`), whereas a neural linear layer outputs unconstrained real numbers `s ∈ (-∞, +∞)`. Defining `σ = exp(0.5 s)` guarantees positivity without clipping!',
-      'Why can\'t we backpropagate directly through `z ~ N(μ, σ²)`? Because a random sampling node has no derivative with respect to its distribution parameters! Kingma & Welling (2014) introduced the **Reparameterization Trick**: sample `ε ~ N(0, I)` independently, then form `z = μ + σ ⊙ ε`. Now `z` is a deterministic, differentiable function of `μ` and `σ`!',
-      'Because KL divergence forces all encoded clouds `N(μ(x), σ²(x))` to overlap inside the unit Gaussian `N(0, I)`, you can throw away the encoder at test time, sample `z ~ N(0, I)`, and decode brand-new digits or faces!'
+      'A Variational Autoencoder maximizes the Evidence Lower Bound (ELBO) on the data log-likelihood log p(x). Minimizing the negative ELBO gives a two-part loss: Reconstruction Loss + KL Divergence.',
+      'Why does the encoder output s = log(σ²) instead of σ directly? Because variance σ² must be strictly positive (> 0), whereas a neural linear layer outputs unconstrained real numbers s ∈ (-∞, +∞). Defining σ = exp(0.5 s) guarantees positivity without clipping!',
+      'Why can\'t we backpropagate directly through z ~ N(μ, σ²)? Because a random sampling node has no derivative with respect to its distribution parameters! Kingma & Welling (2014) introduced the Reparameterization Trick: sample ε ~ N(0, I) independently, then form z = μ + σ ⊙ ε. Now z is a deterministic, differentiable function of μ and σ!',
+      'Because KL divergence forces all encoded clouds N(μ(x), σ²(x)) to overlap inside the unit Gaussian N(0, I), you can throw away the encoder at test time, sample z ~ N(0, I), and decode brand-new digits or faces!'
     ],
     mathFormulas: [
       {
@@ -3406,10 +3418,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'vae-q1',
         question: 'Why is the Reparameterization Trick (z = μ + σ ⊙ ε with ε ~ N(0, I)) essential for training a Variational Autoencoder?',
         options: [
-          'To set KL divergence to infinity.',
-          'To make the decoder linear.',
-          'Because backpropagation cannot differentiate through a raw random number generator z ~ N.',
-          'Because computers cannot generate Gaussian random numbers.'
+          'To force the Kullback-Leibler divergence penalty term to grow toward infinity.',
+          'To restrict the generative decoder network to purely linear transformations.',
+          'It moves randomness into ε ~ N(0, I) so gradients flow deterministically to μ and σ.',
+          'Because standard CPU and GPU hardware cannot sample Gaussian random numbers.'
         ],
         correctIndex: 2,
         explanation: 'Moving stochasticity to an input leaf node ε keeps the computational path from encoder weights through μ and σ to the decoder completely deterministic and differentiable.'
@@ -3476,10 +3488,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'In real life, a bank officer and counterfeiter never share their internal brain wiring with each other, whereas in a GAN the Generator literally backpropagates through the frozen weights of the Discriminator (∂D(G(z))/∂θ_G) to learn how to improve!',
     intuition: [
-      'A **Generative Adversarial Network (GAN)** pits two neural networks against each other in a zero-sum game: the **Discriminator `D`** tries to maximize binary classification log-likelihood on real vs fake samples, while the **Generator `G`** tries to make `D(G(z))` approach `1`.',
-      'For a fixed Generator distribution `p_g`, the mathematically optimal Discriminator is `D*(x) = p_data(x) / (p_data(x) + p_g(x))`. When the Generator perfectly matches the real data distribution (`p_g = p_data`), `D*(x) = 1/2` everywhere!',
-      'Early in training, fakes look terrible so `D(G(z)) ≈ 0`. In the original minimax loss `log(1 - D(G(z)))`, the derivative w.r.t the fake logit is `-D(G(z)) ≈ 0`—the Generator\'s gradient vanishes! Switching G\'s loss to the **Non-Saturating Heuristic** `L_G = -log D(G(z))` gives gradient `D(G(z)) - 1 ≈ -1`, providing a strong update signal when G needs it most.',
-      'Unlike VAEs or Diffusion models, GANs can suffer from **Mode Collapse** (generating only one or two realistic faces repeatedly) and unstable oscillating gradients because finding a saddle point (`min_G max_D`) is much harder than minimizing a single loss function.'
+      'A Generative Adversarial Network (GAN) pits two neural networks against each other in a zero-sum game: the Discriminator D tries to maximize binary classification log-likelihood on real vs fake samples, while the Generator G tries to make D(G(z)) approach 1.',
+      'For a fixed Generator distribution p_g, the mathematically optimal Discriminator is D*(x) = p_data(x) / (p_data(x) + p_g(x)). When the Generator perfectly matches the real data distribution (p_g = p_data), D*(x) = 1/2 everywhere!',
+      'Early in training, fakes look terrible so D(G(z)) ≈ 0. In the original minimax loss log(1 - D(G(z))), the derivative w.r.t the fake logit is -D(G(z)) ≈ 0—the Generator\'s gradient vanishes! Switching G\'s loss to the Non-Saturating Heuristic L_G = -log D(G(z)) gives gradient D(G(z)) - 1 ≈ -1, providing a strong update signal when G needs it most.',
+      'Unlike VAEs or Diffusion models, GANs can suffer from Mode Collapse (generating only one or two realistic faces repeatedly) and unstable oscillating gradients because finding a saddle point (min_G max_D) is much harder than minimizing a single loss function.'
     ],
     mathFormulas: [
       {
@@ -3520,10 +3532,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'gan-q1',
         question: 'In practice, why do we train the Generator to minimize -log D(G(z)) (the non-saturating loss) instead of minimizing log(1 - D(G(z)))?',
         options: [
-          'Because log(1 - D) cannot be computed on a GPU.',
-          'Because early in training the Discriminator easily rejects poor fakes (D(G(z)) ≈ 0), where log(1 - D(G(z))) has a near-zero slope.',
-          'Because -log D(G(z)) removes the need for a Discriminator.',
-          'Because it forces D(x) to be 1.0 at Nash equilibrium.'
+          'Because the logarithmic term log(1 - D(G(z))) cannot be evaluated on GPUs.',
+          'Early on D(G(z)) is near 0, where log(1 - D(G(z))) has a flat gradient.',
+          'Because maximizing log D(G(z)) removes the need for a Discriminator network.',
+          'Because it forces the Discriminator output D(x) to equal 1.0 at equilibrium.'
         ],
         correctIndex: 1,
         explanation: 'Flipping the target so G maximizes log D(G(z)) cures early gradient saturation while preserving the exact same fixed point p_g = p_data.'
@@ -3532,10 +3544,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'gan-q2',
         question: 'Your GAN generates super-sharp, realistic photos of the digit "1", but no matter what random noise vector z you pass in, it NEVER generates digits 0, 2, 3, ..., 9. What is this failure called?',
         options: [
-          'Over-smoothing.',
-          'Vanishing ReLU.',
-          'Data Leakage.',
-          'Mode Collapse: the Generator found a single high-density mode that fools the current Discriminator and collapsed all latent vectors z onto that single output.'
+          'Posterior Collapse: the encoder ignores latent code z and relies on the decoder.',
+          'Dying ReLU Saturation: negative pre-activations zero out all generator gradients.',
+          'Train-Test Leakage: validation images accidentally leaked into the training batch.',
+          'Mode Collapse: the generator maps all noise vectors z to one repetitive output.'
         ],
         correctIndex: 3,
         explanation: 'Because the standard GAN loss does not directly penalize lack of diversity across a batch, G can exploit a blind spot in D by repeating one convincing sample.'
@@ -3590,10 +3602,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Wiping real physical dust off a glass frame only uncovers the one photo underneath, whereas starting a Diffusion model from different random Gaussian static patterns x_T ~ N(0, I) carves out brand-new, never-before-seen images every time!',
     intuition: [
-      'Ho et al. (2020) showed that **Denoising Diffusion Probabilistic Models (DDPM)** achieve state-of-the-art image synthesis using a remarkably simple training objective: **predict the Gaussian noise `ε` that was added to the image**.',
-      'Why don\'t we have to run 500 sequential loop steps during training just to create a noisy image `x_500`? Because the sum of independent Gaussians is still Gaussian! Defining `α_t = 1 - β_t` and cumulative product `ᾱ_t = ∏_{s=1}^t α_s`, the marginal distribution `q(x_t | x_0)` has the exact closed form `x_t = √(ᾱ_t) x_0 + √(1 - ᾱ_t) ε` with `ε ~ N(0, I)`. Notice that `(√ᾱ_t)² + (√(1 - ᾱ_t))² = ᾱ_t + 1 - ᾱ_t = 1`, preserving unit variance!',
-      'During training, we randomly pick a timestep `t ∈ {1, ..., T}`, sample `ε ~ N(0, I)`, form `x_t` in O(1), and train a time-conditioned U-Net (or Diffusion Transformer, DiT) to minimize `||ε - ε_θ(x_t, t)||²`.',
-      'At generation time, we start from pure noise `x_T ~ N(0, I)` and iteratively apply the reverse denoising transition from `t = T` down to `1` (or use accelerated deterministic samplers like DDIM in 20–50 steps).'
+      'Ho et al. (2020) showed that Denoising Diffusion Probabilistic Models (DDPM) achieve state-of-the-art image synthesis using a remarkably simple training objective: predict the Gaussian noise ε that was added to the image.',
+      'Why don\'t we have to run 500 sequential loop steps during training just to create a noisy image x_500? Because the sum of independent Gaussians is still Gaussian! Defining α_t = 1 - β_t and cumulative product ᾱ_t = ∏_{s=1}^t α_s, the marginal distribution q(x_t | x_0) has the exact closed form x_t = √(ᾱ_t) x_0 + √(1 - ᾱ_t) ε with ε ~ N(0, I). Notice that (√ᾱ_t)² + (√(1 - ᾱ_t))² = ᾱ_t + 1 - ᾱ_t = 1, preserving unit variance!',
+      'During training, we randomly pick a timestep t ∈ {1, ..., T}, sample ε ~ N(0, I), form x_t in O(1), and train a time-conditioned U-Net (or Diffusion Transformer, DiT) to minimize ||ε - ε_θ(x_t, t)||².',
+      'At generation time, we start from pure noise x_T ~ N(0, I) and iteratively apply the reverse denoising transition from t = T down to 1 (or use accelerated deterministic samplers like DDIM in 20–50 steps).'
     ],
     mathFormulas: [
       {
@@ -3634,10 +3646,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'diff-q1',
         question: 'Why can we train a 1,000-step Diffusion Model efficiently without running a 1,000-step loop on every training batch?',
         options: [
-          'Because the sum of Gaussian noise steps has a closed-form marginal q(x_t | x_0).',
-          'Because training only uses t = 1.',
-          'Because Diffusion Models do not use neural networks during training.',
-          'Because ᾱ_t is always 0.'
+          'Gaussian noise steps combine into a closed-form marginal q(x_t | x_0).',
+          'Diffusion model training only ever evaluates the first step t = 1.',
+          'Diffusion models do not use neural network weights during training.',
+          'The cumulative signal retention product ᾱ_t is always equal to zero.'
         ],
         correctIndex: 0,
         explanation: 'Closed-form Gaussian marginals let us sample random timesteps t independently across a mini-batch and optimize simple MSE loss.'
@@ -3704,9 +3716,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Relay runners consciously adjust their grip if a baton is handed over too fast, whereas initial neural network layers blindly multiply by W^(l) before any gradient update has occurred.',
     intuition: [
-      '**Why Never Initialize Weights to Zero?** If all weights `W` are initialized to `0` (or any identical constant), every hidden neuron in a layer receives the exact same pre-activation `z` and computes the exact same backward gradient `∂L/∂w`. All neurons in that layer remain identical twins throughout training, reducing a 1,000-neuron layer to the capacity of 1 neuron! (Biases `b`, however, *should* be initialized to `0` since weights already break symmetry.)',
-      '**Variance Preservation (Xavier / Glorot, 2010):** For a linear sum `z = ∑_{i=1}^{n_in} w_i x_i` with independent zero-mean inputs and weights, `Var(z) = n_in · Var(w) · Var(x)`. To keep `Var(z) = Var(x)` across 50 layers, we must set `n_in · Var(w) = 1`, which gives `Var(w) = 1 / n_in` (`σ_w = 1 / √n_in`).',
-      '**Why ReLU Needs Kaiming / He Initialization (He et al., 2015):** Because `ReLU(z) = max(0, z)` zeroes out the entire negative half of a symmetric zero-mean Gaussian distribution, the variance of the output is cut in half: `Var(ReLU(z)) = ½ Var(z) = ½ n_in Var(w) Var(a)`. Setting `½ n_in Var(w) = 1` yields **He Initialization**: `Var(w) = 2 / n_in` (`σ_w = √(2 / n_in)`).'
+      'Why Never Initialize Weights to Zero? If all weights W are initialized to 0 (or any identical constant), every hidden neuron in a layer receives the exact same pre-activation z and computes the exact same backward gradient ∂L/∂w. All neurons in that layer remain identical twins throughout training, reducing a 1,000-neuron layer to the capacity of 1 neuron! (Biases b, however, should be initialized to 0 since weights already break symmetry.)',
+      'Variance Preservation (Xavier / Glorot, 2010): For a linear sum z = ∑_{i=1}^{n_in} w_i x_i with independent zero-mean inputs and weights, Var(z) = n_in · Var(w) · Var(x). To keep Var(z) = Var(x) across 50 layers, we must set n_in · Var(w) = 1, which gives Var(w) = 1 / n_in (σ_w = 1 / √n_in).',
+      'Why ReLU Needs Kaiming / He Initialization (He et al., 2015): Because ReLU(z) = max(0, z) zeroes out the entire negative half of a symmetric zero-mean Gaussian distribution, the variance of the output is cut in half: Var(ReLU(z)) = ½ Var(z) = ½ n_in Var(w) Var(a). Setting ½ n_in Var(w) = 1 yields He Initialization: Var(w) = 2 / n_in (σ_w = √(2 / n_in)).'
     ],
     mathFormulas: [
       {
@@ -3750,7 +3762,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
           'Weights automatically become random after 1 step of SGD.',
           'The network trains faster because 0 is close to regularized weights.',
           'Only the first layer fails; deeper layers learn normally.',
-          'Every neuron in a given hidden layer computes the exact same output and receives the exact same gradient update forever.'
+          'All neurons in a layer compute identical outputs and gradients forever.'
         ],
         correctIndex: 3,
         explanation: 'Without distinct initial weights W_ij, hidden units within a layer are permutation-identical and receive identical gradients at every step.'
@@ -3759,10 +3771,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'init-q2',
         question: 'Why does Kaiming / He Initialization set Var(W) = 2 / n_in instead of Xavier\'s 1 / n_in for ReLU networks?',
         options: [
-          'Because ReLU networks have twice as many layers.',
-          'Because ReLU has a derivative of 2 for positive inputs.',
-          'Because ReLU(z) = max(0, z) sets all negative pre-activations to zero, cutting the variance of a zero-mean symmetric distribution in half at every layer.',
-          'To make all weights positive.'
+          'Because ReLU networks require twice as many hidden layers as Tanh networks.',
+          'Because the ReLU activation function has a slope of 2.0 for positive inputs.',
+          'Because ReLU zeroes out negative half-waves, halving activation variance per layer.',
+          'Because He initialization forces all sampled initial weights to be positive.'
         ],
         correctIndex: 2,
         explanation: 'For z ~ N(0, σ²), E[(max(0, z))²] = ½ σ². Multiplying weight variance by 2 cancels the ½ factor.'
@@ -3816,10 +3828,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A school professor curves grades only once at the end of the semester, whereas BatchNorm/LayerNorm sits between every single block of a deep network and differentiates right through μ and σ² during backpropagation.',
     intuition: [
-      '**How Normalization Accelerates Training:** Ioffe & Szegedy (2015) introduced **Batch Normalization (BatchNorm)**, showing that standardizing intermediate pre-activations allows 5–10× larger learning rates, reduces sensitivity to initialization, and acts as a mild regularizer.',
-      '**Why Include Learnable `γ` and `β`?** What if forcing inputs into mean 0 and variance 1 pushes a Sigmoid or Tanh layer strictly into its linear middle zone, robbing the network of non-linearity? By computing `y = γ x̂ + β` (initialized at `γ = 1, β = 0`), the network can learn to undo the normalization (`γ = σ, β = μ`) whenever raw activations are better!',
-      '**Training vs Inference in BatchNorm:** During training, BatchNorm uses the mini-batch mean `μ_B` and variance `σ_B²` and updates an Exponential Moving Average (`μ_running`, `σ²_running`). At **inference (`model.eval()`)**, a single user request has batch size `B = 1` (where batch variance would be 0!), so BatchNorm freezes and uses the saved running population statistics.',
-      '**Why Transformers Use LayerNorm Instead of BatchNorm:** In variable-length NLP sequences and autoregressive LLM decoding (generating 1 token at a time with batch size 1), **Layer Normalization (Ba et al., 2016)** normalizes across the `d_model` feature channels of each individual token independently—requiring no batch coupling and no running averages!'
+      'How Normalization Accelerates Training: Ioffe & Szegedy (2015) introduced Batch Normalization (BatchNorm), showing that standardizing intermediate pre-activations allows 5–10× larger learning rates, reduces sensitivity to initialization, and acts as a mild regularizer.',
+      'Why Include Learnable γ and β? What if forcing inputs into mean 0 and variance 1 pushes a Sigmoid or Tanh layer strictly into its linear middle zone, robbing the network of non-linearity? By computing y = γ x̂ + β (initialized at γ = 1, β = 0), the network can learn to undo the normalization (γ = σ, β = μ) whenever raw activations are better!',
+      'Training vs Inference in BatchNorm: During training, BatchNorm uses the mini-batch mean μ_B and variance σ_B² and updates an Exponential Moving Average (μ_running, σ²_running). At inference (model.eval()), a single user request has batch size B = 1 (where batch variance would be 0!), so BatchNorm freezes and uses the saved running population statistics.',
+      'Why Transformers Use LayerNorm Instead of BatchNorm: In variable-length NLP sequences and autoregressive LLM decoding (generating 1 token at a time with batch size 1), Layer Normalization (Ba et al., 2016) normalizes across the d_model feature channels of each individual token independently—requiring no batch coupling and no running averages!'
     ],
     mathFormulas: [
       {
@@ -3860,10 +3872,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'norm-q1',
         question: 'Why must you call model.eval() before running single-image production inference on a CNN that contains Batch Normalization layers?',
         options: [
-          'Because in training mode BatchNorm computes mean and variance across the current mini-batch.',
-          'Because model.eval() deletes all convolutional kernels.',
-          'Because BatchNorm only runs on CPUs.',
-          'Because γ and β are set to zero in eval mode.'
+          'Eval mode uses frozen running statistics so single-sample batch variance is not zero.',
+          'Calling model.eval() prunes away half of the trained convolutional filter kernels.',
+          'BatchNorm layers can only execute on CPU threads during training mode forward passes.',
+          'Evaluation mode resets the learned affine scale γ and shift β parameters to zero.'
         ],
         correctIndex: 0,
         explanation: 'Forgetting model.eval() is one of the top real-world PyTorch bugs: with batch size 1, batch variance is 0 and (x - μ) is 0!'
@@ -3872,10 +3884,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'norm-q2',
         question: 'If a Conv2D layer outputs 64 channels and is followed immediately by a BatchNorm2d(64) layer, why do we set bias=False in the Conv2D layer?',
         options: [
-          'To double the receptive field.',
-          'Because Conv2D layers cannot have biases in PyTorch.',
-          'Because biases cause exploding gradients.',
-          'Because BatchNorm immediately subtracts the channel mean μ_B (which cancels out any constant additive Conv2D bias b), and BatchNorm\'s own learnable shift parameter β already serves as the bias!'
+          'Omitting the bias doubles the effective spatial receptive field of the convolution.',
+          'PyTorch Conv2d layers do not support learnable bias vectors on GPU devices.',
+          'Additive bias vectors inside convolutional layers cause gradients to explode.',
+          'BatchNorm subtracts the channel mean (canceling b) and adds its own shift β.'
         ],
         correctIndex: 3,
         explanation: 'Adding a constant b to x shifts μ_B by +b, so (x + b) - (μ_B + b) = x - μ_B — a Conv bias before BatchNorm has zero effect on the output and Zero gradient!'
@@ -3924,9 +3936,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A car driver slows down because they can see the parking spot ahead with their eyes, whereas a learning rate schedule is a pre-programmed function of step count t that runs blindly unless paired with validation-plateau monitoring (ReduceLROnPlateau).',
     intuition: [
-      '**Why Fixed Learning Rates Fail at the End of Training:** With a large constant learning rate `η`, stochastic mini-batch noise keeps kicking the weights around the walls of the minimum (`θ_t` orbits the valley floor without ever settling). Decaying `η → η_min` lets the parameters settle into the bottom of the basin.',
-      '**Why Transformers & ResNets Need Linear Warmup:** At step `t = 1`, weights are freshly randomized, attention distributions are uniform, and Adam\'s running second moment `v_t` has only seen a single mini-batch (high variance!). Taking a full `η_max` stride on step 1 can hurl weights into saturated regions from which they never recover. Ramping `η(t) = η_max · (t / W)` over the first `W` steps lets `v_t` and early feature statistics stabilize first.',
-      '**Why Cosine Annealing Is the Modern Default:** Unlike Step Decay (which requires tuning milestone epochs and drop multipliers), **Cosine Annealing (Loshchilov & Hutter, 2016)** needs only `η_max`, `η_min`, and total steps `T`, spending substantial time at productive mid-range learning rates before gently landing at `η_min`.'
+      'Why Fixed Learning Rates Fail at the End of Training: With a large constant learning rate η, stochastic mini-batch noise keeps kicking the weights around the walls of the minimum (θ_t orbits the valley floor without ever settling). Decaying η → η_min lets the parameters settle into the bottom of the basin.',
+      'Why Transformers & ResNets Need Linear Warmup: At step t = 1, weights are freshly randomized, attention distributions are uniform, and Adam\'s running second moment v_t has only seen a single mini-batch (high variance!). Taking a full η_max stride on step 1 can hurl weights into saturated regions from which they never recover. Ramping η(t) = η_max · (t / W) over the first W steps lets v_t and early feature statistics stabilize first.',
+      'Why Cosine Annealing Is the Modern Default: Unlike Step Decay (which requires tuning milestone epochs and drop multipliers), Cosine Annealing (Loshchilov & Hutter, 2016) needs only η_max, η_min, and total steps T, spending substantial time at productive mid-range learning rates before gently landing at η_min.'
     ],
     mathFormulas: [
       {
@@ -3968,7 +3980,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         question: 'Why is Linear Warmup (ramping η from 0 to η_max over the first few hundred steps) critical when training Transformers with Adam?',
         options: [
           'Because GPUs need 5 minutes to warm up physically before multiplying matrices.',
-          'Because in the very first steps, Adam\'s second-moment variance estimate v_t is noisy and unreliable.',
+          'Early Adam variance estimates v_t are noisy and can trigger destabilizing jumps.',
           'Because Linear Warmup increases the number of parameters.',
           'To force the training loss to increase during epoch 1.'
         ],
@@ -4036,10 +4048,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A human patient recovers with rest, whereas a neural network with a sign bug in its loss function or 90% dead ReLUs will never self-heal no matter how many GPU hours you wait.',
     intuition: [
-      '**Symptom 1 — Loss Explodes to `NaN` or `Inf`:** Almost always caused by (a) learning rate `η` too high, (b) unclipped exploding gradients, or (c) numerical overflow in `log(0)` or `exp(z)` (fix: use combined `BCEWithLogitsLoss` / `CrossEntropyLoss` instead of manual `softmax` + `log`!).',
-      '**Symptom 2 — Dead ReLUs:** If a large gradient step pushes a neuron\'s bias `b` strongly negative so that `z = w·x + b < 0` for *every* sample in the dataset, `ReLU(z)` outputs `0` and its derivative is `0` forever—that neuron is permanently dead! Cure: lower `η`, use He initialization + warmup, or switch to **Leaky ReLU / GELU / SiLU**.',
-      '**Symptom 3 — Overfitting Fork (`L_train ↓` while `L_val ↑`):** The model has enough capacity to memorize the training set but fails to generalize. Cure: add more training data, data augmentation, L2 weight decay (`AdamW`), Dropout, or Early Stopping at the minimum of `L_val`.',
-      '**The Golden Debugging Rule (Karpathy\'s Recipe):** Before running a 2-hour training job, take **1 single mini-batch of 8–16 examples** and turn off regularization. Your model *must* be able to drive training loss on that tiny batch to `~0.000` within 100 steps. If it can\'t, you have a code bug (wrong label alignment, `optimizer.zero_grad()` missing, frozen weights, or inverted loss sign)!'
+      'Symptom 1 — Loss Explodes to NaN or Inf: Almost always caused by (a) learning rate η too high, (b) unclipped exploding gradients, or (c) numerical overflow in log(0) or exp(z) (fix: use combined BCEWithLogitsLoss / CrossEntropyLoss instead of manual softmax + log!).',
+      'Symptom 2 — Dead ReLUs: If a large gradient step pushes a neuron\'s bias b strongly negative so that z = w·x + b < 0 for every sample in the dataset, ReLU(z) outputs 0 and its derivative is 0 forever—that neuron is permanently dead! Cure: lower η, use He initialization + warmup, or switch to Leaky ReLU / GELU / SiLU.',
+      'Symptom 3 — Overfitting Fork (L_train ↓ while L_val ↑): The model has enough capacity to memorize the training set but fails to generalize. Cure: add more training data, data augmentation, L2 weight decay (AdamW), Dropout, or Early Stopping at the minimum of L_val.',
+      'The Golden Debugging Rule (Karpathy\'s Recipe): Before running a 2-hour training job, take 1 single mini-batch of 8–16 examples and turn off regularization. Your model must be able to drive training loss on that tiny batch to ~0.000 within 100 steps. If it can\'t, you have a code bug (wrong label alignment, optimizer.zero_grad() missing, frozen weights, or inverted loss sign)!'
     ],
     mathFormulas: [
       {
@@ -4080,10 +4092,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'dbg-q1',
         question: 'You write a new neural network training script, and before running on all 50,000 images, you test it on a tiny batch of 8 images. Even after 500 steps on those 8 images, the training loss refuses to drop below 2.30. What does this tell you?',
         options: [
-          'You need to add stronger Dropout and L2 regularization.',
-          'You need to collect 1,000,000 more training images.',
-          'There is a bug in the code or setup (e.g. forgot optimizer.zero_grad(), learning rate is 0, labels are shuffled randomly on every step, or gradients are detached).',
-          'The model is overfitting.'
+          'Strong Dropout and L2 weight decay are preventing the network from memorizing.',
+          'The training dataset is too small and needs a million additional labeled images.',
+          'There is a training pipeline bug (such as zero learning rate or detached gradients).',
+          'The model has excessive capacity and is severely overfitting the validation split.'
         ],
         correctIndex: 2,
         explanation: 'Overfitting a tiny batch of 8–16 samples is the fastest unit test in deep learning: if the model cannot memorize 8 examples, adding more data or regularization will only hide the bug.'
@@ -4092,10 +4104,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'dbg-q2',
         question: 'After 5 epochs with a high learning rate, 70% of the neurons in your ReLU hidden layer output 0.000 for every single validation image and never change again. What happened, and how do you fix it?',
         options: [
-          'Dropout is still turned on during validation.',
-          'The neurons converged to the global optimum.',
-          'The Dying ReLU problem: a huge gradient update pushed their biases strongly negative so z ≤ 0 everywhere and ∂ReLU/∂z = 0.',
-          'L2 regularization set the inputs to zero.'
+          'Inverted Dropout masks are accidentally left enabled during validation inference.',
+          'Those hidden neurons have already converged to the exact global loss minimum.',
+          'Dying ReLU: a large step pushed pre-activations negative where slope is zero.',
+          'L2 weight decay normalized all incoming dataset pixel intensities to exact zero.'
         ],
         correctIndex: 2,
         explanation: 'Because ReLU has a flat zero slope for z < 0, a large negative update traps the unit permanently unless a non-zero negative slope (Leaky ReLU / GELU) or smaller step size is used.'
@@ -4150,10 +4162,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Physical Lego bricks have fixed shapes regardless of language, whereas a BPE tokenizer trained mostly on English splits non-Latin scripts like Devanagari into many more tiny byte tokens per word unless balanced multilingual training data is used.',
     intuition: [
-      '**Subword Tokenization (BPE / WordPiece / Unigram):** Byte-Pair Encoding starts with raw UTF-8 bytes (256 base tokens) and repeatedly merges the most frequent adjacent pair `(a, b) → ab` until reaching vocabulary size `|V|` (e.g. 100,277 in GPT-4 `cl100k_base` or 128,256 in Llama-3).',
-      '**Autoregressive Pretraining Objective:** Given a sequence of tokens `(x_1, x_2, ..., x_T)`, a causal decoder Transformer outputs logits `z_t ∈ R^{|V|}` at each step and minimizes average Cross-Entropy (Negative Log-Likelihood): `L = -(1/T) ∑_{t=1}^T log P(x_t | x_{<t})`.',
-      '**What Is Perplexity (`PPL`)?** `PPL = exp(L)`. If a model assigns probability `p = 0.50` to the true next token, `L = -ln(0.5) = 0.693 nats`, and `PPL = exp(0.693) = 2.0`—meaning the model is as uncertain as choosing uniformly between 2 tokens!',
-      '**Decoding Strategies (Temperature, Top-k, Top-p):** Dividing logits by Temperature `T` before Softmax (`z_i / T`) controls entropy. **Top-p (Nucleus) Sampling (Holtzman et al., 2020)** sorts tokens by descending probability and keeps only the smallest prefix whose cumulative probability exceeds `p` (e.g. `p = 0.90`), dynamically adapting the candidate pool size based on model confidence.'
+      'Subword Tokenization (BPE / WordPiece / Unigram): Byte-Pair Encoding starts with raw UTF-8 bytes (256 base tokens) and repeatedly merges the most frequent adjacent pair (a, b) → ab until reaching vocabulary size |V| (e.g. 100,277 in GPT-4 cl100k_base or 128,256 in Llama-3).',
+      'Autoregressive Pretraining Objective: Given a sequence of tokens (x_1, x_2, ..., x_T), a causal decoder Transformer outputs logits z_t ∈ R^{|V|} at each step and minimizes average Cross-Entropy (Negative Log-Likelihood): L = -(1/T) ∑_{t=1}^T log P(x_t | x_{<t}).',
+      'What Is Perplexity (PPL)? PPL = exp(L). If a model assigns probability p = 0.50 to the true next token, L = -ln(0.5) = 0.693 nats, and PPL = exp(0.693) = 2.0—meaning the model is as uncertain as choosing uniformly between 2 tokens!',
+      'Decoding Strategies (Temperature, Top-k, Top-p): Dividing logits by Temperature T before Softmax (z_i / T) controls entropy. Top-p (Nucleus) Sampling (Holtzman et al., 2020) sorts tokens by descending probability and keeps only the smallest prefix whose cumulative probability exceeds p (e.g. p = 0.90), dynamically adapting the candidate pool size based on model confidence.'
     ],
     mathFormulas: [
       {
@@ -4201,10 +4213,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'tok-q2',
         question: 'When generating code or factual math answers from an LLM, why do engineers typically set Temperature T = 0.0 (or very low, e.g. T = 0.1) instead of T = 1.5?',
         options: [
-          'Because Temperature changes the model\'s pretraining weights.',
-          'Because T = 0.0 makes the model run 10× more layers.',
-          'Because T = 1.5 sets all logits to infinity.',
-          'Because as T → 0, Softmax(z / T) concentrates almost 100% of probability mass on the highest-scoring token (greedy decoding), avoiding random sampling of lower-probability syntax errors or hallucinations.'
+          'Because lowering Temperature directly modifies the pretrained weight matrices.',
+          'Because setting T = 0.0 causes the Transformer to execute ten times more layers.',
+          'Because setting T = 1.5 drives all vocabulary logit values to positive infinity.',
+          'Low T concentrates Softmax mass on the top token, avoiding random syntax errors.'
         ],
         correctIndex: 3,
         explanation: 'High temperature flattens the probability distribution and increases random exploration, which is fun for creative stories but harmful for deterministic syntax and math.'
@@ -4258,10 +4270,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A physical plug-in audio adapter adds a millisecond of cable delay when plugged in, whereas LoRA\'s matrix product (α/r)B·A has the exact same shape (d × k) as W_0 and is added directly into W_0 before serving—resulting in literally zero extra matrix multiplications at inference time!',
     intuition: [
-      '**Why Full Fine-Tuning Is So Expensive:** In FP16/BF16, a 7B parameter model takes 14 GB for weights, plus 14 GB for gradients, plus **28–56 GB for Adam optimizer states (`m_t`, `v_t`, master weights)**—exceeding consumer GPUs!',
-      '**The LoRA Decomposition:** For a weight matrix `W_0 ∈ R^{d × k}` (e.g. `4096 × 4096 = 16,777,216` weights), LoRA freezes `W_0` and parameterizes the update as `W = W_0 + (α / r) B A`, where `B ∈ R^{d × r}` and `A ∈ R^{r × k}` with rank `r ∈ {4, 8, 16, 32}`. At `r = 8`, `B` and `A` together have only `8 × (4096 + 4096) = 65,536` parameters—**256× fewer**!',
-      '**Why Initialize `A ~ N(0, σ²)` and `B = 0`?** If both `A` and `B` were zero, gradients would be zero (symmetry trap!). If both were random, `B A` would inject random noise into the pretrained LLM at step 0. Setting `A` random and `B = 0` makes `B A = 0` at step 0 while allowing `∂L/∂B = (α/r) dy (Ax)^T ≠ 0` on the very first backward pass!',
-      '**QLoRA (4-Bit Quantized Base + FP16 LoRA):** Dettmers et al. (2023) showed you can quantize the frozen base matrix `W_0` to 4-bit NormalFloat (NF4) while keeping the tiny LoRA adapters `B, A` in BF16—allowing a 7B or 13B LLM to be fine-tuned on a single free 16 GB Colab T4 GPU!'
+      'Why Full Fine-Tuning Is So Expensive: In FP16/BF16, a 7B parameter model takes 14 GB for weights, plus 14 GB for gradients, plus 28–56 GB for Adam optimizer states (m_t, v_t, master weights)—exceeding consumer GPUs!',
+      'The LoRA Decomposition: For a weight matrix W_0 ∈ R^{d × k} (e.g. 4096 × 4096 = 16,777,216 weights), LoRA freezes W_0 and parameterizes the update as W = W_0 + (α / r) B A, where B ∈ R^{d × r} and A ∈ R^{r × k} with rank r ∈ {4, 8, 16, 32}. At r = 8, B and A together have only 8 × (4096 + 4096) = 65,536 parameters—256× fewer!',
+      'Why Initialize A ~ N(0, σ²) and B = 0? If both A and B were zero, gradients would be zero (symmetry trap!). If both were random, B A would inject random noise into the pretrained LLM at step 0. Setting A random and B = 0 makes B A = 0 at step 0 while allowing ∂L/∂B = (α/r) dy (Ax)^T ≠ 0 on the very first backward pass!',
+      'QLoRA (4-Bit Quantized Base + FP16 LoRA): Dettmers et al. (2023) showed you can quantize the frozen base matrix W_0 to 4-bit NormalFloat (NF4) while keeping the tiny LoRA adapters B, A in BF16—allowing a 7B or 13B LLM to be fine-tuned on a single free 16 GB Colab T4 GPU!'
     ],
     mathFormulas: [
       {
@@ -4302,10 +4314,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'lora-q1',
         question: 'In LoRA (ΔW = B · A), why do we initialize A with random Gaussian noise and B = 0, instead of initializing both A and B with random noise?',
         options: [
-          'Initializing B = 0 guarantees that ΔW = B · A = 0 at the start of fine-tuning so the model begins with the exact capabilities of the pretrained LLM rather than injecting random noise.',
-          'Because B is frozen during training.',
-          'Because matrix multiplication only works when one matrix is zero.',
-          'To force the output to be zero forever.'
+          'Setting B = 0 makes ΔW = B·A = 0 at step 0 so fine-tuning starts from W_0 cleanly.',
+          'Because matrix B is kept permanently frozen while only matrix A is updated.',
+          'Because low-rank matrix multiplication requires one factor to be initialized to zero.',
+          'To force the adapted linear layer to output zero activations throughout training.'
         ],
         correctIndex: 0,
         explanation: 'At step 0, B = 0 makes ΔW = 0 (identity preservation), while ∂L/∂B = (α/r) dy (Ax)^T is non-zero because A is non-zero!'
@@ -4314,10 +4326,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'lora-q2',
         question: 'How much extra inference latency does a LoRA adapter add once you deploy a single fine-tuned model to production?',
         options: [
-          'It doubles inference latency because every layer runs twice.',
-          'Zero extra latency! Because W_0 and (α/r)B·A are both linear matrices of shape (d × k), you simply pre-add them once (W_merged = W_0 + (α/r)B·A) before serving.',
-          'It increases latency by 8× when rank r = 8.',
-          'It requires running Adam during inference.'
+          'It doubles production inference latency because every linear layer runs twice.',
+          'Zero extra latency, since (α/r)B·A is added directly into W_0 before serving.',
+          'It multiplies forward-pass latency by a factor of 8 whenever LoRA rank r = 8.',
+          'It requires running an Adam optimizer gradient step on every inference query.'
         ],
         correctIndex: 1,
         explanation: 'By linearity of matrix multiplication, W_0 x + (α/r)B A x = (W_0 + (α/r)B A) x = W_merged x.'
@@ -4372,9 +4384,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A human student in an open-book exam knows when a retrieved page is irrelevant and keeps flipping pages, whereas a naive RAG pipeline will blindly stuff whatever Top-k chunks had the highest cosine score into the prompt unless a cross-encoder reranker or relevance threshold filters them.',
     intuition: [
-      '**RAG vs Fine-Tuning — When to Use Which?** Use **LoRA Fine-Tuning** when you want to change the model\'s *style, tone, output format, or domain skill*. Use **RAG** when you need the model to answer questions over *frequently updated, private, or citation-critical factual documents* (you can update a RAG vector database in 1 second by inserting new chunks, without any GPU training!).',
-      '**Why Chunk Overlap Matters:** If a chunk boundary falls right between *"The final exam is moved to..."* and *"...November 24 in Hall B"*, zero overlap splits the subject from the date! Using a 15–25% overlap (e.g. `chunkSize = 256, overlap = 64`) ensures every sentence appears complete in at least one chunk.',
-      '**Hybrid Search (Dense Embeddings + BM25 Keyword Match) & Reranking:** Dense cosine embeddings excel at semantic synonyms (*"automobile"* ≈ *"car"*), while sparse BM25 excels at exact part numbers, course codes (*"CS-402"*), and names. Production RAG systems combine both and pass the top 20 candidates through a Cross-Encoder Reranker to select the best 3–5 chunks.'
+      'RAG vs Fine-Tuning — When to Use Which? Use LoRA Fine-Tuning when you want to change the model\'s *style, tone, output format, or domain skill*. Use RAG when you need the model to answer questions over *frequently updated, private, or citation-critical factual documents* (you can update a RAG vector database in 1 second by inserting new chunks, without any GPU training!).',
+      'Why Chunk Overlap Matters: If a chunk boundary falls right between *"The final exam is moved to..."* and *"...November 24 in Hall B"*, zero overlap splits the subject from the date! Using a 15–25% overlap (e.g. chunkSize = 256, overlap = 64) ensures every sentence appears complete in at least one chunk.',
+      'Hybrid Search (Dense Embeddings + BM25 Keyword Match) & Reranking: Dense cosine embeddings excel at semantic synonyms (*"automobile"* ≈ *"car"*), while sparse BM25 excels at exact part numbers, course codes (*"CS-402"*), and names. Production RAG systems combine both and pass the top 20 candidates through a Cross-Encoder Reranker to select the best 3–5 chunks.'
     ],
     mathFormulas: [
       {
@@ -4422,10 +4434,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'rag-q2',
         question: 'Why do we include a 15–20% token overlap (e.g. 50 tokens of overlap for 256-token chunks) when splitting documents for a RAG pipeline?',
         options: [
-          'Because cosine similarity requires overlapping vectors.',
-          'To make the vector database use less RAM.',
-          'To ensure sentences and facts that straddle the boundary between two adjacent chunks are not sliced in half, preserving semantic context for the embedding model.',
-          'To set all chunk embeddings to zero.'
+          'Because cosine similarity is undefined unless document chunks share tokens.',
+          'To compress the dense vector index so that it consumes 50% less system RAM.',
+          'To keep sentences at chunk boundaries intact so semantic context is preserved.',
+          'To force all boundary token embeddings to cancel out to the zero vector.'
         ],
         correctIndex: 2,
         explanation: 'Without overlap, a key subject at the end of Chunk i and its predicate at the start of Chunk i+1 get separated, hurting retrieval recall.'
@@ -4480,10 +4492,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'When you train a pet with treats, the pet cannot rewrite your brain\'s definition of a good trick, whereas an unregularized LLM (β = 0) will quickly discover adversarial string patterns ("reward hacking") that trick a neural Reward Model into outputting +999 for repetitive nonsense!',
     intuition: [
-      '**The 3-Stage Modern Alignment Pipeline:** (1) **Pretraining** on trillions of tokens (next-token prediction) builds world knowledge; (2) **Supervised Fine-Tuning (SFT)** on high-quality `(prompt, ideal_response)` demonstrations teaches instruction-following; (3) **Preference Alignment (RLHF / DPO)** teaches helpfulness, harmlessness, and reasoning depth.',
-      '**Why Pairwise Comparisons (Bradley-Terry)?** If 10 human annotators grade essays on a 1–10 scale, every annotator has a different internal baseline. Asking *"Which of these two responses `(y_w, y_l)` to prompt `x` is better?"* yields far higher inter-annotator agreement. The Bradley-Terry model defines `P(y_w ≻ y_l | x) = σ(r(x, y_w) - r(x, y_l))`.',
-      '**Why the KL Penalty `β · D_KL(π_θ || π_ref)` Is Mandatory:** The Reward Model `r_ϕ(x, y)` is only an imperfect neural proxy for human judgment. By Goodhart\'s Law, if the policy `π_θ` drifts too far from the SFT reference `π_ref`, it finds out-of-distribution gibberish that scores artificially high reward (**Reward Hacking**).',
-      '**Direct Preference Optimization (DPO, Rafailov et al., 2023):** By solving for the optimal KL-constrained policy analytically, DPO expresses the reward margin directly in terms of log-probability ratios `β log(π_θ(y|x) / π_ref(y|x))`, training the LLM on `(x, y_w, y_l)` pairs with simple binary cross-entropy—no separate Reward Model or PPO reinforcement loop required!'
+      'The 3-Stage Modern Alignment Pipeline: (1) Pretraining on trillions of tokens (next-token prediction) builds world knowledge; (2) Supervised Fine-Tuning (SFT) on high-quality (prompt, ideal_response) demonstrations teaches instruction-following; (3) Preference Alignment (RLHF / DPO) teaches helpfulness, harmlessness, and reasoning depth.',
+      'Why Pairwise Comparisons (Bradley-Terry)? If 10 human annotators grade essays on a 1–10 scale, every annotator has a different internal baseline. Asking *"Which of these two responses (y_w, y_l) to prompt x is better?"* yields far higher inter-annotator agreement. The Bradley-Terry model defines P(y_w ≻ y_l | x) = σ(r(x, y_w) - r(x, y_l)).',
+      'Why the KL Penalty β · D_KL(π_θ || π_ref) Is Mandatory: The Reward Model r_ϕ(x, y) is only an imperfect neural proxy for human judgment. By Goodhart\'s Law, if the policy π_θ drifts too far from the SFT reference π_ref, it finds out-of-distribution gibberish that scores artificially high reward (Reward Hacking).',
+      'Direct Preference Optimization (DPO, Rafailov et al., 2023): By solving for the optimal KL-constrained policy analytically, DPO expresses the reward margin directly in terms of log-probability ratios β log(π_θ(y|x) / π_ref(y|x)), training the LLM on (x, y_w, y_l) pairs with simple binary cross-entropy—no separate Reward Model or PPO reinforcement loop required!'
     ],
     mathFormulas: [
       {
@@ -4536,10 +4548,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'rlhf-q2',
         question: 'Why has Direct Preference Optimization (DPO) become a popular alternative to PPO-based RLHF for aligning open-weights LLMs?',
         options: [
-          'DPO removes the reference model constraint completely (β = 0).',
-          'DPO does not require any preference pairs (y_w, y_l).',
-          'DPO sets all model weights to integers.',
-          'DPO mathematically reparameterizes the reward in terms of the policy π_θ and reference π_ref log-probabilities.'
+          'DPO removes the KL divergence reference model constraint completely (β = 0).',
+          'DPO trains without requiring any human preference pairs (y_w, y_l) at all.',
+          'DPO quantizes all policy network weights into discrete 4-bit integer values.',
+          'DPO expresses the reward margin directly via policy and reference log-ratios.'
         ],
         correctIndex: 3,
         explanation: 'DPO achieves the exact same optimal policy as KL-regularized RLHF while requiring only 2 models in memory (π_θ and frozen π_ref) instead of 4 (Actor, Critic, Reward, Reference).'
@@ -4594,9 +4606,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'An official auto meter has a fixed government tariff card with zero randomness, whereas real-world housing or salary datasets contain unmeasured factors and noise, and extrapolating a linear line to x = -10 km or x = 10,000 km produces absurd predictions.',
     intuition: [
-      '**Linear Regression Is a 1-Neuron Network with Identity Activation:** The equation `ŷ = w^T x + b` is literally a single artificial neuron without a non-linear activation function!',
-      '**Why Square the Residuals (`(ŷ_i - y_i)²`)?** (1) Squaring makes positive and negative errors both positive; (2) it is smoothly differentiable everywhere (unlike `|ŷ_i - y_i|`); and (3) under Gaussian target noise `y = w^T x + b + ε` with `ε ~ N(0, σ²)`, minimizing Mean Squared Error is mathematically identical to **Maximum Likelihood Estimation (MLE)**!',
-      '**Closed-Form Normal Equation vs Gradient Descent:** For `D` features, setting `∇_w L = 0` gives the analytical Normal Equation `w* = (X^T X)^{-1} X^T y`. When `D ≤ 2,000`, `w*` solves in milliseconds; when `D = 100,000`, inverting `X^T X` (`O(D³)`) is too slow, so we use Gradient Descent (`O(N D)` per step).'
+      'Linear Regression Is a 1-Neuron Network with Identity Activation: The equation ŷ = w^T x + b is literally a single artificial neuron without a non-linear activation function!',
+      'Why Square the Residuals ((ŷ_i - y_i)²)? (1) Squaring makes positive and negative errors both positive; (2) it is smoothly differentiable everywhere (unlike |ŷ_i - y_i|); and (3) under Gaussian target noise y = w^T x + b + ε with ε ~ N(0, σ²), minimizing Mean Squared Error is mathematically identical to Maximum Likelihood Estimation (MLE)!',
+      'Closed-Form Normal Equation vs Gradient Descent: For D features, setting ∇_w L = 0 gives the analytical Normal Equation w* = (X^T X)^{-1} X^T y. When D ≤ 2,000, w* solves in milliseconds; when D = 100,000, inverting X^T X (O(D³)) is too slow, so we use Gradient Descent (O(N D) per step).'
     ],
     mathFormulas: [
       {
@@ -4637,8 +4649,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'lin-q1',
         question: 'When is it better to train Linear Regression using iterative Gradient Descent (SGD) instead of the closed-form Normal Equation w* = (X^T X)^{-1} X^T y?',
         options: [
-          'When N = 10 and D = 2.',
-          'When the number of features D is very large (e.g. D > 50,000), because forming and inverting the D × D matrix X^T X takes O(D³) time and O(D²) memory.',
+          'When the dataset has tiny dimensions such as N = 10 rows and D = 2 features.',
+          'When feature count D is huge, because inverting the D×D matrix X^T X costs O(D³).',
           'Because the Normal Equation only works for classification.',
           'Because Gradient Descent does not require a learning rate.'
         ],
@@ -4649,10 +4661,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'lin-q2',
         question: 'Your linear regression model achieves R² = 0.00 on the test set. What does R² = 0.00 mean?',
         options: [
-          'Your model performs no better than a trivial horizontal line that always predicts the average target value ȳ for every input.',
-          'Your model has zero error (MSE = 0).',
-          'All weights w are equal to 1.',
-          'The dataset has zero variance.'
+          'The model performs no better than predicting the constant target mean ȳ.',
+          'The model achieves zero Mean Squared Error on every training data point.',
+          'Every learned regression slope weight w_j is exactly equal to positive one.',
+          'The target variable y has zero variance across the entire evaluation dataset.'
         ],
         correctIndex: 0,
         explanation: 'Since R² = 1 - SS_res / SS_tot, R² = 0 means your model\'s squared error SS_res is just as large as predicting the constant mean ȳ.'
@@ -4707,9 +4719,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A human student might suddenly change their mind based on a single WhatsApp message from a friend, whereas Logistic Regression can only draw a single flat linear boundary (w^T x + b = 0) in feature space unless interaction features are engineered.',
     intuition: [
-      '**Why Not Use Linear Regression + MSE for Binary Classification?** (1) Linear predictions `w^T x + b` can be `< 0` or `> 1`; (2) a single extreme outlier far on the right pulls the whole MSE line and shifts the `0.5` decision boundary; and (3) if you put Sigmoid `σ(w^T x + b)` inside Mean Squared Error `(σ(z) - y)²`, the loss surface becomes **non-convex with flat saturated plateaus**!',
-      '**Why Binary Cross-Entropy + Sigmoid Is Magical:** When you differentiate `L_BCE = -[y ln σ(z) + (1 - y) ln(1 - σ(z))]` with respect to `z`, the `σ(z)(1 - σ(z))` numerator from the Sigmoid derivative **cancels out the denominator completely**, leaving the remarkably simple, linear-looking gradient: `∂L/∂z = σ(z) - y = p - y`!',
-      '**Interpreting Weights as Odds Ratios:** Because `ln(p / (1 - p)) = w^T x + b`, increasing feature `x_j` by `+1` unit multiplies the odds `p / (1 - p)` by `exp(w_j)`. This interpretability makes Logistic Regression the gold standard in credit scoring and clinical risk models.'
+      'Why Not Use Linear Regression + MSE for Binary Classification? (1) Linear predictions w^T x + b can be < 0 or > 1; (2) a single extreme outlier far on the right pulls the whole MSE line and shifts the 0.5 decision boundary; and (3) if you put Sigmoid σ(w^T x + b) inside Mean Squared Error (σ(z) - y)², the loss surface becomes non-convex with flat saturated plateaus!',
+      'Why Binary Cross-Entropy + Sigmoid Is Magical: When you differentiate L_BCE = -[y ln σ(z) + (1 - y) ln(1 - σ(z))] with respect to z, the σ(z)(1 - σ(z)) numerator from the Sigmoid derivative cancels out the denominator completely, leaving the remarkably simple, linear-looking gradient: ∂L/∂z = σ(z) - y = p - y!',
+      'Interpreting Weights as Odds Ratios: Because ln(p / (1 - p)) = w^T x + b, increasing feature x_j by +1 unit multiplies the odds p / (1 - p) by exp(w_j). This interpretability makes Logistic Regression the gold standard in credit scoring and clinical risk models.'
     ],
     mathFormulas: [
       {
@@ -4750,10 +4762,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'log-q1',
         question: 'Why do we train Logistic Regression with Binary Cross-Entropy (BCE) loss instead of Mean Squared Error (MSE) loss (σ(z) - y)²?',
         options: [
-          'Because BCE makes the decision boundary curved.',
-          'Because MSE cannot be computed on probabilities.',
-          'Putting Sigmoid σ(z) inside MSE creates a non-convex loss surface with flat vanishing-gradient plateaus when confident-and-wrong.',
-          'Because MSE is always negative.'
+          'Because Binary Cross-Entropy turns the linear decision boundary into a curve.',
+          'Because Mean Squared Error is mathematically undefined on values in (0, 1).',
+          'Putting Sigmoid inside MSE creates non-convex vanishing-gradient plateaus.',
+          'Because Mean Squared Error always evaluates to a negative loss on binary data.'
         ],
         correctIndex: 2,
         explanation: 'Under MSE, ∂L/∂z = 2(p - y)p(1 - p), which vanishes to 0 when p ≈ 0 even if y = 1! Under BCE, p(1 - p) cancels out so ∂L/∂z = p - y.'
@@ -4762,10 +4774,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'log-q2',
         question: 'What is the geometric shape of the decision boundary (where p = 0.50) of a Logistic Regression classifier in D-dimensional feature space?',
         options: [
-          'A circle centered at the origin.',
-          'An S-shaped curve in feature space.',
-          'A flat linear hyperplane defined by w^T x + b = 0 (since σ(z) = 0.50 if and only if z = 0).',
-          'Axis-aligned rectangles.'
+          'A concentric circular boundary centered at the coordinate origin in R^D.',
+          'A non-linear S-shaped decision curve winding through the input feature space.',
+          'A flat linear hyperplane defined by w^T x + b = 0 where σ(z) equals 0.50.',
+          'A staircase of axis-aligned rectangular boxes partitioning the input coordinates.'
         ],
         correctIndex: 2,
         explanation: 'While the probability surface p(x) is S-shaped, the level set p(x) = τ is w^T x + b = ln(τ/(1-τ)), which is a flat hyperplane!'
@@ -4819,9 +4831,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'In classical polynomial regression with small datasets, test error follows a strict U-curve, whereas vastly overparameterized modern deep networks trained with SGD and weight decay can exhibit "Double Descent" where test error drops a second time past the interpolation threshold.',
     intuition: [
-      '**Exact Mathematical Decomposition:** Suppose true targets are generated by `y = f(x) + ε` where `E[ε] = 0` and `Var(ε) = σ_ε²`. Across different random training sets `D`, our learning algorithm produces an estimator `f̂_D(x)`. Expanding `E_{D, ε}[(y - f̂_D(x))²]` algebraically proves that cross-terms vanish and total expected MSE equals **Bias² + Variance + Irreducible Noise**!',
-      '**How to Cure High Bias (Underfitting):** Increase model capacity (more layers/neurons, polynomial/interaction features), reduce regularization `λ`, or train longer. Note: **adding more training rows `N` does NOT fix high bias** if your model is a straight line trying to fit a sine wave!',
-      '**How to Cure High Variance (Overfitting):** Add more training examples `N` (variance scales as `~1/N`), apply L2/L1 regularization or Dropout, prune noisy features, or use Ensembles (Bagging / Random Forests).'
+      'Exact Mathematical Decomposition: Suppose true targets are generated by y = f(x) + ε where E[ε] = 0 and Var(ε) = σ_ε². Across different random training sets D, our learning algorithm produces an estimator f̂_D(x). Expanding E_{D, ε}[(y - f̂_D(x))²] algebraically proves that cross-terms vanish and total expected MSE equals Bias² + Variance + Irreducible Noise!',
+      'How to Cure High Bias (Underfitting): Increase model capacity (more layers/neurons, polynomial/interaction features), reduce regularization λ, or train longer. Note: adding more training rows N does NOT fix high bias if your model is a straight line trying to fit a sine wave!',
+      'How to Cure High Variance (Overfitting): Add more training examples N (variance scales as ~1/N), apply L2/L1 regularization or Dropout, prune noisy features, or use Ensembles (Bagging / Random Forests).'
     ],
     mathFormulas: [
       {
@@ -4852,10 +4864,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'bv-q1',
         question: 'Your linear model has High Bias (both training error and validation error are equally high at 32%). What happens if you collect 10× more training rows without changing the model features or architecture?',
         options: [
-          'Validation error will drop to 0%.',
-          'Training and validation error will stay stuck near 32%,.',
-          'The model will start overfitting.',
-          'Irreducible noise σ_ε² will become zero.'
+          'Validation error will drop all the way to 0% as N grows.',
+          'Training and validation error will stay stuck near 32%.',
+          'The linear model will begin severely overfitting the noise.',
+          'The irreducible observation noise variance σ_ε² will hit 0.'
         ],
         correctIndex: 1,
         explanation: 'More training data shrinks Variance (O(1/N)), but does not reduce approximation Bias; to fix Underfitting you must increase model capacity or engineer better features.'
@@ -4864,10 +4876,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'bv-q2',
         question: 'When you increase the L2 regularization penalty λ in Ridge Regression, how do Bias and Variance change?',
         options: [
-          'Neither changes.',
-          'Both Bias and Variance decrease to zero.',
-          'Bias decreases and Variance increases.',
-          'Bias increases slightly while Variance decreases significantly.'
+          'Neither Bias nor Variance changes when λ is increased.',
+          'Both Bias and Variance decrease monotonically toward zero.',
+          'Model Bias decreases while Estimator Variance increases.',
+          'Bias increases slightly while Variance drops significantly.'
         ],
         correctIndex: 3,
         explanation: 'Shrinking weights toward zero restricts hypothesis flexibility (raising Bias slightly) while making predictions much less sensitive to noise in any single training sample (lowering Variance).'
@@ -4915,9 +4927,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A human playing 20 Questions can ask diagonal or relational questions ("Is salary higher than rent?"), whereas a standard CART Decision Tree only makes axis-aligned orthogonal cuts (x_j ≤ t), requiring a staircase of many splits to approximate a diagonal line.',
     intuition: [
-      '**How CART Picks a Split:** At a node with `N` samples, a Decision Tree scans every feature `j` and every midpoint threshold `t` between sorted values, computing the weighted impurity of the resulting Left (`x_j ≤ t`) and Right (`x_j > t`) children. It greedily chooses the `(j*, t*)` that maximizes impurity reduction.',
-      '**Gini Impurity vs Shannon Entropy:** For binary classification with positive fraction `p`, `Gini(p) = 2p(1 - p)` (peaks at `0.50` when `p = 0.5`) and `Entropy(p) = -p log₂ p - (1-p) log₂(1-p)` (peaks at `1.00 bit` when `p = 0.5`). Both are `0` when the node is pure (`p = 0` or `p = 1`).',
-      '**Why Random Forests Subsample Features (`max_features = √D`) at Every Split:** If you only bootstrap rows (Bagging) and one feature (say, `Credit_Score`) is super strong, *every single tree* will pick `Credit_Score` at its root—making all `B` trees highly correlated (`ρ ≈ 1`), so averaging them barely reduces variance! By restricting each split to a random subset of `√D` candidate features, **Random Forests (Breiman, 2001)** decorrelate the trees (`ρ ↓`), driving ensemble variance `(ρ + (1-ρ)/B) σ²` way down!'
+      'How CART Picks a Split: At a node with N samples, a Decision Tree scans every feature j and every midpoint threshold t between sorted values, computing the weighted impurity of the resulting Left (x_j ≤ t) and Right (x_j > t) children. It greedily chooses the (j*, t*) that maximizes impurity reduction.',
+      'Gini Impurity vs Shannon Entropy: For binary classification with positive fraction p, Gini(p) = 2p(1 - p) (peaks at 0.50 when p = 0.5) and Entropy(p) = -p log₂ p - (1-p) log₂(1-p) (peaks at 1.00 bit when p = 0.5). Both are 0 when the node is pure (p = 0 or p = 1).',
+      'Why Random Forests Subsample Features (max_features = √D) at Every Split: If you only bootstrap rows (Bagging) and one feature (say, Credit_Score) is super strong, every single tree will pick Credit_Score at its root—making all B trees highly correlated (ρ ≈ 1), so averaging them barely reduces variance! By restricting each split to a random subset of √D candidate features, Random Forests (Breiman, 2001) decorrelate the trees (ρ ↓), driving ensemble variance (ρ + (1-ρ)/B) σ² way down!'
     ],
     mathFormulas: [
       {
@@ -4960,7 +4972,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         options: [
           'To decorrelate the trees (lowering pairwise correlation ρ).',
           'Because Decision Trees cannot handle more than 3 features.',
-          'To increase the Bias of the ensemble.',
+          'To intentionally increase the Bias of each individual tree.',
           'Because Gini impurity is undefined for D features.'
         ],
         correctIndex: 0,
@@ -4970,10 +4982,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'tree-q2',
         question: 'Can a Random Forest extrapolate a rising linear trend (like inflation-adjusted house prices in 2035) to feature values larger than anything seen in the training set?',
         options: [
-          'Yes, Random Forests extrapolate linear trends better than Linear Regression.',
-          'No! Because every leaf of a Decision Tree predicts the average target y of the training samples that fell into that leaf, a Random Forest\'s predictions are strictly bounded between [min(y_train), max(y_train)].',
-          'Yes, if you use Entropy instead of Gini.',
-          'Only when B > 500 trees.'
+          'Yes, Random Forests extrapolate linear trends more accurately than Linear Regression.',
+          'No, leaf predictions average training targets and stay bounded in [y_min, y_max].',
+          'Yes, provided the trees split using Shannon Entropy rather than Gini Impurity.',
+          'Yes, whenever the forest ensemble contains more than B = 500 decision trees.'
         ],
         correctIndex: 1,
         explanation: 'Tree ensembles partition space into axis-aligned boxes with constant piecewise predictions; outside the training bounding box, they predict the outermost leaf constant.'
@@ -5028,9 +5040,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'At a real wedding, tables can be arranged for long curved family groups, whereas standard k-Means uses isotropic Euclidean distance ||x - μ_k||² and can only carve out convex spherical/Voronoi blobs of similar radius.',
     intuition: [
-      '**Lloyd\'s Algorithm for k-Means:** Alternates (1) **Assignment Step**: assign each point `x_i` to `c(i) = argmin_k ||x_i - μ_k||₂²`, and (2) **Update Step**: set `μ_k` to the mean of points in cluster `k` (since the sample mean is the unique minimizer of sum of squared Euclidean distances!). Because both steps monotonically decrease the finite non-negative Inertia `J`, k-Means is guaranteed to converge—though to a local minimum, which is why **k-Means++** smart initialization is used.',
-      '**How to Choose `k` in k-Means:** Since Inertia `J` always drops as `k` increases (reaching `0` when `k = N`), we look for the **Elbow Point** on the `J vs k` curve or maximize the **Silhouette Score** `(b - a) / max(a, b)`.',
-      '**Principal Component Analysis (PCA):** Always **center (and standardize!)** features first (`X_c = X - μ`). The sample covariance matrix `Σ = (1/(N-1)) X_c^T X_c` is symmetric positive semi-definite, so its eigenvectors `v_1, ..., v_D` are mutually orthogonal (`v_i^T v_j = 0`), and its eigenvalues `λ_1 ≥ λ_2 ≥ ... ≥ λ_D ≥ 0` equal the exact variance along each axis!'
+      'Lloyd\'s Algorithm for k-Means: Alternates (1) Assignment Step: assign each point x_i to c(i) = argmin_k ||x_i - μ_k||₂², and (2) Update Step: set μ_k to the mean of points in cluster k (since the sample mean is the unique minimizer of sum of squared Euclidean distances!). Because both steps monotonically decrease the finite non-negative Inertia J, k-Means is guaranteed to converge—though to a local minimum, which is why k-Means++ smart initialization is used.',
+      'How to Choose k in k-Means: Since Inertia J always drops as k increases (reaching 0 when k = N), we look for the Elbow Point on the J vs k curve or maximize the Silhouette Score (b - a) / max(a, b).',
+      'Principal Component Analysis (PCA): Always center (and standardize!) features first (X_c = X - μ). The sample covariance matrix Σ = (1/(N-1)) X_c^T X_c is symmetric positive semi-definite, so its eigenvectors v_1, ..., v_D are mutually orthogonal (v_i^T v_j = 0), and its eigenvalues λ_1 ≥ λ_2 ≥ ... ≥ λ_D ≥ 0 equal the exact variance along each axis!'
     ],
     mathFormulas: [
       {
@@ -5083,10 +5095,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'km-q2',
         question: 'Why can\'t we choose the optimal number of clusters k in k-Means simply by picking the k that gives the lowest Inertia J?',
         options: [
-          'Because J is always negative.',
-          'Because Inertia increases as k grows.',
-          'Because Inertia J decreases monotonically as k grows and hits J = 0 when k = N (putting every single data point in its own 1-point cluster).',
-          'Because k-Means only works for k = 2.'
+          'Because the within-cluster Inertia objective J is always a negative number.',
+          'Because within-cluster Inertia J increases monotonically as k grows larger.',
+          'Because Inertia J drops monotonically with k and hits 0 trivially at k = N.',
+          'Because Lloyd\'s k-Means algorithm is only mathematically defined for k = 2.'
         ],
         correctIndex: 2,
         explanation: 'Adding more centroids can only reduce or keep equal each point\'s distance to its nearest centroid; thus we use the Elbow method or Silhouette score instead of raw minimum J.'
@@ -5141,9 +5153,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'We can draw 2D and 3D arrows on paper with a ruler and protractor, whereas deep learning vectors live in 512 to 4,096 dimensions—where human visual intuition fails, yet the exact same algebraic formula Σ a_i b_i and Cauchy-Schwarz bound |cos θ| ≤ 1 hold unchanged!',
     intuition: [
-      '**Every Neural Layer Is Built on the Dot Product:** Whether it is an artificial neuron (`w^T x + b`), a 2D convolution patch (`⟨X_patch, K⟩`), or Transformer Self-Attention (`q_i^T k_j / √d_k`), 95% of deep learning computation is taking dot products to measure alignment between an input pattern and a learned template!',
-      '**Algebraic vs Geometric Equivalence:** By the Law of Cosines, `a · b = ∑ a_i b_i = ||a||₂ ||b||₂ cos(θ)`. Therefore, if two non-zero vectors are orthogonal (`θ = 90°`), their dot product is strictly `0`.',
-      '**Matrix Multiplication as Parallel Dot Products & Space Transformation:** Multiplying `W ∈ R^{M × d}` by `x ∈ R^d` requires that the inner dimensions match (`d = d`) and produces an `M`-dimensional vector where entry `i` is the dot product of row `i` of `W` with `x`. Geometrically, a matrix `W` shears, scales, and rotates the coordinate grid, scaling areas/volumes by `|det(W)|`.'
+      'Every Neural Layer Is Built on the Dot Product: Whether it is an artificial neuron (w^T x + b), a 2D convolution patch (⟨X_patch, K⟩), or Transformer Self-Attention (q_i^T k_j / √d_k), 95% of deep learning computation is taking dot products to measure alignment between an input pattern and a learned template!',
+      'Algebraic vs Geometric Equivalence: By the Law of Cosines, a · b = ∑ a_i b_i = ||a||₂ ||b||₂ cos(θ). Therefore, if two non-zero vectors are orthogonal (θ = 90°), their dot product is strictly 0.',
+      'Matrix Multiplication as Parallel Dot Products & Space Transformation: Multiplying W ∈ R^{M × d} by x ∈ R^d requires that the inner dimensions match (d = d) and produces an M-dimensional vector where entry i is the dot product of row i of W with x. Geometrically, a matrix W shears, scales, and rotates the coordinate grid, scaling areas/volumes by |det(W)|.'
     ],
     mathFormulas: [
       {
@@ -5196,10 +5208,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'vec-q2',
         question: 'Two non-zero feature vectors u and v have a dot product u · v = 0. What does this tell you about the angle θ between them?',
         options: [
-          'They point in the exact same direction (θ = 0°).',
-          'They are orthogonal (perpendicular, θ = 90°).',
-          'They point in opposite directions (θ = 180°).',
-          'They are separated by an acute angle (θ = 45°).'
+          'They are parallel and point in the same direction (θ = 0°).',
+          'They are orthogonal and perpendicular to each other (θ = 90°).',
+          'They are antiparallel and point in opposite directions (θ = 180°).',
+          'They are separated by a diagonal acute angle (θ = 45°).'
         ],
         correctIndex: 1,
         explanation: 'Since u · v = ||u|| ||v|| cos(θ) and ||u||, ||v|| > 0, u · v = 0 implies cos(θ) = 0, so θ = 90° (orthogonal, sharing zero linear correlation).'
@@ -5253,9 +5265,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'On a physical hill you can look around with your eyes to see the valley 500 meters away, whereas the gradient ∇f(x) is purely local—it only knows the slope at the exact millimeter under your boots.',
     intuition: [
-      '**What a Derivative Really Means in ML:** If `∂L/∂w = +3.0`, nudging weight `w` by `+0.001` will change the loss `L` by approximately `(+3.0)(+0.001) = +0.003`. Therefore, to *reduce* the loss, we nudge `w` in the **opposite** sign of its derivative!',
-      '**Why the Gradient `∇f` Points Steepest Uphill:** For any unit direction vector `u` (`||u||₂ = 1`), the directional derivative is `D_u f = ∇f · u = ||∇f||₂ ||u||₂ cos(θ)`. This dot product is maximized when `cos(θ) = +1` (`u` points along `+∇f`) and minimized (`-||∇f||₂`) when `cos(θ) = -1` (`u` points along `-∇f`)!',
-      '**Always Verify Analytical Gradients with Central Differences:** The centered difference `(f(x + h) - f(x - h)) / (2h)` cancels even-order Taylor error terms, achieving `O(h²)` accuracy (`~10⁻¹⁰` precision at `h = 10⁻⁶`). Every single math module in NeuroPlay is tested this way!'
+      'What a Derivative Really Means in ML: If ∂L/∂w = +3.0, nudging weight w by +0.001 will change the loss L by approximately (+3.0)(+0.001) = +0.003. Therefore, to reduce the loss, we nudge w in the opposite sign of its derivative!',
+      'Why the Gradient ∇f Points Steepest Uphill: For any unit direction vector u (||u||₂ = 1), the directional derivative is D_u f = ∇f · u = ||∇f||₂ ||u||₂ cos(θ). This dot product is maximized when cos(θ) = +1 (u points along +∇f) and minimized (-||∇f||₂) when cos(θ) = -1 (u points along -∇f)!',
+      'Always Verify Analytical Gradients with Central Differences: The centered difference (f(x + h) - f(x - h)) / (2h) cancels even-order Taylor error terms, achieving O(h²) accuracy (~10⁻¹⁰ precision at h = 10⁻⁶). Every single math module in NeuroPlay is tested this way!'
     ],
     mathFormulas: [
       {
@@ -5296,10 +5308,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'grad-q1',
         question: 'At your current weight vector w, the gradient of the loss is ∇L(w) = [0, 0, ..., 0]^T. What does this geometric condition mean?',
         options: [
-          'The loss L(w) must be equal to 0.',
-          'You are at a stationary (critical) point.',
-          'All weights w_i must be equal to 0.',
-          'The learning rate is 0.'
+          'The objective loss value L(w) must be equal to zero.',
+          'The parameter vector is at a stationary critical point.',
+          'Every weight coordinate w_i must be equal to zero.',
+          'The optimizer learning rate hyperparameter η is zero.'
         ],
         correctIndex: 1,
         explanation: 'A zero gradient means the first-order slope in every direction is zero (a minimum, maximum, or saddle point).'
@@ -5308,10 +5320,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'grad-q2',
         question: 'Why do we use the Central Difference formula (f(x+h) - f(x-h)) / (2h) instead of the One-Sided Forward Difference (f(x+h) - f(x)) / h when unit-testing neural network gradients?',
         options: [
-          'Because the symmetric Taylor expansions of f(x+h) and f(x-h) cancel out the second-derivative O(h) error term, giving O(h²) accuracy (roughly 5–6 orders of magnitude more accurate for h = 10⁻⁶)!',
-          'Because Forward Difference requires complex numbers.',
-          'Because Central Difference only evaluates f once.',
-          'Because Forward Difference is always negative.'
+          'Symmetric Taylor expansions cancel the O(h) error, giving O(h²) accuracy.',
+          'Forward difference approximations require complex-valued step sizes.',
+          'Central difference approximations only evaluate the function f(x) once.',
+          'Forward difference approximations always return negative slope values.'
         ],
         correctIndex: 0,
         explanation: 'f(x+h) - f(x-h) = 2h f\'(x) + (h³/3) f\'\'\'(x) + ..., so dividing by 2h leaves an O(h²) error instead of O(h).'
@@ -5359,9 +5371,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Currency exchange rates stay fixed regardless of how many rupees you convert, whereas in a non-linear neural network the local derivative ∂z/∂u changes depending on the exact forward activation value u cached during the forward pass.',
     intuition: [
-      '**Series Composition = Multiply Local Derivatives:** If `z = f(u)` and `u = g(x)`, a tiny nudge `Δx` produces `Δu ≈ (du/dx) Δx`, which in turn produces `Δz ≈ (dz/du) Δu ≈ (dz/du)(du/dx) Δx`.',
-      '**Parallel Fan-Out = Sum Across Branches:** Whenever a variable `x` feeds into multiple downstream operations (for example, a shared CNN kernel weight touching 9 image patches, or a ResNet input `x` splitting into residual branch `F(x)` and identity shortcut `+x`), the total derivative `dz/dx` is the **sum** of the derivatives along every path from `x` to `z`!',
-      '**Why Reverse-Mode Autodiff (Backpropagation) Is O(1) Passes Instead of O(P):** If a neural network has `P = 1,000,000` weights and `1` scalar loss `L`, forward-mode differentiation would require `1,000,000` passes (one per weight). Reverse-mode differentiation starts at the single output `L` (`∂L/∂L = 1`) and sweeps backward once, computing the gradient for all `1,000,000` weights in a single backward pass!'
+      'Series Composition = Multiply Local Derivatives: If z = f(u) and u = g(x), a tiny nudge Δx produces Δu ≈ (du/dx) Δx, which in turn produces Δz ≈ (dz/du) Δu ≈ (dz/du)(du/dx) Δx.',
+      'Parallel Fan-Out = Sum Across Branches: Whenever a variable x feeds into multiple downstream operations (for example, a shared CNN kernel weight touching 9 image patches, or a ResNet input x splitting into residual branch F(x) and identity shortcut +x), the total derivative dz/dx is the sum of the derivatives along every path from x to z!',
+      'Why Reverse-Mode Autodiff (Backpropagation) Is O(1) Passes Instead of O(P): If a neural network has P = 1,000,000 weights and 1 scalar loss L, forward-mode differentiation would require 1,000,000 passes (one per weight). Reverse-mode differentiation starts at the single output L (∂L/∂L = 1) and sweeps backward once, computing the gradient for all 1,000,000 weights in a single backward pass!'
     ],
     mathFormulas: [
       {
@@ -5400,7 +5412,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
           'max(δ_u, δ_v) = 3.5',
           'δ_u × δ_v = -5.25',
           'δ_u + δ_v = +2.0',
-          '0.0'
+          'δ_u - δ_v = +5.0'
         ],
         correctIndex: 2,
         explanation: 'By the multivariate chain rule, when a variable feeds multiple consumers in the forward graph, its total sensitivity is the sum of sensitivities from each consumer.'
@@ -5467,9 +5479,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A textbook coin has a permanently fixed physical probability p, whereas a machine learning model predicts a conditional probability distribution P_θ(y | x) that shifts dynamically for every input sample x.',
     intuition: [
-      '**Why Take the Logarithm of Likelihood?** For `N` independent training examples, the joint probability is a product of `N` numbers in `(0, 1)`: `∏_{i=1}^N P_θ(y_i | x_i)`. Multiplying 10,000 probabilities like `0.5¹⁰⁰⁰⁰` immediately underflows floating-point numbers to `0.0`! Taking the logarithm turns the product into a numerically stable sum: `log ∏ P_i = ∑ log P_i`.',
-      '**Bernoulli MLE = Binary Cross-Entropy:** Taking `-log(p^y (1 - p)^{1-y})` gives `-[y log p + (1 - y) log(1 - p)]`—the exact BCE loss!',
-      '**Gaussian MLE = Mean Squared Error:** Taking `-log N(y; ŷ, σ²)` gives `½ log(2πσ²) + (y - ŷ)² / (2σ²)`. Minimizing this over `ŷ` is identical to minimizing `(y - ŷ)²` (MSE)!'
+      'Why Take the Logarithm of Likelihood? For N independent training examples, the joint probability is a product of N numbers in (0, 1): ∏_{i=1}^N P_θ(y_i | x_i). Multiplying 10,000 probabilities like 0.5¹⁰⁰⁰⁰ immediately underflows floating-point numbers to 0.0! Taking the logarithm turns the product into a numerically stable sum: log ∏ P_i = ∑ log P_i.',
+      'Bernoulli MLE = Binary Cross-Entropy: Taking -log(p^y (1 - p)^{1-y}) gives -[y log p + (1 - y) log(1 - p)]—the exact BCE loss!',
+      'Gaussian MLE = Mean Squared Error: Taking -log N(y; ŷ, σ²) gives ½ log(2πσ²) + (y - ŷ)² / (2σ²). Minimizing this over ŷ is identical to minimizing (y - ŷ)² (MSE)!'
     ],
     mathFormulas: [
       {
@@ -5510,10 +5522,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'prob-q1',
         question: 'Why do we maximize the SUM of log-probabilities Σ log P(y_i | x_i) instead of directly maximizing the PRODUCT of probabilities Π P(y_i | x_i)?',
         options: [
-          'Because probabilities can be negative.',
-          'Because multiplying thousands of probabilities in (0, 1) rapidly underflows 64-bit/32-bit floats to 0.0.',
-          'Because the logarithm is not a monotonic function.',
-          'To make the dataset smaller.'
+          'Because individual likelihood probabilities P(y_i | x_i) are often negative.',
+          'Multiplying thousands of values in (0, 1) underflows floating-point numbers.',
+          'Because the natural logarithm reverses the location of the global maximum.',
+          'Because taking the logarithm reduces the number of rows in the training set.'
         ],
         correctIndex: 1,
         explanation: 'Since log(·) is strictly increasing, argmax_θ log L(θ) = argmax_θ L(θ), while avoiding floating-point underflow and turning product-rule derivatives into simple sums.'
@@ -5522,10 +5534,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'prob-q2',
         question: 'Minimizing Mean Squared Error (MSE) on a regression target y is mathematically equivalent to Maximum Likelihood Estimation under what noise assumption?',
         options: [
-          'Zero variance deterministic targets only.',
-          'Bernoulli coin-flip noise.',
-          'Uniform discrete noise.',
-          'Zero-mean Gaussian (Normal) noise y = f_θ(x) + ε with ε ~ N(0, σ²).'
+          'Deterministic targets that contain zero random observation noise anywhere.',
+          'Binary Bernoulli coin-flip noise attached to discrete classification labels.',
+          'Discrete Uniform noise distributed across finitely many integer categories.',
+          'Additive zero-mean Gaussian noise y = f_θ(x) + ε with constant variance σ².'
         ],
         correctIndex: 3,
         explanation: 'The exponent of the Gaussian density is -(y - f_θ(x))² / (2σ²), whose negative log is proportional to squared error (y - f_θ(x))².'
@@ -5571,11 +5583,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     playWithItPrompt:
       'In Tab 2.7 ("ReLU Depth"), drag "Road Position / Input (x)" across the hinge points to see the piecewise-linear output f(x) and exact slope df/dx jump as hinges switch on! Then drag "Network Depth / Stacked Layers (L)" from 1 to 6 to compare 1-Layer Regions vs L-Layer Regions!',
     analogyBreaks:
-      'The mathematical Universal Approximation Theorem guarantees that a wide 1-layer network *exists* that fits your function, but it does NOT guarantee that SGD will easily find those weights or generalize well on finite data—which is why deep compositional hierarchies win in practice.',
+      'The mathematical Universal Approximation Theorem guarantees that a wide 1-layer network exists that fits your function, but it does NOT guarantee that SGD will easily find those weights or generalize well on finite data—which is why deep compositional hierarchies win in practice.',
     intuition: [
-      '**How ReLU Builds Arbitrary Curves Out of Straight Lines:** A single ReLU unit `max(0, w_i x + b_i)` is `0` for `x < -b_i/w_i` and linear with slope `w_i` for `x > -b_i/w_i`. Summing `N` such units creates a continuous piecewise-linear spline with `N` knots where the slope changes by `v_i w_i` at each knot.',
-      '**The Universal Approximation Theorem (Cybenko 1989, Hornik 1991, Leshno 1993):** A feed-forward network with a single hidden layer containing a finite number of neurons and any non-polynomial activation function (like Sigmoid, Tanh, or ReLU) can approximate any continuous function `f: [0, 1]^d → R` to within any desired error `ε > 0`.',
-      '**Why Depth Beats Width (Montúfar et al., 2014; Telgarsky, 2016):** If 1 hidden layer can approximate anything, why do we build 50-layer ResNets and 96-layer Transformers? Because a 1-hidden-layer network may require an **exponentially huge width `2^L`** to represent a function that an `L`-layer network represents with just `O(L)` neurons! Each deeper layer composes features of features (edges → parts → objects).'
+      'How ReLU Builds Arbitrary Curves Out of Straight Lines: A single ReLU unit max(0, w_i x + b_i) is 0 for x < -b_i/w_i and linear with slope w_i for x > -b_i/w_i. Summing N such units creates a continuous piecewise-linear spline with N knots where the slope changes by v_i w_i at each knot.',
+      'The Universal Approximation Theorem (Cybenko 1989, Hornik 1991, Leshno 1993): A feed-forward network with a single hidden layer containing a finite number of neurons and any non-polynomial activation function (like Sigmoid, Tanh, or ReLU) can approximate any continuous function f: [0, 1]^d → R to within any desired error ε > 0.',
+      'Why Depth Beats Width (Montúfar et al., 2014; Telgarsky, 2016): If 1 hidden layer can approximate anything, why do we build 50-layer ResNets and 96-layer Transformers? Because a 1-hidden-layer network may require an exponentially huge width 2^L to represent a function that an L-layer network represents with just O(L) neurons! Each deeper layer composes features of features (edges → parts → objects).'
     ],
     mathFormulas: [
       {
@@ -5611,10 +5623,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'uat-q1',
         question: 'If the Universal Approximation Theorem proves that a single wide hidden layer can approximate any continuous function, why do we use deep multi-layer networks in practice?',
         options: [
-          'Because a 1-layer network can require an exponentially large number of neurons to match the representational capacity and hierarchical feature composition (edges → motifs → objects) of a compact deep network.',
-          'Because 1-layer networks cannot use backpropagation.',
-          'Because ReLU only works when there are at least 10 layers.',
-          'Because 1-layer networks have zero parameters.'
+          'Shallow networks can need exponentially many units to match deep hierarchy.',
+          'Single-hidden-layer networks cannot be trained using backpropagation.',
+          'Rectified Linear Units only activate when stacked at least 10 layers deep.',
+          'Single-hidden-layer networks contain zero trainable weight parameters.'
         ],
         correctIndex: 0,
         explanation: 'Depth provides exponential parameter efficiency through function composition f_L(f_{L-1}(...f_1(x))).'
@@ -5623,10 +5635,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'uat-q2',
         question: 'Can a 10-layer neural network with NO non-linear activation functions (i.e. purely linear layers h^(l) = W^(l) h^(l-1)) be a Universal Approximator?',
         options: [
-          'Yes, if width N > 1,000.',
-          'No! Because the product of matrices W^(10) W^(9) ... W^(1) collapses into a single matrix W_eff, a 10-layer linear network can only represent flat hyperplanes and cannot even fit XOR or a parabola.',
-          'Yes, if trained with Adam.',
-          'Only for 1D inputs.'
+          'Yes, provided each hidden layer contains at least N = 1,000 linear units.',
+          'No, multiplying linear matrices collapses into one linear matrix W_eff.',
+          'Yes, when the weights are optimized using Adam with cosine annealing.',
+          'Yes, but only for one-dimensional scalar regression problems on [-1, 1].'
         ],
         correctIndex: 1,
         explanation: 'Non-polynomial activation functions (like ReLU, GELU, Tanh) are mandatory to bend space and prevent multi-layer collapse.'
@@ -5674,9 +5686,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Stacking physical glass lenses makes the image dimmer due to light reflection, whereas stacking 3×3 CNN layers increases representational richness by inserting a ReLU non-linearity after every single 3×3 convolution.',
     intuition: [
-      '**Historical Evolution (1998 → 2014):** **LeNet-5 (LeCun, 1998)** pioneered `Conv → Pool → Conv → Pool → Dense` on 32×32 grayscale digits (~60K params). **AlexNet (Krizhevsky, 2012)** scaled CNNs to 224×224 RGB ImageNet using GPUs, ReLU (instead of Tanh), Dropout, and Data Augmentation (~60M params). **VGG-16 (2014)** replaced ad-hoc kernel sizes (11×11, 7×7, 5×5) with a uniform, modular recipe: **3×3 convolutions (stride 1, pad 1) + 2×2 max-pooling (stride 2)**, doubling channels after each pool (`64 → 128 → 256 → 512`).',
-      '**Why 3×3 Kernels Win Doubly:** Stacking `N = 3` layers of `3×3` convolutions achieves the exact same `7×7` receptive field as a single `7×7` layer, but (1) inserts **3 ReLU non-linearities** instead of 1 (making features much more discriminative), and (2) requires only `3 × 9C² = 27C²` weights instead of `49C²` (**44.9% fewer parameters**!).',
-      '**Where Most Parameters Hide in VGG-16:** Out of VGG-16\'s 138 million parameters, over **102 million (74%!)** sit in the very first Dense layer (`7 × 7 × 512 = 25,088` flattened features connected to `4,096` neurons!). Modern architectures (ResNet, EfficientNet, ConvNeXt) eliminate this bottleneck using **Global Average Pooling (GAP)**, averaging each `7×7` channel into `1` number (`512` features total) before the final linear classifier!'
+      'Historical Evolution (1998 → 2014): LeNet-5 (LeCun, 1998) pioneered Conv → Pool → Conv → Pool → Dense on 32×32 grayscale digits (~60K params). AlexNet (Krizhevsky, 2012) scaled CNNs to 224×224 RGB ImageNet using GPUs, ReLU (instead of Tanh), Dropout, and Data Augmentation (~60M params). VGG-16 (2014) replaced ad-hoc kernel sizes (11×11, 7×7, 5×5) with a uniform, modular recipe: 3×3 convolutions (stride 1, pad 1) + 2×2 max-pooling (stride 2), doubling channels after each pool (64 → 128 → 256 → 512).',
+      'Why 3×3 Kernels Win Doubly: Stacking N = 3 layers of 3×3 convolutions achieves the exact same 7×7 receptive field as a single 7×7 layer, but (1) inserts 3 ReLU non-linearities instead of 1 (making features much more discriminative), and (2) requires only 3 × 9C² = 27C² weights instead of 49C² (44.9% fewer parameters!).',
+      'Where Most Parameters Hide in VGG-16: Out of VGG-16\'s 138 million parameters, over 102 million (74%!) sit in the very first Dense layer (7 × 7 × 512 = 25,088 flattened features connected to 4,096 neurons!). Modern architectures (ResNet, EfficientNet, ConvNeXt) eliminate this bottleneck using Global Average Pooling (GAP), averaging each 7×7 channel into 1 number (512 features total) before the final linear classifier!'
     ],
     mathFormulas: [
       {
@@ -5717,10 +5729,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'vgg-q1',
         question: 'Why did VGG replace every 5×5 convolutional filter with a stack of two 3×3 convolutional filters?',
         options: [
-          'To eliminate pooling layers.',
-          'Because GPUs cannot multiply 5×5 matrices.',
-          'Because a 5×5 filter has a smaller receptive field than a 3×3 filter.',
-          'Two stacked 3×3 filters cover the exact same 5×5 effective receptive field while using 28% fewer parameters (18C² vs 25C²) and applying two ReLU non-linearities instead of one.'
+          'To eliminate the need for spatial max-pooling layers between blocks.',
+          'Because modern GPU tensor cores cannot multiply 5×5 filter matrices.',
+          'Because a single 5×5 kernel has a smaller receptive field than a 3×3 kernel.',
+          'Two 3×3 layers match a 5×5 receptive field with fewer weights and two ReLUs.'
         ],
         correctIndex: 3,
         explanation: 'Stacking smaller 3×3 kernels is strictly more expressive (more ReLUs) and more parameter-efficient (18C² < 25C²) for the same spatial context.'
@@ -5780,9 +5792,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A human photographer never forgets how to see edges even if you shout instructions at them, whereas unfrozen pretrained weights updated with a huge learning rate before the random new head is warmed up will be destroyed in 2 steps by large random gradients ("catastrophic forgetting").',
     intuition: [
-      '**Why Early CNN Layers Are Universal:** Visualizing Layer 1 and Layer 2 filters of any CNN trained on ImageNet, CIFAR, or medical scans reveals the exact same **Gabor edge detectors, color-opponent blobs, and corner filters**. You almost *never* need to relearn edge detectors from scratch!',
-      '**The 2-Phase Transfer Learning Recipe:** **Phase 1 (Linear Probing / Feature Extraction):** Freeze the entire backbone (`for p in model.parameters(): p.requires_grad = False`), replace `model.fc = nn.Linear(2048, K)`, and train the new head for 5–10 epochs at `η = 10⁻³`. **Phase 2 (Fine-Tuning):** Unfreeze the top 1–2 stages of the backbone and train with a **10× smaller learning rate (`η = 10⁻⁴`)** so pretrained weights aren\'t blasted away.',
-      '**Crucial Preprocessing Rule:** When using an ImageNet-pretrained backbone, you **must** normalize your target images using the exact same ImageNet channel mean `μ = [0.485, 0.456, 0.406]` and std `σ = [0.229, 0.224, 0.225]` that the backbone expects!'
+      'Why Early CNN Layers Are Universal: Visualizing Layer 1 and Layer 2 filters of any CNN trained on ImageNet, CIFAR, or medical scans reveals the exact same Gabor edge detectors, color-opponent blobs, and corner filters. You almost never need to relearn edge detectors from scratch!',
+      'The 2-Phase Transfer Learning Recipe: Phase 1 (Linear Probing / Feature Extraction): Freeze the entire backbone (for p in model.parameters(): p.requires_grad = False), replace model.fc = nn.Linear(2048, K), and train the new head for 5–10 epochs at η = 10⁻³. Phase 2 (Fine-Tuning): Unfreeze the top 1–2 stages of the backbone and train with a 10× smaller learning rate (η = 10⁻⁴) so pretrained weights aren\'t blasted away.',
+      'Crucial Preprocessing Rule: When using an ImageNet-pretrained backbone, you must normalize your target images using the exact same ImageNet channel mean μ = [0.485, 0.456, 0.406] and std σ = [0.229, 0.224, 0.225] that the backbone expects!'
     ],
     mathFormulas: [
       {
@@ -5818,10 +5830,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'tl-q1',
         question: 'Why should you ALWAYS freeze the pretrained backbone and warm up the newly attached random classification head for a few epochs BEFORE unfreezing the backbone for fine-tuning?',
         options: [
-          'Because at step 0 the new classification head has random weights that produce huge, noisy error gradients.',
-          'Because PyTorch does not allow unfreezing layers at epoch 0.',
-          'Because frozen layers run slower than unfrozen layers.',
-          'To make the classification head weights zero.'
+          'Random initial head weights create large gradients that distort backbone features.',
+          'Deep learning frameworks do not permit unfreezing backbone layers at epoch zero.',
+          'Frozen convolutional layers execute much slower than unfrozen layers on GPUs.',
+          'Freezing the backbone forces all linear classification head weights to stay zero.'
         ],
         correctIndex: 0,
         explanation: 'Warming up the linear head aligns its weights with the pretrained feature space first, so subsequent fine-tuning gradients are small and constructive.'
@@ -5830,10 +5842,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'tl-q2',
         question: 'You have only 300 labeled chest X-ray images (very small dataset, domain somewhat different from natural photos). Which transfer learning strategy is safest against overfitting?',
         options: [
-          'Remove all pooling layers.',
-          'Re-initialize all 25 million ResNet weights randomly and train from scratch for 200 epochs.',
-          'Unfreeze all layers and use a huge learning rate η = 1.0.',
-          'Freeze the early and middle convolutional blocks (which detect universal edges and textures), train the linear head.'
+          'Remove all spatial pooling layers and train a single linear matrix on raw pixels.',
+          'Re-initialize all 25 million ResNet weights randomly and train from scratch.',
+          'Unfreeze all 50 layers immediately and train with a large learning rate η = 1.0.',
+          'Freeze early/middle conv blocks and train the new linear head on top.'
         ],
         correctIndex: 3,
         explanation: 'On 300 images, training 25M parameters from scratch or with high LR rapidly memorizes the training set; freezing early universal features is essential.'
@@ -5882,9 +5894,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A human guard naturally sees each physical bike as a single object, whereas a convolutional detector evaluates thousands of dense anchor/grid locations in parallel and relies on Non-Maximum Suppression (NMS) to clean up duplicate boxes.',
     intuition: [
-      '**Two-Stage (R-CNN) vs Single-Stage (YOLO) Detectors:** Older Two-Stage detectors (Faster R-CNN) first proposed ~2,000 candidate regions and then classified each region separately (accurate but slow). **YOLO** frames detection as a **single regression pass** from image pixels straight to an `S × S` grid of bounding boxes `(x, y, w, h, confidence, class_probs)`, running at 60–150+ FPS on video streams!',
-      '**Why We Use IoU Instead of Raw Coordinate L2 Error:** A 2-pixel error on a tiny distant helmet (`10×10` pixels) is huge, whereas a 2-pixel error on a close-up bus (`400×400` pixels) is negligible! **Intersection over Union (`IoU ∈ [0, 1]`)** is completely scale-invariant.',
-      '**How Non-Maximum Suppression (NMS) Works:** For each class: (1) sort all predicted boxes by confidence score above `p_min`; (2) pick the highest-scoring box `B*` and add it to final detections; (3) delete every remaining box `B_j` whose overlap with `B*` exceeds `IoU(B*, B_j) ≥ τ_NMS` (e.g. `0.50`); (4) repeat until no boxes remain!'
+      'Two-Stage (R-CNN) vs Single-Stage (YOLO) Detectors: Older Two-Stage detectors (Faster R-CNN) first proposed ~2,000 candidate regions and then classified each region separately (accurate but slow). YOLO frames detection as a single regression pass from image pixels straight to an S × S grid of bounding boxes (x, y, w, h, confidence, class_probs), running at 60–150+ FPS on video streams!',
+      'Why We Use IoU Instead of Raw Coordinate L2 Error: A 2-pixel error on a tiny distant helmet (10×10 pixels) is huge, whereas a 2-pixel error on a close-up bus (400×400 pixels) is negligible! Intersection over Union (IoU ∈ [0, 1]) is completely scale-invariant.',
+      'How Non-Maximum Suppression (NMS) Works: For each class: (1) sort all predicted boxes by confidence score above p_min; (2) pick the highest-scoring box B* and add it to final detections; (3) delete every remaining box B_j whose overlap with B* exceeds IoU(B*, B_j) ≥ τ_NMS (e.g. 0.50); (4) repeat until no boxes remain!'
     ],
     mathFormulas: [
       {
@@ -5920,10 +5932,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'yolo-q1',
         question: 'Why is Non-Maximum Suppression (NMS) needed at the end of a YOLO object detection pass?',
         options: [
-          'To resize the input image to 224×224.',
-          'Because multiple neighbouring grid cells/anchors often fire with high confidence on the exact same physical object.',
-          'To replace ReLU activations during backpropagation.',
-          'Because YOLO can only detect 1 object per image.'
+          'To resize arbitrary camera images to a fixed 224×224 spatial resolution.',
+          'Neighboring anchors fire on the same object and require deduplication.',
+          'To replace non-differentiable ReLU activations during the backward pass.',
+          'Because single-stage detectors can only output one bounding box per image.'
         ],
         correctIndex: 1,
         explanation: 'Without NMS, a single motorcycle at the gate would have 4–6 slightly shifted bounding boxes drawn on top of it.'
@@ -5932,10 +5944,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'yolo-q2',
         question: 'What happens in Non-Maximum Suppression if two genuinely DIFFERENT pedestrians are standing right next to each other in a crowded queue such that their true bounding boxes overlap with IoU = 0.70 (above τ_NMS = 0.50)?',
         options: [
-          'Standard greedy NMS will mistakenly suppress (delete) the second pedestrian\'s box.',
-          'NMS automatically splits them into 4 boxes.',
-          'IoU becomes negative.',
-          'Both boxes are deleted.'
+          'Greedy NMS suppresses the second pedestrian box due to high IoU overlap.',
+          'Greedy NMS automatically splits the two overlapping boxes into four boxes.',
+          'The Intersection over Union metric becomes negative whenever boxes overlap.',
+          'Greedy NMS deletes both the highest-scoring and second-highest boxes at once.'
         ],
         correctIndex: 0,
         explanation: 'Hard NMS cannot distinguish between a duplicate box on the same person and a real box on an occluded second person right behind them.'
@@ -5957,7 +5969,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'Coloring Every Single Pixel of a Medical Scan Using an Hourglass Encoder-Decoder with Skip Bridges (U-Net)',
       narrative:
-        'Object detection only draws a coarse rectangle around a tumor or road lane. What if a surgeon needs the exact pixel-by-pixel boundary (Semantic Segmentation)? If you only downsample an image through a CNN Encoder, you know *what* is in the photo (semantic context), but the feature map is shrunk to 14×14 so you lost *where* the crisp pixel borders were! Ronneberger et al. (2015) solved this with U-Net: a U-shaped Encoder-Decoder where every upsampling stage in the Decoder receives a direct high-resolution Skip Concatenation bridge from the matching Encoder stage—combining deep semantic context with crisp pixel-level edges, optimized with the Dice Coefficient!'
+        'Object detection only draws a coarse rectangle around a tumor or road lane. What if a surgeon needs the exact pixel-by-pixel boundary (Semantic Segmentation)? If you only downsample an image through a CNN Encoder, you know what is in the photo (semantic context), but the feature map is shrunk to 14×14 so you lost where the crisp pixel borders were! Ronneberger et al. (2015) solved this with U-Net: a U-shaped Encoder-Decoder where every upsampling stage in the Decoder receives a direct high-resolution Skip Concatenation bridge from the matching Encoder stage—combining deep semantic context with crisp pixel-level edges, optimized with the Dice Coefficient!'
     },
     mapping: [
       {
@@ -5990,9 +6002,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A coloring book already has black outlines printed on the page, whereas U-Net receives raw continuous pixels and must infer both the object boundaries and the interior class labels simultaneously.',
     intuition: [
-      '**The "What" vs "Where" Trade-off in Vision:** Max-pooling and strided convolutions give deep layers a wide receptive field (so they know *what* organ is present), but discard exact pixel coordinates. **U-Net** bridges this gap by concatenating the high-resolution feature maps from each Encoder stage directly onto the upsampled Decoder maps at the same resolution!',
-      '**ResNet Addition (`+`) vs U-Net Concatenation (`Concat`):** ResNet adds `[C, H, W] + [C, H, W] → [C, H, W]` across consecutive blocks to aid gradient flow. U-Net **concatenates** encoder features and upsampled decoder features along the channel axis `[C, H, W] || [C, H, W] → [2C, H, W]` across the entire U-shape so the subsequent `3×3` conv can fuse low-level edge coordinates with high-level semantic classes!',
-      '**Why Dice Loss Beats Pixel Cross-Entropy on Small Foreground Objects:** If a tumor occupies only `1%` of the pixels in an MRI scan (`99%` background), standard pixel-wise cross-entropy is dominated by the `99%` easy background pixels. The **Soft Dice Loss** `L_Dice = 1 - (2 ∑ p_i g_i) / (∑ p_i + ∑ g_i)` ignores True Negative background pixels completely and directly optimizes the F1 overlap of the foreground mask!'
+      'The "What" vs "Where" Trade-off in Vision: Max-pooling and strided convolutions give deep layers a wide receptive field (so they know what organ is present), but discard exact pixel coordinates. U-Net bridges this gap by concatenating the high-resolution feature maps from each Encoder stage directly onto the upsampled Decoder maps at the same resolution!',
+      'ResNet Addition (+) vs U-Net Concatenation (Concat): ResNet adds [C, H, W] + [C, H, W] → [C, H, W] across consecutive blocks to aid gradient flow. U-Net concatenates encoder features and upsampled decoder features along the channel axis [C, H, W] || [C, H, W] → [2C, H, W] across the entire U-shape so the subsequent 3×3 conv can fuse low-level edge coordinates with high-level semantic classes!',
+      'Why Dice Loss Beats Pixel Cross-Entropy on Small Foreground Objects: If a tumor occupies only 1% of the pixels in an MRI scan (99% background), standard pixel-wise cross-entropy is dominated by the 99% easy background pixels. The Soft Dice Loss L_Dice = 1 - (2 ∑ p_i g_i) / (∑ p_i + ∑ g_i) ignores True Negative background pixels completely and directly optimizes the F1 overlap of the foreground mask!'
     ],
     mathFormulas: [
       {
@@ -6045,10 +6057,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'unet-q2',
         question: 'Why is Dice Loss (or Combo BCE + Dice Loss) strongly preferred over plain pixel-wise Accuracy when segmenting tiny retinal blood vessels that cover only 2% of the image?',
         options: [
-          'Because pixel accuracy is always 0%.',
-          'Because Dice Loss does not use gradients.',
-          'Because predicting 100% background scores 98% pixel Accuracy while catching 0% of the blood vessels.',
-          'Because U-Net only outputs integers.'
+          'Because standard pixel-wise accuracy always evaluates to 0% on medical scans.',
+          'Because the Dice coefficient loss can be optimized without computing gradients.',
+          'Predicting all background gives 98% pixel accuracy while missing all vessels.',
+          'Because U-Net segmentation decoders can only output discrete integer logits.'
         ],
         correctIndex: 2,
         explanation: 'Dice Coefficient is mathematically identical to the harmonic F1 score at the pixel level, making it insensitive to massive True Negative background counts.'
@@ -6069,7 +6081,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'Stamping Train Coach Seat Numbers Onto Every Passenger Ticket So Order Matters',
       narrative:
-        'Look closely at the Self-Attention equation Softmax(Q K^T / √d_k) V: if you scramble the words "Dog bites man" into "Man bites dog", every token\'s dot product with every other token is 100% identical—without position labels, a Transformer is just a fancy bag-of-words! To tell the model *where* each word sits without bringing back slow sequential recurrence, Vaswani et al. (2017) added a geometric clock vector—Sinusoidal Positional Encoding PE(pos)—to each token embedding, while modern LLMs (Llama, Mistral, Qwen) use Rotary Position Embedding (RoPE), rotating Q and K by angle pos · θ so their dot product depends purely on relative word distance (m - n)!'
+        'Look closely at the Self-Attention equation Softmax(Q K^T / √d_k) V: if you scramble the words "Dog bites man" into "Man bites dog", every token\'s dot product with every other token is 100% identical—without position labels, a Transformer is just a fancy bag-of-words! To tell the model where each word sits without bringing back slow sequential recurrence, Vaswani et al. (2017) added a geometric clock vector—Sinusoidal Positional Encoding PE(pos)—to each token embedding, while modern LLMs (Llama, Mistral, Qwen) use Rotary Position Embedding (RoPE), rotating Q and K by angle pos · θ so their dot product depends purely on relative word distance (m - n)!'
     },
     mapping: [
       {
@@ -6096,9 +6108,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A printed train seat number is a single integer (Seat 42) that grows huge on long trains, whereas Sinusoidal and RoPE encodings use bounded trigonometric waves in [-1, +1] across multiple wavelengths so values never blow up at token 8,192.',
     intuition: [
-      '**Why Raw Self-Attention Is Order-Blind:** In an RNN, token `t` is processed *after* token `t-1` via `W_hh`. In Self-Attention, all tokens are multiplied in parallel via `Q K^T`. If you swap row 1 and row 3 of `X`, the output simply swaps row 1 and row 3—the representation of each word is unchanged!',
-      '**Why Not Just Add Raw Integer Position `pos ∈ {1, 2, ..., 4096}`?** Because at `pos = 4000`, adding `+4000` to an embedding vector whose entries are in `[-1, +1]` completely drowns out the word\'s meaning! Using `[sin(ω_k pos), cos(ω_k pos)]` with wavelengths ranging from `2π` to `10000 · 2π` keeps every coordinate bounded in `[-1, +1]`.',
-      '**The Trigonometric Identity Behind Sinusoidal & RoPE Encodings:** Because `cos(α - β) = cos α cos β + sin α sin β`, rotating a 2D query vector `q` by `m θ` and a key vector `k` by `n θ` (**RoPE, Su et al., 2021**) makes their inner product `(R_m q)^T (R_n k)` depend **exclusively on the relative distance `(m - n)`** between the two words!'
+      'Why Raw Self-Attention Is Order-Blind: In an RNN, token t is processed after token t-1 via W_hh. In Self-Attention, all tokens are multiplied in parallel via Q K^T. If you swap row 1 and row 3 of X, the output simply swaps row 1 and row 3—the representation of each word is unchanged!',
+      'Why Not Just Add Raw Integer Position pos ∈ {1, 2, ..., 4096}? Because at pos = 4000, adding +4000 to an embedding vector whose entries are in [-1, +1] completely drowns out the word\'s meaning! Using [sin(ω_k pos), cos(ω_k pos)] with wavelengths ranging from 2π to 10000 · 2π keeps every coordinate bounded in [-1, +1].',
+      'The Trigonometric Identity Behind Sinusoidal & RoPE Encodings: Because cos(α - β) = cos α cos β + sin α sin β, rotating a 2D query vector q by m θ and a key vector k by n θ (RoPE, Su et al., 2021) makes their inner product (R_m q)^T (R_n k) depend exclusively on the relative distance (m - n) between the two words!'
     ],
     mathFormulas: [
       {
@@ -6134,10 +6146,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'pe-q1',
         question: 'What happens if you train a Transformer classifier on sentences WITHOUT any Positional Encoding (and without causal masking)?',
         options: [
-          'The Transformer throws a syntax error.',
-          'The Transformer becomes permutation-invariant.',
-          'Self-attention weights all become zero.',
-          'It automatically behaves like an RNN.'
+          'The Transformer raises a matrix dimension mismatch error.',
+          'The Transformer becomes invariant to token word order.',
+          'All scaled dot-product attention weights collapse to zero.',
+          'The attention layer automatically reverts to an RNN loop.'
         ],
         correctIndex: 1,
         explanation: 'Without positional encodings (or causal masks), Self-Attention is permutation-equivariant: permuting input tokens simply permutes output rows identically.'
@@ -6146,10 +6158,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'pe-q2',
         question: 'Why do modern LLMs (like Llama-3, Mistral, and Qwen) use Rotary Position Embedding (RoPE) applied directly to Q and K in every attention layer instead of Learned Absolute Positional Embeddings?',
         options: [
-          'Because learned embeddings cannot be differentiated.',
-          'Because RoPE doubles the vocabulary size.',
-          'Because RoPE removes the need for Value vectors V.',
-          'Because RoPE encodes relative token distance (n - m) via 2D rotation matrices R_m^T R_n = R_{n-m} and generalizes to longer sequence lengths.'
+          'Because absolute learned position embeddings cannot be differentiated.',
+          'Because Rotary Position Embedding doubles the tokenizer vocabulary size.',
+          'Because Rotary Position Embedding removes the need for Value vectors V.',
+          'Because RoPE encodes relative distance (n - m) via 2D query-key rotations.'
         ],
         correctIndex: 3,
         explanation: 'RoPE preserves exact relative distance invariants at every attention layer and supports context-window extension.'
@@ -6197,8 +6209,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'A human writer can go back and erase a sentence they wrote 2 minutes ago, whereas standard autoregressive GPT decoding commits to each emitted token left-to-right so past tokens\' KV-cache states are never recomputed when later tokens are generated.',
     intuition: [
-      '**How the Causal Mask Works Mathematically:** Why do we add `-∞` (or `-10⁹` in float32) to the upper triangle (`j > i`) of the score matrix `S = Q K^T / √d_k` *before* Softmax, instead of zeroing out weights *after* Softmax? Because if you zeroed out weights after Softmax, the remaining weights in row `i` wouldn\'t sum to `1.0`! Adding `-∞` *before* Softmax makes `exp(-∞) = 0.0`, so Softmax automatically normalizes only over the valid past/present tokens `j ≤ i`!',
-      '**When to Choose BERT (Encoder) vs GPT (Decoder):** **BERT-style Encoders** (RoBERTa, DeBERTa, BGE Embeddings) see bidirectional context at every layer, making them compact powerhouses for **Embedding extraction (RAG), Sentiment Classification, and Named Entity Recognition (NER)**. **GPT-style Causal Decoders** (GPT-4, Claude, Gemini, Llama) excel at **open-ended text generation, coding, and few-shot reasoning**.'
+      'How the Causal Mask Works Mathematically: Why do we add -∞ (or -10⁹ in float32) to the upper triangle (j > i) of the score matrix S = Q K^T / √d_k before Softmax, instead of zeroing out weights after Softmax? Because if you zeroed out weights after Softmax, the remaining weights in row i wouldn\'t sum to 1.0! Adding -∞ before Softmax makes exp(-∞) = 0.0, so Softmax automatically normalizes only over the valid past/present tokens j ≤ i!',
+      'When to Choose BERT (Encoder) vs GPT (Decoder): BERT-style Encoders (RoBERTa, DeBERTa, BGE Embeddings) see bidirectional context at every layer, making them compact powerhouses for Embedding extraction (RAG), Sentiment Classification, and Named Entity Recognition (NER). GPT-style Causal Decoders (GPT-4, Claude, Gemini, Llama) excel at open-ended text generation, coding, and few-shot reasoning.'
     ],
     mathFormulas: [
       {
@@ -6234,10 +6246,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'bg-q1',
         question: 'In a GPT causal decoder, why do we add -∞ to future positions (j > i) BEFORE applying Softmax, instead of simply multiplying the post-Softmax attention matrix by a binary 0/1 mask?',
         options: [
-          'Because exp(-∞) = 0 inside the Softmax numerator and denominator, guaranteeing that future positions get 0 weight AND that the remaining valid weights (j ≤ i) still sum to 100% (a valid probability distribution)!',
-          'Because multiplying by 0 after Softmax causes NaN.',
-          'Because -∞ makes the matrix smaller.',
-          'To allow the model to peek at future tokens during training.'
+          'Because exp(-∞) = 0 in Softmax, giving future tokens 0 weight while rows sum to 1.',
+          'Because multiplying attention weights by zero after Softmax produces NaN values.',
+          'Because filling the upper triangle with -∞ reduces matrix memory footprint by 50%.',
+          'Because adding -∞ allows the decoder to attend to future tokens during training.'
         ],
         correctIndex: 0,
         explanation: 'Zeroing after Softmax leaves rows summing to < 1.0 and leaks the magnitude of future logits through the Softmax denominator!'
@@ -6246,10 +6258,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'bg-q2',
         question: 'Why is a BERT-style Bidirectional Encoder typically preferred over a causal decoder for computing dense document chunk embeddings in a RAG vector database?',
         options: [
-          'Because BERT does not use self-attention.',
-          'Because bidirectional attention allows every token in the paragraph to attend to both preceding and following words simultaneously, producing a richer holistic summary of the entire chunk.',
-          'Because causal decoders cannot output vectors.',
-          'Because BERT has no parameters.'
+          'Because BERT replaces all self-attention layers with fixed keyword lookup tables.',
+          'Because bidirectional attention lets every token attend to both left and right context.',
+          'Because autoregressive causal decoders cannot output continuous vector embeddings.',
+          'Because BERT encoders contain zero trainable weight matrices during fine-tuning.'
         ],
         correctIndex: 1,
         explanation: 'In a causal model, token 1 only sees token 1; in a bidirectional encoder, every token integrates context from the entire passage.'
@@ -6298,9 +6310,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'When you solve a physical jigsaw puzzle, you only match adjacent touching edges first, whereas a Vision Transformer allows the top-left corner patch (Patch 1) and the bottom-right corner patch (Patch 196) to attend to each other directly in Layer 1!',
     intuition: [
-      '**How Patchification Works in Practice:** A `224 × 224 × 3` image sliced into `P × P = 16 × 16` patches yields `N = (224/16) × (224/16) = 14 × 14 = 196` patches. Each patch contains `16 × 16 × 3 = 768` raw pixel values, which is linearly projected to `d_model = 768`. In PyTorch, slicing and projecting is a single strided convolution: `nn.Conv2d(3, 768, kernel_size=16, stride=16)`!',
-      '**Inductive Bias Trade-off (CNN vs ViT):** A **CNN** has strong built-in spatial **inductive biases** (locality via `3×3` kernels and 2D translation equivariance via weight sharing), so it learns well even on small datasets (`1k–50k` images). A **Vision Transformer (ViT)** has almost no spatial inductive bias—it must learn from data how the 2D grid fits together, but its global self-attention from Layer 1 allows it to surpass CNNs when pretrained on massive datasets (`14M–300M` images) or via self-supervised **CLIP / DINOv2**!',
-      '**Why Halving Patch Size `P` Costs 16× More Attention Compute:** Because the number of patches scales as `N = H W / P²` and Self-Attention complexity scales as `O(N²)`, halving `P` from `16` to `8` multiplies `N` by `4×` and multiplies the `N × N` attention matrix by **`4² = 16×`**!'
+      'How Patchification Works in Practice: A 224 × 224 × 3 image sliced into P × P = 16 × 16 patches yields N = (224/16) × (224/16) = 14 × 14 = 196 patches. Each patch contains 16 × 16 × 3 = 768 raw pixel values, which is linearly projected to d_model = 768. In PyTorch, slicing and projecting is a single strided convolution: nn.Conv2d(3, 768, kernel_size=16, stride=16)!',
+      'Inductive Bias Trade-off (CNN vs ViT): A CNN has strong built-in spatial inductive biases (locality via 3×3 kernels and 2D translation equivariance via weight sharing), so it learns well even on small datasets (1k–50k images). A Vision Transformer (ViT) has almost no spatial inductive bias—it must learn from data how the 2D grid fits together, but its global self-attention from Layer 1 allows it to surpass CNNs when pretrained on massive datasets (14M–300M images) or via self-supervised CLIP / DINOv2!',
+      'Why Halving Patch Size P Costs 16× More Attention Compute: Because the number of patches scales as N = H W / P² and Self-Attention complexity scales as O(N²), halving P from 16 to 8 multiplies N by 4× and multiplies the N × N attention matrix by 4² = 16×!'
     ],
     mathFormulas: [
       {
@@ -6341,10 +6353,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'vit-q1',
         question: 'Why does a Vision Transformer (ViT) split a 224×224 image into 16×16 patches (N = 196) instead of treating every individual pixel as a token (N = 50,176)?',
         options: [
-          'To avoid using positional encodings.',
-          'Because Transformers can only accept inputs of length 196.',
-          'Because individual pixels have no RGB values.',
-          'Because Self-Attention has O(N²) memory and compute complexity.'
+          'Splitting into patches removes the need for positional encodings.',
+          'Transformer encoders are hard-coded to accept at most 196 tokens.',
+          'Individual image pixels do not possess RGB color channel values.',
+          'Self-Attention scales quadratically O(N²) in sequence length N.'
         ],
         correctIndex: 3,
         explanation: 'Patch tokenization reduces sequence length N by a factor of P² = 256×, which reduces quadratic O(N²) attention cost by 256² = 65,536×!'
@@ -6353,10 +6365,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         id: 'vit-q2',
         question: 'When training from scratch on a small dataset of only 3,000 images (without pretraining), why does a standard ResNet CNN usually outperform a Vision Transformer (ViT) trained from scratch?',
         options: [
-          'Because ViT cannot use backpropagation.',
-          'Because ViT has zero learnable parameters.',
-          'Because CNNs have strong built-in spatial inductive biases (local 3×3 neighborhoods and translation equivariance).',
-          'Because ResNet uses 16×16 patches.'
+          'Because Vision Transformers cannot be trained with backpropagation.',
+          'Because Vision Transformers contain zero learnable weight matrices.',
+          'Because CNNs have built-in locality and translation equivariance biases.',
+          'Because ResNet architectures tokenize images into 16×16 pixel patches.'
         ],
         correctIndex: 2,
         explanation: 'Inductive bias acts as prior knowledge on small datasets; at large scale (or when fine-tuning a pretrained ViT/CLIP checkpoint), ViT\'s flexible global attention excels.'

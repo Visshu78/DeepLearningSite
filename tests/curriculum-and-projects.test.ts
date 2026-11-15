@@ -70,15 +70,82 @@ describe('NeuroPlay PRD v2.1 Curriculum & Lesson Structure', () => {
     // Across all 115 questions, correctIndex is evenly distributed across 0, 1, 2, 3
     const counts = [0, 0, 0, 0];
     let totalQuestions = 0;
+    let longestIsCorrect = 0;
     for (const detail of Object.values(LESSON_DETAILS)) {
       for (const q of detail.quiz) {
         counts[q.correctIndex]++;
         totalQuestions++;
+        const cLen = q.options[q.correctIndex].length;
+        const maxWrong = Math.max(
+          ...q.options.filter((_, idx) => idx !== q.correctIndex).map(o => o.length)
+        );
+        if (cLen > maxWrong) longestIsCorrect++;
+        // Correct option must never be more than 10 chars longer than the longest distractor
+        expect(cLen - maxWrong).toBeLessThanOrEqual(10);
       }
     }
     for (const count of counts) {
       expect(count).toBeGreaterThanOrEqual(Math.floor(totalQuestions * 0.2));
       expect(count).toBeLessThanOrEqual(Math.ceil(totalQuestions * 0.3));
     }
+    // Correct option is longest in roughly ~1/4 of questions (under 35%)
+    expect(longestIsCorrect / totalQuestions).toBeLessThan(0.35);
+  });
+
+  it('verifies mathematical, historical, and domain accuracy fixes across Tracks 3, 4, 5, 6, and 9', () => {
+    // 6.2 FFN formula & Pre-LN GPT-2/3 + LLaMA
+    const l62 = LESSON_DETAILS['transformer-block-multihead-attention'];
+    expect(l62.scene.narrative).toContain('at the intermission');
+    expect(l62.intuition.join(' ')).toContain('GPT-2/3, LLaMA');
+    expect(l62.intuition.join(' ')).not.toContain('GPT-4');
+    const ffnFormula = l62.mathFormulas.find(f => f.name.includes('Feed-Forward'));
+    expect(ffnFormula?.latex).not.toContain('\\max(0, x W_1 + b_1) W_2 + b_2 = \\text{GELU}');
+    expect(ffnFormula?.explanation).toMatch(/ReLU in the original.*GELU/i);
+
+    // 9.7 sin/cos collision example uses 3 AM and 9 AM
+    const l97 = LESSON_DETAILS['feature-engineering-and-pipelines'];
+    expect(l97.intuition.join(' ')).toContain('3 AM and 9 AM');
+    expect(l97.intuition.join(' ')).not.toContain('6 AM and 6 PM');
+
+    // 4.4 scene says 4 patches / 4 stops
+    const l44 = LESSON_DETAILS['cnn-backpropagation'];
+    expect(l44.scene.narrative).toContain('4 different patches');
+    expect(l44.scene.narrative).toContain('4 stops');
+
+    // 5.3 Jacobian uses diag(1 - h_k^2) W_hh (no transpose)
+    const l53 = LESSON_DETAILS['bptt-and-vanishing-gradients'];
+    expect(l53.mathFormulas[0].latex).toContain('\\text{diag}(1 - \\mathbf{h}_k^2)\\,\\mathbf{W}_{hh}');
+    expect(l53.mathFormulas[0].latex).not.toContain('\\mathbf{W}_{hh}^\\top');
+    expect(l53.intuition.join(' ')).toContain('Across (T - t)');
+
+    // 5.4 credits Gers et al. (2000) for the forget gate
+    const l54 = LESSON_DETAILS['lstm-networks'];
+    expect(l54.intuition.join(' ')).toContain('Gers');
+    expect(l54.intuition.join(' ')).toContain('2000');
+
+    // 5.5 includes reset gate r_t, PyTorch swapped z_t note, and Luong vs Bahdanau attention
+    const l55 = LESSON_DETAILS['gru-and-seq2seq'];
+    expect(l55.mathFormulas[0].latex).toContain('\\mathbf{r}_t');
+    expect(l55.intuition.join(' ')).toContain('PyTorch');
+    expect(l55.mathFormulas[1].name).toContain('Luong');
+    expect(l55.workedExample.steps[0].math).toContain('r_t');
+
+    // 3.3 mentions AdamW / decoupled weight decay
+    const l33 = LESSON_DETAILS['regularization-dropout'];
+    expect(l33.intuition.join(' ')).toContain('AdamW');
+
+    // 9.2 vs 9.3 ownership and Min-Max test range note
+    const l92 = LESSON_DETAILS['handling-missing-data'];
+    expect(l92.scene.title).toContain('An Attendance Sheet');
+    expect(l92.scene.title).not.toContain('350%');
+    expect(l92.quiz[0].options[l92.quiz[0].correctIndex]).toContain('Fill the blanks with 0');
+
+    const l93 = LESSON_DETAILS['outliers-and-feature-scaling'];
+    expect(l93.intuition.join(' ')).toMatch(/ONLY on training data/i);
+    expect(l93.mathFormulas[0].name).toContain('Tukey IQR');
+
+    // 4.7 mentions B0-B7 follow phi approximately
+    const l47 = LESSON_DETAILS['efficientnet-compound-scaling'];
+    expect(l47.intuition.join(' ')).toContain('approximately');
   });
 });
