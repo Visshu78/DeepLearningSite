@@ -187,11 +187,10 @@ export function KnowledgeCheck({ lessonSlug, questions, onAllCorrect }: Knowledg
                 ) : (
                   <div className="space-y-3">
                     <div
-                      className={`p-4 rounded-lg text-sm sm:text-base leading-relaxed border flex items-start gap-2.5 ${
-                        isCorrect
-                          ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
-                          : 'bg-[#FFFDF5] border-[#FCD34D] text-[#854D0E]'
-                      }`}
+                      className={`p-4 rounded-lg text-sm sm:text-base leading-relaxed border flex items-start gap-2.5 ${isCorrect
+                        ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
+                        : 'bg-[#FFFDF5] border-[#FCD34D] text-[#854D0E]'
+                        }`}
                     >
                       <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
                       <div>
