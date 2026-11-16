@@ -220,3 +220,357 @@ export function computeProbabilityAndLikelihood(
     dGaussianNll_dSigma,
   };
 }
+
+// ============================================================================
+// LESSON 0.5: MATRIX OPERATIONS & LINEAR TRANSFORMATIONS
+// ============================================================================
+
+export type Mat2x2 = [[number, number], [number, number]];
+
+export interface MatrixAlgebra2x2Result {
+  productAB: Mat2x2;
+  productBA: Mat2x2;
+  transposeA: Mat2x2;
+  determinantA: number;
+  isInvertible: boolean;
+  inverseA: Mat2x2 | null;
+  transformedV: [number, number];
+  commutes: boolean;
+}
+
+export function multiplyMat2x2(A: Mat2x2, B: Mat2x2): Mat2x2 {
+  return [
+    [
+      A[0][0] * B[0][0] + A[0][1] * B[1][0],
+      A[0][0] * B[0][1] + A[0][1] * B[1][1],
+    ],
+    [
+      A[1][0] * B[0][0] + A[1][1] * B[1][0],
+      A[1][0] * B[0][1] + A[1][1] * B[1][1],
+    ],
+  ];
+}
+
+/**
+ * Computes 2x2 matrix multiplication (AB and BA), transpose A^T, determinant,
+ * inverse A^-1 (when det(A) != 0), and linear transformation A * v.
+ */
+export function computeMatrixAlgebra2x2(
+  A: Mat2x2,
+  B: Mat2x2,
+  v: [number, number]
+): MatrixAlgebra2x2Result {
+  const productAB = multiplyMat2x2(A, B);
+  const productBA = multiplyMat2x2(B, A);
+  const transposeA: Mat2x2 = [
+    [A[0][0], A[1][0]],
+    [A[0][1], A[1][1]],
+  ];
+  const determinantA = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+  const isInvertible = Math.abs(determinantA) > 1e-8;
+  const inverseA: Mat2x2 | null = isInvertible
+    ? [
+        [A[1][1] / determinantA, -A[0][1] / determinantA],
+        [-A[1][0] / determinantA, A[0][0] / determinantA],
+      ]
+    : null;
+
+  const transformedV: [number, number] = [
+    A[0][0] * v[0] + A[0][1] * v[1],
+    A[1][0] * v[0] + A[1][1] * v[1],
+  ];
+
+  const commutes =
+    Math.abs(productAB[0][0] - productBA[0][0]) < 1e-6 &&
+    Math.abs(productAB[0][1] - productBA[0][1]) < 1e-6 &&
+    Math.abs(productAB[1][0] - productBA[1][0]) < 1e-6 &&
+    Math.abs(productAB[1][1] - productBA[1][1]) < 1e-6;
+
+  return {
+    productAB,
+    productBA,
+    transposeA,
+    determinantA,
+    isInvertible,
+    inverseA,
+    transformedV,
+    commutes,
+  };
+}
+
+// ============================================================================
+// LESSON 0.6: NORMS, DISTANCES & EIGENVALUES / PCA
+// ============================================================================
+
+export interface NormsDistancesResult {
+  l1NormU: number;
+  l2NormU: number;
+  l1Distance: number;
+  l2Distance: number;
+}
+
+export function computeNormsAndDistances(
+  u: [number, number],
+  v: [number, number]
+): NormsDistancesResult {
+  const l1NormU = Math.abs(u[0]) + Math.abs(u[1]);
+  const l2NormU = Math.hypot(u[0], u[1]);
+  const dx = u[0] - v[0];
+  const dy = u[1] - v[1];
+  const l1Distance = Math.abs(dx) + Math.abs(dy);
+  const l2Distance = Math.hypot(dx, dy);
+  return { l1NormU, l2NormU, l1Distance, l2Distance };
+}
+
+export interface EigenPCAResult {
+  lambda1: number;
+  lambda2: number;
+  eigvec1: [number, number];
+  eigvec2: [number, number];
+  explainedVarianceRatio1: number;
+  explainedVarianceRatio2: number;
+  trace: number;
+  determinant: number;
+}
+
+/**
+ * Exact eigendecomposition of a 2x2 symmetric matrix [[a, b], [b, c]]
+ * (such as a 2D covariance matrix for PCA).
+ * Eigenvalues are ordered lambda1 >= lambda2.
+ */
+export function computeSymmetric2x2EigenPCA(
+  varX: number,
+  varY: number,
+  covXY: number
+): EigenPCAResult {
+  const a = varX;
+  const b = covXY;
+  const c = varY;
+  const trace = a + c;
+  const determinant = a * c - b * b;
+  const disc = Math.sqrt(Math.max(0, (a - c) * (a - c) + 4 * b * b));
+  const lambda1 = 0.5 * (trace + disc);
+  const lambda2 = 0.5 * (trace - disc);
+
+  let eigvec1: [number, number];
+  if (Math.abs(b) > 1e-10) {
+    const vx = lambda1 - c;
+    const vy = b;
+    const len = Math.hypot(vx, vy) || 1;
+    eigvec1 = [vx / len, vy / len];
+  } else {
+    eigvec1 = a >= c ? [1, 0] : [0, 1];
+  }
+  const eigvec2: [number, number] = [-eigvec1[1], eigvec1[0]];
+
+  const totalPosVar = Math.max(EPS, Math.max(0, lambda1) + Math.max(0, lambda2));
+  const explainedVarianceRatio1 = Math.max(0, lambda1) / totalPosVar;
+  const explainedVarianceRatio2 = Math.max(0, lambda2) / totalPosVar;
+
+  return {
+    lambda1,
+    lambda2,
+    eigvec1,
+    eigvec2,
+    explainedVarianceRatio1,
+    explainedVarianceRatio2,
+    trace,
+    determinant,
+  };
+}
+
+// ============================================================================
+// LESSON 0.7: PARTIAL DERIVATIVES, JACOBIAN & HESSIAN
+// ============================================================================
+
+export type HessianCurvatureType = 'minimum' | 'maximum' | 'saddle' | 'degenerate';
+
+export interface JacobianHessianResult {
+  fVec: [number, number];
+  jacobian: Mat2x2;
+  jacobianDet: number;
+  fScalar: number;
+  grad: [number, number];
+  hessian: Mat2x2;
+  hessianEigenvalues: [number, number];
+  curvatureType: HessianCurvatureType;
+  conditionNumber: number;
+}
+
+/**
+ * Evaluates:
+ * 1) Vector-valued map F(x, y) = [x^2 + y, sin(x) * y] and its exact 2x2 Jacobian:
+ *      J = [[2x, 1], [cos(x)*y, sin(x)]]
+ * 2) Quadratic scalar surface f(x, y) = a*x^2 + b*x*y + c*y^2, its gradient,
+ *    exact Hessian H = [[2a, b], [b, 2c]], Hessian eigenvalues, and curvature classification.
+ */
+export function computeJacobianAndHessian(
+  x: number,
+  y: number,
+  a: number = 1.5,
+  b: number = 0.8,
+  c: number = 0.5
+): JacobianHessianResult {
+  const fVec: [number, number] = [x * x + y, Math.sin(x) * y];
+  const jacobian: Mat2x2 = [
+    [2 * x, 1],
+    [Math.cos(x) * y, Math.sin(x)],
+  ];
+  const jacobianDet =
+    jacobian[0][0] * jacobian[1][1] - jacobian[0][1] * jacobian[1][0];
+
+  const fScalar = a * x * x + b * x * y + c * y * y;
+  const grad: [number, number] = [2 * a * x + b * y, b * x + 2 * c * y];
+  const hessian: Mat2x2 = [
+    [2 * a, b],
+    [b, 2 * c],
+  ];
+
+  const eigen = computeSymmetric2x2EigenPCA(2 * a, 2 * c, b);
+  const l1 = eigen.lambda1;
+  const l2 = eigen.lambda2;
+
+  let curvatureType: HessianCurvatureType;
+  if (l1 > 1e-6 && l2 > 1e-6) {
+    curvatureType = 'minimum';
+  } else if (l1 < -1e-6 && l2 < -1e-6) {
+    curvatureType = 'maximum';
+  } else if (l1 * l2 < -1e-6) {
+    curvatureType = 'saddle';
+  } else {
+    curvatureType = 'degenerate';
+  }
+
+  const absMin = Math.min(Math.abs(l1), Math.abs(l2));
+  const absMax = Math.max(Math.abs(l1), Math.abs(l2));
+  const conditionNumber = absMin > 1e-6 ? absMax / absMin : Infinity;
+
+  return {
+    fVec,
+    jacobian,
+    jacobianDet,
+    fScalar,
+    grad,
+    hessian,
+    hessianEigenvalues: [l1, l2],
+    curvatureType,
+    conditionNumber,
+  };
+}
+
+// ============================================================================
+// LESSON 0.8: CONDITIONAL PROBABILITY, BAYES' THEOREM, COVARIANCE & DISTRIBUTIONS
+// ============================================================================
+
+export interface BayesResult {
+  priorH: number;
+  pEvidence: number;
+  posteriorHgivenE: number;
+  jointTruePositive: number;
+  jointFalsePositive: number;
+  bayesFactor: number;
+}
+
+export function computeBayesTheorem(
+  priorH: number,
+  sensitivityEgivenH: number,
+  falsePositiveEgivenNotH: number
+): BayesResult {
+  const pH = Math.min(1 - 1e-6, Math.max(1e-6, priorH));
+  const pE_H = Math.min(1, Math.max(0, sensitivityEgivenH));
+  const pE_notH = Math.min(1, Math.max(0, falsePositiveEgivenNotH));
+
+  const jointTruePositive = pE_H * pH;
+  const jointFalsePositive = pE_notH * (1 - pH);
+  const pEvidence = Math.max(EPS, jointTruePositive + jointFalsePositive);
+  const posteriorHgivenE = jointTruePositive / pEvidence;
+  const bayesFactor = pE_notH > EPS ? pE_H / pE_notH : Infinity;
+
+  return {
+    priorH: pH,
+    pEvidence,
+    posteriorHgivenE,
+    jointTruePositive,
+    jointFalsePositive,
+    bayesFactor,
+  };
+}
+
+export interface CovarianceCorrelationResult {
+  meanX: number;
+  meanY: number;
+  covariance: number;
+  stdX: number;
+  stdY: number;
+  correlationR: number;
+}
+
+export function computeCovarianceAndCorrelation(
+  xs: number[],
+  ys: number[]
+): CovarianceCorrelationResult {
+  const n = Math.min(xs.length, ys.length);
+  if (n === 0) {
+    return { meanX: 0, meanY: 0, covariance: 0, stdX: 0, stdY: 0, correlationR: 0 };
+  }
+  const meanX = xs.slice(0, n).reduce((a, b) => a + b, 0) / n;
+  const meanY = ys.slice(0, n).reduce((a, b) => a + b, 0) / n;
+
+  let covSum = 0;
+  let varXSum = 0;
+  let varYSum = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = xs[i] - meanX;
+    const dy = ys[i] - meanY;
+    covSum += dx * dy;
+    varXSum += dx * dx;
+    varYSum += dy * dy;
+  }
+
+  const covariance = covSum / n;
+  const stdX = Math.sqrt(varXSum / n);
+  const stdY = Math.sqrt(varYSum / n);
+  const denom = stdX * stdY;
+  const correlationR = denom > EPS ? Math.max(-1, Math.min(1, covariance / denom)) : 0;
+
+  return { meanX, meanY, covariance, stdX, stdY, correlationR };
+}
+
+function binomialCoeff(n: number, k: number): number {
+  if (k < 0 || k > n) return 0;
+  let res = 1;
+  for (let i = 1; i <= k; i++) {
+    res = (res * (n - i + 1)) / i;
+  }
+  return res;
+}
+
+export function computeBinomialPmf(n: number, p: number): number[] {
+  const clampedN = Math.max(1, Math.min(20, Math.round(n)));
+  const clampedP = Math.max(0, Math.min(1, p));
+  const probs: number[] = [];
+  for (let k = 0; k <= clampedN; k++) {
+    probs.push(
+      binomialCoeff(clampedN, k) *
+        Math.pow(clampedP, k) *
+        Math.pow(1 - clampedP, clampedN - k)
+    );
+  }
+  return probs;
+}
+
+export function computeUniformPdf(x: number, a: number, b: number): {
+  pdf: number;
+  mean: number;
+  variance: number;
+} {
+  const low = Math.min(a, b);
+  const high = Math.max(a, b) > low + 1e-6 ? Math.max(a, b) : low + 1;
+  const width = high - low;
+  const pdf = x >= low && x <= high ? 1 / width : 0;
+  return {
+    pdf,
+    mean: 0.5 * (low + high),
+    variance: (width * width) / 12,
+  };
+}

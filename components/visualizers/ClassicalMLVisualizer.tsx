@@ -117,6 +117,56 @@ export function ClassicalMLVisualizer({
         {activeTab === 'linreg' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 space-y-4">
+              {/* Live OLS Scatter + Residuals SVG */}
+              <div className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3">
+                <div className="flex justify-between items-center text-[11px] font-mono-num text-[#625956] mb-1.5">
+                  <span>Auto-Rickshaw Scatter, Fitted Line &amp; Vertical Residuals (yᵢ - ŷᵢ)</span>
+                  <span className="text-[#166534] font-semibold">Dashed Green = True OLS (15x + 30)</span>
+                </div>
+                <svg viewBox="0 0 460 210" className="w-full h-52 bg-white rounded border border-[#E8E2D9]">
+                  {(() => {
+                    const toX = (d: number) => 42 + (d / 9) * 395;
+                    const toY = (fare: number) => 185 - ((fare - 20) / 150) * 165;
+                    const y0Fit = slopeW * 0 + interceptB;
+                    const y9Fit = slopeW * 9 + interceptB;
+                    const y0Ols = linRes.wOpt * 0 + linRes.bOpt;
+                    const y9Ols = linRes.wOpt * 9 + linRes.bOpt;
+                    return (
+                      <>
+                        {/* Axes */}
+                        <line x1="42" y1="185" x2="437" y2="185" stroke="#D6CCC0" strokeWidth="1.5" />
+                        <line x1="42" y1="15" x2="42" y2="185" stroke="#D6CCC0" strokeWidth="1.5" />
+                        <text x="240" y="203" textAnchor="middle" fontSize="10" fill="#625956">Distance x (km)</text>
+                        <text x="16" y="100" textAnchor="middle" fontSize="10" fill="#625956" transform="rotate(-90 16 100)">Fare ₹</text>
+                        {/* Closed-form OLS reference */}
+                        <line x1={toX(0)} y1={toY(y0Ols)} x2={toX(9)} y2={toY(y9Ols)} stroke="#166534" strokeWidth="1.5" strokeDasharray="4,3" opacity="0.6" />
+                        {/* Current fitted line */}
+                        <line x1={toX(0)} y1={toY(y0Fit)} x2={toX(9)} y2={toY(y9Fit)} stroke="#7A1C30" strokeWidth="2.5" />
+                        {/* Residuals and data points */}
+                        {autoDistances.map((d, i) => {
+                          const yTrue = autoFares[i];
+                          const yPred = slopeW * d + interceptB;
+                          return (
+                            <g key={i}>
+                              <line
+                                x1={toX(d)}
+                                y1={toY(yTrue)}
+                                x2={toX(d)}
+                                y2={toY(yPred)}
+                                stroke="#C28E38"
+                                strokeWidth="2"
+                                strokeDasharray="2,2"
+                              />
+                              <circle cx={toX(d)} cy={toY(yTrue)} r="5" fill="#1D1819" stroke="#FFFFFF" strokeWidth="1.5" />
+                            </g>
+                          );
+                        })}
+                      </>
+                    );
+                  })()}
+                </svg>
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono-num">
                 <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
                   <div className="text-[#786970]">MSE Loss</div>
@@ -202,6 +252,46 @@ export function ClassicalMLVisualizer({
         {activeTab === 'logreg' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 space-y-4">
+              {/* Live Sigmoid S-Curve & Threshold SVG */}
+              <div className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3">
+                <div className="flex justify-between items-center text-[11px] font-mono-num text-[#625956] mb-1.5">
+                  <span>Logistic Sigmoid Curve σ(wx - 1) &amp; Decision Threshold τ</span>
+                  <span className="text-[#166534] font-semibold">τ = {(thresholdTau * 100).toFixed(0)}%</span>
+                </div>
+                <svg viewBox="0 0 460 190" className="w-full h-48 bg-white rounded border border-[#E8E2D9]">
+                  {(() => {
+                    const toX = (x: number) => 40 + ((x + 2) / 6) * 395;
+                    const toY = (p: number) => 165 - p * 140;
+                    const pts: string[] = [];
+                    for (let i = 0; i <= 60; i++) {
+                      const x = -2 + (i / 60) * 6;
+                      const z = logWeightW * x - 1.0;
+                      const p = 1 / (1 + Math.exp(-z));
+                      pts.push(`${toX(x).toFixed(1)},${toY(p).toFixed(1)}`);
+                    }
+                    const tauY = toY(thresholdTau);
+                    const ptX = toX(rainLevelX);
+                    const ptY = toY(logRes.probability);
+                    return (
+                      <>
+                        <line x1="40" y1="165" x2="435" y2="165" stroke="#D6CCC0" strokeWidth="1.5" />
+                        <line x1="40" y1="20" x2="40" y2="165" stroke="#D6CCC0" strokeWidth="1.5" />
+                        <line x1="40" y1={tauY} x2="435" y2={tauY} stroke="#166534" strokeWidth="1.5" strokeDasharray="4,3" />
+                        <text x="430" y={tauY - 4} textAnchor="end" fontSize="9" fontWeight="bold" fill="#166534">
+                          Threshold τ = {thresholdTau.toFixed(2)}
+                        </text>
+                        <polyline points={pts.join(' ')} fill="none" stroke="#7A1C30" strokeWidth="2.5" />
+                        <circle cx={ptX} cy={ptY} r="6" fill="#7A1C30" stroke="#FFFFFF" strokeWidth="2" />
+                        <text x={Math.min(390, Math.max(85, ptX))} y={Math.max(20, ptY - 10)} textAnchor="middle" fontSize="9" fontWeight="bold" fill="#7A1C30">
+                          p = {(logRes.probability * 100).toFixed(1)}%
+                        </text>
+                        <text x="240" y="182" textAnchor="middle" fontSize="10" fill="#625956">Rain Intensity x (-2 to +4)</text>
+                      </>
+                    );
+                  })()}
+                </svg>
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono-num">
                 <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
                   <div className="text-[#786970]">Log-Odds z = wx+b</div>
@@ -295,6 +385,47 @@ export function ClassicalMLVisualizer({
         {activeTab === 'biasvar' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 space-y-4">
+              {/* Live U-Shaped Bias-Variance Curve SVG */}
+              <div className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3">
+                <div className="flex justify-between items-center text-[11px] font-mono-num text-[#625956] mb-1.5">
+                  <span>U-Shaped Bias-Variance Tradeoff Across Polynomial Degree (d = 1..9)</span>
+                  <span className="text-[#7A1C30] font-semibold">Current d = {polyDegree.toFixed(1)}</span>
+                </div>
+                <svg viewBox="0 0 460 190" className="w-full h-48 bg-white rounded border border-[#E8E2D9]">
+                  {(() => {
+                    const toX = (d: number) => 40 + ((d - 1) / 8) * 395;
+                    const maxErr = 2.2;
+                    const toY = (e: number) => 165 - Math.min(1, e / maxErr) * 140;
+                    const biasPts: string[] = [];
+                    const varPts: string[] = [];
+                    const totPts: string[] = [];
+                    for (let i = 0; i <= 32; i++) {
+                      const d = 1 + (i / 32) * 8;
+                      const res = computeBiasVarianceDecomposition(d, noiseStd);
+                      biasPts.push(`${toX(d).toFixed(1)},${toY(res.biasSquared).toFixed(1)}`);
+                      varPts.push(`${toX(d).toFixed(1)},${toY(res.variance).toFixed(1)}`);
+                      totPts.push(`${toX(d).toFixed(1)},${toY(res.expectedTestError).toFixed(1)}`);
+                    }
+                    const curX = toX(polyDegree);
+                    return (
+                      <>
+                        <line x1="40" y1="165" x2="435" y2="165" stroke="#D6CCC0" strokeWidth="1.5" />
+                        <line x1="40" y1="20" x2="40" y2="165" stroke="#D6CCC0" strokeWidth="1.5" />
+                        <line x1={curX} y1="20" x2={curX} y2="165" stroke="#1D1819" strokeWidth="1.5" strokeDasharray="3,3" />
+                        <polyline points={biasPts.join(' ')} fill="none" stroke="#7A1C30" strokeWidth="2" strokeDasharray="4,2" />
+                        <polyline points={varPts.join(' ')} fill="none" stroke="#C28E38" strokeWidth="2" strokeDasharray="4,2" />
+                        <polyline points={totPts.join(' ')} fill="none" stroke="#1D1819" strokeWidth="2.5" />
+                        <circle cx={curX} cy={toY(bvRes.expectedTestError)} r="5.5" fill="#1D1819" stroke="#FFFFFF" strokeWidth="1.5" />
+                        <text x="60" y="34" fontSize="9" fontWeight="bold" fill="#7A1C30">--- Bias²</text>
+                        <text x="115" y="34" fontSize="9" fontWeight="bold" fill="#C28E38">--- Variance</text>
+                        <text x="180" y="34" fontSize="9" fontWeight="bold" fill="#1D1819">━━ Total Error</text>
+                        <text x="240" y="182" textAnchor="middle" fontSize="10" fill="#625956">Model Complexity / Degree (d)</text>
+                      </>
+                    );
+                  })()}
+                </svg>
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono-num">
                 <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
                   <div className="text-[#786970]">Bias² (Underfit)</div>
@@ -370,6 +501,33 @@ export function ClassicalMLVisualizer({
         {activeTab === 'trees' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 space-y-4">
+              {/* Live Decision Tree Split & Purity Diagram SVG */}
+              <div className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3">
+                <div className="flex justify-between items-center text-[11px] font-mono-num text-[#625956] mb-1.5">
+                  <span>CART Binary Split Tree &amp; Child Node Class Purity</span>
+                  <span className="text-[#7A1C30] font-semibold">ΔG = +{treeRes.giniGain.toFixed(3)}</span>
+                </div>
+                <svg viewBox="0 0 460 175" className="w-full h-44 bg-white rounded border border-[#E8E2D9]">
+                  {/* Edges */}
+                  <line x1="230" y1="54" x2="120" y2="105" stroke="#968A86" strokeWidth="2" />
+                  <line x1="230" y1="54" x2="340" y2="105" stroke="#968A86" strokeWidth="2" />
+                  {/* Root Node */}
+                  <rect x="155" y="14" width="150" height="42" rx="6" fill="#FAF5EE" stroke="#C28E38" strokeWidth="1.5" />
+                  <text x="230" y="31" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1D1819">Root: 10+ / 10-</text>
+                  <text x="230" y="46" textAnchor="middle" fontSize="9" fontFamily="monospace" fill="#7A1C30">Gini = {treeRes.parentGini.toFixed(3)}</text>
+                  {/* Left Child */}
+                  <rect x="45" y="105" width="150" height="52" rx="6" fill="#F0FDF4" stroke="#166534" strokeWidth="1.5" />
+                  <text x="120" y="123" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#166534">Left: {leftPos}+ / {leftNeg}-</text>
+                  <rect x="65" y="133" width="110" height="8" rx="2" fill="#E8E2D9" />
+                  <rect x="65" y="133" width={(leftPos / (leftPos + leftNeg)) * 110} height="8" rx="2" fill="#166534" />
+                  {/* Right Child */}
+                  <rect x="265" y="105" width="150" height="52" rx="6" fill="#FDF2F2" stroke="#7A1C30" strokeWidth="1.5" />
+                  <text x="340" y="123" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#7A1C30">Right: {10 - leftPos}+ / {10 - leftNeg}-</text>
+                  <rect x="285" y="133" width="110" height="8" rx="2" fill="#E8E2D9" />
+                  <rect x="285" y="133" width={((10 - leftPos) / (20 - leftPos - leftNeg)) * 110} height="8" rx="2" fill="#7A1C30" />
+                </svg>
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono-num">
                 <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
                   <div className="text-[#786970]">Parent Gini (10+,10-)</div>
@@ -445,6 +603,56 @@ export function ClassicalMLVisualizer({
         {activeTab === 'kmeans-pca' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 space-y-4">
+              {/* Live 2D k-Means Clusters + PCA Axes SVG */}
+              <div className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3">
+                <div className="flex justify-between items-center text-[11px] font-mono-num text-[#625956] mb-1.5">
+                  <span>2D Cluster Assignment &amp; Centroids (★) + Top PCA Axis</span>
+                  <span className="text-[#166534] font-semibold">PC1 captures {(kmPcaRes.explainedVarianceRatio1 * 100).toFixed(1)}% var</span>
+                </div>
+                <svg viewBox="0 0 460 200" className="w-full h-48 bg-white rounded border border-[#E8E2D9]">
+                  {(() => {
+                    const toX = (x: number) => 230 + x * 62;
+                    const toY = (y: number) => 100 - y * 36;
+                    const c0: [number, number] = [c0X, -1.3];
+                    const c1: [number, number] = [c1X, 1.5];
+                    return (
+                      <>
+                        <line x1="230" y1="10" x2="230" y2="190" stroke="#E8E2D9" strokeWidth="1" />
+                        <line x1="20" y1="100" x2="440" y2="100" stroke="#E8E2D9" strokeWidth="1" />
+                        {/* PC1 Principal Axis */}
+                        <line
+                          x1={toX(-kmPcaRes.principalAxis1[0] * 2.8)}
+                          y1={toY(-kmPcaRes.principalAxis1[1] * 2.8)}
+                          x2={toX(kmPcaRes.principalAxis1[0] * 2.8)}
+                          y2={toY(kmPcaRes.principalAxis1[1] * 2.8)}
+                          stroke="#166534"
+                          strokeWidth="2"
+                          strokeDasharray="5,3"
+                        />
+                        {/* Guest points & assignment lines */}
+                        {sampleGuests.map(([gx, gy], idx) => {
+                          const d0 = (gx - c0[0]) ** 2 + (gy - c0[1]) ** 2;
+                          const d1 = (gx - c1[0]) ** 2 + (gy - c1[1]) ** 2;
+                          const target = d0 <= d1 ? c0 : c1;
+                          const col = d0 <= d1 ? '#7A1C30' : '#C28E38';
+                          return (
+                            <g key={idx}>
+                              <line x1={toX(gx)} y1={toY(gy)} x2={toX(target[0])} y2={toY(target[1])} stroke={col} strokeWidth="1.5" strokeDasharray="3,2" opacity="0.7" />
+                              <circle cx={toX(gx)} cy={toY(gy)} r="5" fill={col} stroke="#FFFFFF" strokeWidth="1.5" />
+                            </g>
+                          );
+                        })}
+                        {/* Centroids */}
+                        <circle cx={toX(c0[0])} cy={toY(c0[1])} r="7" fill="#7A1C30" stroke="#1D1819" strokeWidth="2" />
+                        <text x={toX(c0[0])} y={toY(c0[1]) + 17} textAnchor="middle" fontSize="9" fontWeight="bold" fill="#7A1C30">μ₁</text>
+                        <circle cx={toX(c1[0])} cy={toY(c1[1])} r="7" fill="#C28E38" stroke="#1D1819" strokeWidth="2" />
+                        <text x={toX(c1[0])} y={toY(c1[1]) - 11} textAnchor="middle" fontSize="9" fontWeight="bold" fill="#C28E38">μ₂</text>
+                      </>
+                    );
+                  })()}
+                </svg>
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono-num">
                 <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
                   <div className="text-[#786970]">k-Means Inertia J</div>

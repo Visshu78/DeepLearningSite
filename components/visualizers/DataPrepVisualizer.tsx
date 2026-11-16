@@ -12,13 +12,9 @@ import {
   computeWeightedBCE,
   generateSmotePoint,
   computeCyclicalEncoding,
-  evaluateMissingDataStrategies,
   compareEncodingExplosion,
-  simulateLeakageModelScore,
   type ImputationStrategy,
   type ScalingMethod,
-  type LabNumericStrategy,
-  type LabCategoricalStrategy,
 } from '@/lib/math/dataPrep';
 import { AlertTriangle, CheckCircle2, Database } from 'lucide-react';
 
@@ -66,12 +62,6 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
       ),
     [imputationResult, iqrMultiplier]
   );
-  const [labIncomeStrategy, setLabIncomeStrategy] = useState<LabNumericStrategy>('median_plus_flag');
-  const [labCityStrategy, setLabCityStrategy] = useState<LabCategoricalStrategy>('unknown');
-  const missingLabResult = useMemo(
-    () => evaluateMissingDataStrategies(labIncomeStrategy, labCityStrategy),
-    [labIncomeStrategy, labCityStrategy]
-  );
 
   // 9.3 Scaling State
   const [scalingMethod, setScalingMethod] = useState<ScalingMethod>('zscore');
@@ -88,7 +78,6 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
   // 9.4 Categorical Encoding State
   const [smoothingM, setSmoothingM] = useState<number>(5);
   const [encodingCardinalityK, setEncodingCardinalityK] = useState<number>(500);
-  const [targetEncodingOutOfFold, setTargetEncodingOutOfFold] = useState<boolean>(true);
   const encodingExplosion = useMemo(
     () => compareEncodingExplosion(encodingCardinalityK, 32),
     [encodingCardinalityK]
@@ -120,10 +109,6 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
   const testMarks = useMemo(() => [58, 64, testOutlierMagnitude], [testOutlierMagnitude]);
   const leakageResult = useMemo(
     () => compareCleanVsLeakedScaling(trainMarks, testMarks),
-    [trainMarks, testMarks]
-  );
-  const leakageScoreResult = useMemo(
-    () => simulateLeakageModelScore(trainMarks, testMarks),
     [trainMarks, testMarks]
   );
 
@@ -324,6 +309,56 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
         {activeTab === 'missing-outliers' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 space-y-4">
+              {/* Visual Tukey IQR Fence & Winsorization Plot */}
+              <div className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3">
+                <div className="flex justify-between items-center text-[11px] font-mono-num text-[#625956] mb-1.5">
+                  <span>Tukey IQR Fence &amp; Winsorization Strip (₹0k – ₹150k)</span>
+                  <span className="text-[#7A1C30] font-semibold">Upper Fence = ₹{outlierResult.upperFence.toFixed(1)}k</span>
+                </div>
+                <svg viewBox="0 0 500 95" className="w-full h-24 bg-white rounded border border-[#E8E2D9]">
+                  {(() => {
+                    const imputedStats = computeSummaryStats(imputationResult.rows.map(r => r.imputed));
+                    const toX = (v: number) => 24 + (Math.min(150, Math.max(0, v)) / 150) * 452;
+                    const fenceX = toX(outlierResult.upperFence);
+                    const q1X = toX(imputedStats.q1);
+                    const q3X = toX(imputedStats.q3);
+                    return (
+                      <>
+                        <line x1="24" y1="55" x2="476" y2="55" stroke="#D6CCC0" strokeWidth="1.5" />
+                        <rect x={q1X} y="38" width={Math.max(4, q3X - q1X)} height="34" rx="3" fill="#FAF2E6" stroke="#C28E38" strokeWidth="1.5" />
+                        <line x1={fenceX} y1="15" x2={fenceX} y2="80" stroke="#991B1B" strokeWidth="2" strokeDasharray="4,2" />
+                        <text x={Math.min(440, fenceX)} y="12" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#991B1B">
+                          Fence ({outlierResult.upperFence.toFixed(1)}k)
+                        </text>
+                        {imputationResult.rows.map((row, idx) => {
+                          const outPt = outlierResult.points[idx];
+                          const rawX = toX(row.imputed);
+                          const clipX = toX(outPt.clippedIqrValue);
+                          return (
+                            <g key={idx}>
+                              {outPt.isIqrOutlier && (
+                                <line x1={rawX} y1="55" x2={clipX} y2="55" stroke="#7A1C30" strokeWidth="2" strokeDasharray="2,2" />
+                              )}
+                              <circle
+                                cx={rawX}
+                                cy={row.wasMissing ? 42 : 55}
+                                r={outPt.isIqrOutlier ? 5.5 : 4}
+                                fill={row.wasMissing ? '#C28E38' : outPt.isIqrOutlier ? '#991B1B' : '#1D1819'}
+                                stroke="#FFFFFF"
+                                strokeWidth="1"
+                              />
+                              {outPt.isIqrOutlier && (
+                                <circle cx={clipX} cy="55" r="4.5" fill="#166534" stroke="#FFFFFF" strokeWidth="1" />
+                              )}
+                            </g>
+                          );
+                        })}
+                      </>
+                    );
+                  })()}
+                </svg>
+              </div>
+
               <div className="overflow-x-auto border border-[#E8E2D9] rounded-lg">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
@@ -436,97 +471,6 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
                 </div>
               </div>
             </div>
-
-            {/* Interactive Per-Column Strategy & Accuracy Lab */}
-            <div className="lg:col-span-12 mt-2 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-4 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#1D1819]">
-                    Per-Column Missing-Data Lab: Credit Approval Dataset
-                  </h4>
-                  <p className="text-xs text-[#54484E]">
-                    Pick an imputation strategy for numeric <code>income</code> and categorical <code>city</code>, then watch retained training rows and held-out test accuracy change.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 font-mono-num text-xs">
-                  <span className="px-2.5 py-1 rounded bg-white border border-[#E8E2D9]">
-                    Retained Rows: <strong>{missingLabResult.retainedTrainRows}/{missingLabResult.totalTrainRows}</strong>
-                  </span>
-                  <span className="px-2.5 py-1 rounded bg-[#7A1C30] text-white font-bold">
-                    Test Accuracy: {missingLabResult.testAccuracyPct.toFixed(1)}% ({missingLabResult.correctCount}/{missingLabResult.totalTestRows})
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white border border-[#E8E2D9] rounded-lg p-3 space-y-2">
-                  <label className="text-xs font-bold text-[#1D1819] block">
-                    Column 1: <code>income</code> (Numeric, MNAR when missing)
-                  </label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {(
-                      [
-                        { id: 'drop_rows', label: 'Drop Rows' },
-                        { id: 'mean', label: 'Mean Fill' },
-                        { id: 'median', label: 'Median Fill' },
-                        { id: 'median_plus_flag', label: 'Median + Flag' },
-                      ] as const
-                    ).map(opt => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setLabIncomeStrategy(opt.id)}
-                        className={`px-2 py-1.5 rounded text-xs font-medium border transition-colors ${
-                          labIncomeStrategy === opt.id
-                            ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
-                            : 'bg-[#FAF8F5] text-[#4A3B3E] border-[#E8E2D9] hover:border-[#7A1C30]'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="text-[11px] font-mono-num text-[#54484E]">
-                    Fill value: {missingLabResult.fillIncome === null ? 'Dropped' : `₹${missingLabResult.fillIncome.toFixed(1)}k`}
-                  </div>
-                </div>
-
-                <div className="bg-white border border-[#E8E2D9] rounded-lg p-3 space-y-2">
-                  <label className="text-xs font-bold text-[#1D1819] block">
-                    Column 2: <code>city</code> (Categorical)
-                  </label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {(
-                      [
-                        { id: 'drop_rows', label: 'Drop Rows' },
-                        { id: 'mode', label: 'Most Frequent' },
-                        { id: 'unknown', label: '"Unknown"' },
-                      ] as const
-                    ).map(opt => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setLabCityStrategy(opt.id)}
-                        className={`px-2 py-1.5 rounded text-xs font-medium border transition-colors ${
-                          labCityStrategy === opt.id
-                            ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
-                            : 'bg-[#FAF8F5] text-[#4A3B3E] border-[#E8E2D9] hover:border-[#7A1C30]'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="text-[11px] font-mono-num text-[#54484E]">
-                    Fill value: {missingLabResult.fillCity}
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-xs text-[#4A3B3E] bg-white border border-[#E8E2D9] rounded px-3 py-2">
-                <strong>Diagnostic:</strong> {missingLabResult.diagnosticNote}
-              </div>
-            </div>
           </div>
         )}
 
@@ -551,6 +495,47 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Visual 1D Compression Strip */}
+                <div className="pt-1">
+                  <div className="text-[11px] text-[#625956] mb-1">
+                    Normalized Coordinate Strip (6 normal rooms in dark/gold vs outlier x₇ in wine):
+                  </div>
+                  <svg viewBox="0 0 500 72" className="w-full h-18 bg-white rounded border border-[#E8E2D9]">
+                    {(() => {
+                      const minS = Math.min(...scaledRents.scaled);
+                      const maxS = Math.max(...scaledRents.scaled);
+                      const span = Math.max(1e-6, maxS - minS);
+                      const toX = (v: number) => 28 + ((v - minS) / span) * 444;
+                      return (
+                        <>
+                          <line x1="28" y1="36" x2="472" y2="36" stroke="#D6CCC0" strokeWidth="1.5" />
+                          {scaledRents.scaled.map((val, i) => {
+                            const isOutlier = i === scaledRents.scaled.length - 1;
+                            const cx = toX(val);
+                            return (
+                              <g key={i}>
+                                <circle
+                                  cx={cx}
+                                  cy="36"
+                                  r={isOutlier ? 6.5 : 4.5}
+                                  fill={isOutlier ? '#7A1C30' : '#C28E38'}
+                                  stroke="#FFFFFF"
+                                  strokeWidth="1.5"
+                                />
+                                {(i === 0 || i === 5 || isOutlier) && (
+                                  <text x={cx} y={isOutlier ? 20 : 58} textAnchor="middle" fontSize="9" fontFamily="monospace" fill={isOutlier ? '#7A1C30' : '#4A3B3E'}>
+                                    {val.toFixed(2)}
+                                  </text>
+                                )}
+                              </g>
+                            );
+                          })}
+                        </>
+                      );
+                    })()}
+                  </svg>
                 </div>
               </div>
 
@@ -670,7 +655,7 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
                 </p>
               </div>
 
-              {/* Cardinality Explosion & CV Leakage Panel */}
+              {/* Cardinality Explosion Bar Comparison */}
               <div className="bg-white border border-[#E8E2D9] rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-center text-xs">
                   <label htmlFor="cardinality-k-slider" className="font-bold text-[#1D1819]">
@@ -688,47 +673,27 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
                   onChange={e => setEncodingCardinalityK(parseInt(e.target.value, 10))}
                   className="w-full accent-[#7A1C30]"
                 />
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono-num">
-                  <div className="p-2 rounded bg-[#FDF2F2] border border-[#E8C5C5]">
-                    <div className="text-[10px] text-[#7A1C30]">One-Hot Columns</div>
-                    <strong className="text-sm text-[#7A1C30]">{encodingExplosion.oneHotColumns.toLocaleString()}</strong>
-                  </div>
-                  <div className="p-2 rounded bg-[#FAF8F5] border border-[#E8E2D9]">
-                    <div className="text-[10px] text-[#54484E]">Binary Encoding</div>
-                    <strong className="text-sm text-[#1D1819]">{encodingExplosion.binaryColumns} cols</strong>
-                  </div>
-                  <div className="p-2 rounded bg-[#FAF8F5] border border-[#E8E2D9]">
-                    <div className="text-[10px] text-[#54484E]">Hashing Trick</div>
-                    <strong className="text-sm text-[#1D1819]">{encodingExplosion.hashingColumns} cols</strong>
-                  </div>
-                  <div className="p-2 rounded bg-[#FAF8F5] border border-[#E8E2D9]">
-                    <div className="text-[10px] text-[#54484E]">Target Encoding</div>
-                    <strong className="text-sm text-[#1D1819]">{encodingExplosion.targetEncodingColumns} col</strong>
-                  </div>
-                </div>
-                <div className="text-[11px] text-[#54484E] font-mono-num">
-                  Binary compression ratio: <strong>{encodingExplosion.compressionRatio.toFixed(1)}×</strong> fewer columns than One-Hot.
-                </div>
-
-                <div className="pt-2 border-t border-[#EAE2D5] space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => setTargetEncodingOutOfFold(v => !v)}
-                    className={`w-full px-3 py-1.5 rounded text-xs font-semibold border transition-colors ${
-                      targetEncodingOutOfFold
-                        ? 'bg-[#EEF5F0] text-[#1D4E35] border-[#B6D4C2]'
-                        : 'bg-[#FDF2F2] text-[#7A1C30] border-[#E8C5C5]'
-                    }`}
-                  >
-                    {targetEncodingOutOfFold
-                      ? 'Mode: Out-of-Fold CV Target Encoding (Safe)'
-                      : 'Mode: In-Fold Target Encoding (Leakage!)'}
-                  </button>
-                  {!targetEncodingOutOfFold && (
-                    <div className="p-2.5 rounded bg-[#FDF2F2] border border-[#E8C5C5] text-[11px] text-[#7A1C30]">
-                      <strong>CV Leakage Warning:</strong> Computing target means on the same fold that trains the model leaks each row&apos;s own label into its feature, inflating CV score and failing on unseen data!
-                    </div>
-                  )}
+                <div className="space-y-1.5 pt-1 text-[10px] font-mono-num">
+                  {[
+                    { label: 'One-Hot', count: encodingExplosion.oneHotColumns, color: 'bg-[#7A1C30]' },
+                    { label: 'Hashing', count: encodingExplosion.hashingColumns, color: 'bg-[#C28E38]' },
+                    { label: 'Binary', count: encodingExplosion.binaryColumns, color: 'bg-[#1D4E35]' },
+                    { label: 'Target', count: encodingExplosion.targetEncodingColumns, color: 'bg-[#1D1819]' },
+                  ].map(bar => {
+                    const widthPct = Math.max(
+                      3,
+                      (Math.log10(Math.max(1, bar.count)) / Math.log10(Math.max(10, encodingExplosion.oneHotColumns))) * 100
+                    );
+                    return (
+                      <div key={bar.label} className="flex items-center gap-2">
+                        <span className="w-14 text-[#54484E]">{bar.label}</span>
+                        <div className="flex-1 h-2.5 bg-[#F4EFEB] rounded overflow-hidden">
+                          <div style={{ width: `${widthPct}%` }} className={`h-full ${bar.color} transition-all`} />
+                        </div>
+                        <span className="w-12 text-right font-bold">{bar.count.toLocaleString()}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -772,24 +737,37 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
                 </strong>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono-num">
-                <div className="p-3 rounded-lg bg-[#FDF2F2] border border-[#E8C5C5]">
-                  <div className="text-[10px] uppercase tracking-wider text-[#7A1C30]">Leaked Validation</div>
-                  <strong className="text-base text-[#7A1C30]">{leakageScoreResult.leakedValAccuracyPct.toFixed(1)}%</strong>
-                  <div className="text-[10px] text-[#54484E] mt-0.5">Fake high score (saw test stats)</div>
+              {/* Visual Distribution Pull Diagram */}
+              <div className="bg-white border border-[#E8E2D9] rounded-lg p-3">
+                <div className="text-[11px] font-bold text-[#1D1819] mb-1">
+                  How Pre-Split Leakage Pulls the Scaler&apos;s Mean (μ) Toward the Test Outlier
                 </div>
-                <div className="p-3 rounded-lg bg-[#EEF5F0] border border-[#B6D4C2]">
-                  <div className="text-[10px] uppercase tracking-wider text-[#1D4E35]">Clean Validation</div>
-                  <strong className="text-base text-[#1D4E35]">{leakageScoreResult.cleanValAccuracyPct.toFixed(1)}%</strong>
-                  <div className="text-[10px] text-[#54484E] mt-0.5">Honest train-only fit</div>
-                </div>
-                <div className="p-3 rounded-lg bg-[#FAF8F5] border border-[#E8E2D9]">
-                  <div className="text-[10px] uppercase tracking-wider text-[#54484E]">Real Production Score</div>
-                  <strong className="text-base text-[#1D1819]">{leakageScoreResult.realProdAccuracyPct.toFixed(1)}%</strong>
-                  <div className="text-[10px] text-[#7A1C30] mt-0.5">
-                    Inflation gap: +{leakageScoreResult.inflationGapPct.toFixed(1)}%
-                  </div>
-                </div>
+                <svg viewBox="0 0 500 84" className="w-full h-20 bg-[#FAF8F5] rounded border border-[#E8E2D9]">
+                  {(() => {
+                    const toX = (v: number) => 24 + (Math.min(300, Math.max(40, v)) - 40) / 260 * 452;
+                    const cleanX = toX(leakageResult.trainMeanClean);
+                    const leakX = toX(leakageResult.fullMeanLeaked);
+                    const testX = toX(testOutlierMagnitude);
+                    return (
+                      <>
+                        <line x1="24" y1="45" x2="476" y2="45" stroke="#D6CCC0" strokeWidth="1.5" />
+                        <line x1={cleanX} y1="45" x2={leakX} y2="45" stroke="#991B1B" strokeWidth="3" />
+                        <circle cx={cleanX} cy="45" r="5" fill="#166534" />
+                        <text x={cleanX} y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#166534">
+                          Clean μ={leakageResult.trainMeanClean.toFixed(1)}
+                        </text>
+                        <circle cx={leakX} cy="45" r="5" fill="#991B1B" />
+                        <text x={leakX} y="70" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#991B1B">
+                          Leaked μ={leakageResult.fullMeanLeaked.toFixed(1)}
+                        </text>
+                        <circle cx={testX} cy="45" r="5.5" fill="#7A1C30" stroke="#FFFFFF" strokeWidth="1.5" />
+                        <text x={Math.min(450, testX)} y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#7A1C30">
+                          x_test={testOutlierMagnitude}
+                        </text>
+                      </>
+                    );
+                  })()}
+                </svg>
               </div>
             </div>
 
@@ -840,10 +818,43 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg border border-[#E8E2D9] bg-white space-y-2 text-xs">
+              <div className="p-4 rounded-lg border border-[#E8E2D9] bg-white space-y-3 text-xs">
                 <div className="font-bold text-[#1D1819]">
                   SMOTE Line-Segment Interpolation: x_new = x_i + λ(x_nn - x_i)
                 </div>
+                <svg viewBox="0 0 360 130" className="w-full h-32 bg-[#FAF8F5] rounded border border-[#E8E2D9]">
+                  {/* Majority points background */}
+                  {[
+                    [45, 95], [70, 102], [95, 88], [115, 105], [140, 92], [175, 98], [210, 105], [240, 95],
+                  ].map(([mx, my], i) => (
+                    <circle key={i} cx={mx} cy={my} r="3.5" fill="#968A86" opacity="0.65" />
+                  ))}
+                  {/* Interpolation line between x_i (2, 2.5) and x_nn (7, 6.5) */}
+                  <line x1="80" y1="85" x2="280" y2="25" stroke="#C28E38" strokeWidth="2" strokeDasharray="4,3" />
+                  <circle cx="80" cy="85" r="5.5" fill="#1D4E35" />
+                  <text x="80" y="102" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1D4E35">x_i [2.0, 2.5]</text>
+                  <circle cx="280" cy="25" r="5.5" fill="#1D4E35" />
+                  <text x="280" y="16" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1D4E35">x_nn [7.0, 6.5]</text>
+                  {/* Live synthetic point */}
+                  <circle
+                    cx={80 + smoteLambda * 200}
+                    cy={85 - smoteLambda * 60}
+                    r="6.5"
+                    fill="#7A1C30"
+                    stroke="#FFFFFF"
+                    strokeWidth="2"
+                  />
+                  <text
+                    x={80 + smoteLambda * 200}
+                    y={85 - smoteLambda * 60 - 11}
+                    textAnchor="middle"
+                    fontSize="9"
+                    fontWeight="bold"
+                    fill="#7A1C30"
+                  >
+                    x_new [{smotePoint[0].toFixed(1)}, {smotePoint[1].toFixed(1)}]
+                  </text>
+                </svg>
                 <div className="font-mono-num text-[#54484E]">
                   Minority Anchor x_i = [2.0, 2.5] • Neighbor x_nn = [7.0, 6.5] →{' '}
                   <strong className="text-[#7A1C30]">

@@ -134,6 +134,94 @@ export const CURRICULUM: ModuleMeta[] = [
           'Variance Var(X) = E[(X - μ)²] quantifies spread around the mean',
           'Maximizing log-likelihood is mathematically equivalent to minimizing cross-entropy or squared error loss'
         ]
+      },
+      {
+        id: 'lesson-0-5',
+        lessonCode: '0.5',
+        slug: 'matrix-operations-and-linear-transformations',
+        title: 'Matrix Operations & Linear Transformations',
+        subtitle: 'Matrix multiplication, transpose, inverse, determinants, and the geometric meaning of linear maps.',
+        everydayScene: 'Rotating, stretching, and shearing a sheet of graph paper without bending its grid lines',
+        isFreePreview: false,
+        moduleId: 'track-0',
+        moduleName: 'Math Toolkit',
+        moduleNumber: 0,
+        lessonNumber: 5,
+        duration: '20 min',
+        prerequisites: ['vectors-matrices-and-dot-products'],
+        status: 'available',
+        relatedProjectSlug: 'autodiff-engine-from-scratch',
+        keyTakeaways: [
+          'Matrix multiplication A·B combines linear maps; order matters because in general A·B ≠ B·A',
+          'Transpose Aᵀ flips rows and columns, and (A·B)ᵀ = Bᵀ·Aᵀ',
+          'The inverse A⁻¹ undoes A (A·A⁻¹ = I) and exists only when det(A) ≠ 0 (non-singular)'
+        ]
+      },
+      {
+        id: 'lesson-0-6',
+        lessonCode: '0.6',
+        slug: 'norms-distances-and-eigenvalues-pca',
+        title: 'Norms, Distances & Eigenvalues (PCA Intuition)',
+        subtitle: 'L1 vs L2 norms, Euclidean distance, eigenvectors, and how PCA finds maximum-variance directions.',
+        everydayScene: 'Walking city blocks (L1) vs flying straight (L2), and finding the longest shadow of a tilted football',
+        isFreePreview: false,
+        moduleId: 'track-0',
+        moduleName: 'Math Toolkit',
+        moduleNumber: 0,
+        lessonNumber: 6,
+        duration: '20 min',
+        prerequisites: ['matrix-operations-and-linear-transformations'],
+        status: 'available',
+        relatedProjectSlug: 'autodiff-engine-from-scratch',
+        keyTakeaways: [
+          'L1 norm sums absolute coordinates (encouraging sparsity); L2 norm is Euclidean straight-line length',
+          'Eigenvectors satisfy Av = λv: directions that only stretch by eigenvalue λ without rotating',
+          'PCA projects data onto the top eigenvectors of the covariance matrix to preserve maximum variance'
+        ]
+      },
+      {
+        id: 'lesson-0-7',
+        lessonCode: '0.7',
+        slug: 'partial-derivatives-jacobian-and-hessian',
+        title: 'Partial Derivatives, Jacobian & Hessian',
+        subtitle: 'Multivariable slicing, vector-valued Jacobians for backprop, and Hessian curvature in optimization.',
+        everydayScene: 'Mapping how every lever on a soundboard shifts every speaker (Jacobian) and feeling bowl vs saddle curvature (Hessian)',
+        isFreePreview: false,
+        moduleId: 'track-0',
+        moduleName: 'Math Toolkit',
+        moduleNumber: 0,
+        lessonNumber: 7,
+        duration: '22 min',
+        prerequisites: ['derivatives-and-gradients', 'the-chain-rule'],
+        status: 'available',
+        relatedProjectSlug: 'autodiff-engine-from-scratch',
+        keyTakeaways: [
+          'Partial derivatives ∂f/∂xᵢ slice a multivariable surface along one coordinate axis at a time',
+          'The Jacobian J collects all ∂fᵢ/∂xⱼ for vector-valued layers; backprop multiplies by Jᵀ',
+          'The Hessian H captures second-order curvature: positive eigenvalues mean a minimum, mixed signs mean a saddle point'
+        ]
+      },
+      {
+        id: 'lesson-0-8',
+        lessonCode: '0.8',
+        slug: 'conditional-probability-bayes-covariance-distributions',
+        title: 'Conditional Probability, Bayes, Covariance & Distributions',
+        subtitle: 'Updating beliefs with Bayes’ theorem, measuring variable relationships, and Bernoulli, Binomial, Gaussian & Uniform distributions.',
+        everydayScene: 'Re-evaluating a medical test result after checking how rare the disease actually is',
+        isFreePreview: false,
+        moduleId: 'track-0',
+        moduleName: 'Math Toolkit',
+        moduleNumber: 0,
+        lessonNumber: 8,
+        duration: '22 min',
+        prerequisites: ['probability-and-distributions'],
+        status: 'available',
+        relatedProjectSlug: 'autodiff-engine-from-scratch',
+        keyTakeaways: [
+          'Bayes’ theorem P(H|E) = P(E|H)P(H)/P(E) updates prior beliefs with new evidence while respecting base rates',
+          'Covariance measures joint directional spread; correlation ρ normalizes it to [-1, +1]',
+          'Bernoulli, Binomial, Gaussian, and Uniform form the core building blocks for classification, counts, noise, and initialization'
+        ]
       }
     ]
   },

@@ -4721,6 +4721,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         name: 'Closed-Form 1D OLS & Matrix Normal Equation',
         latex: 'w^* = \\frac{\\sum_{i=1}^N (x_i - \\bar{x})(y_i - \\bar{y})}{\\sum_{i=1}^N (x_i - \\bar{x})^2}, \\quad b^* = \\bar{y} - w^*\\bar{x}, \\qquad \\mathbf{w}^* = (\\mathbf{X}^\\top \\mathbf{X})^{-1}\\mathbf{X}^\\top \\mathbf{y}',
         explanation: 'Solves for optimal slope and intercept directly without iterative learning rates.'
+      },
+      {
+        name: 'Derivation of the Normal Equation',
+        latex: '\\nabla_{\\mathbf{w}}\\|\\mathbf{X}\\mathbf{w} - \\mathbf{y}\\|_2^2 = \\nabla_{\\mathbf{w}}(\\mathbf{w}^\\top \\mathbf{X}^\\top \\mathbf{X}\\mathbf{w} - 2\\mathbf{y}^\\top\\mathbf{X}\\mathbf{w} + \\mathbf{y}^\\top\\mathbf{y}) = 2\\mathbf{X}^\\top\\mathbf{X}\\mathbf{w} - 2\\mathbf{X}^\\top\\mathbf{y} = \\mathbf{0} \\implies \\mathbf{w}^* = (\\mathbf{X}^\\top\\mathbf{X})^{-1}\\mathbf{X}^\\top\\mathbf{y}',
+        explanation: 'Expanding the squared L2 residual norm, differentiating with respect to w, and setting the gradient to zero yields the closed-form solution.'
       }
     ],
     workedExample: {
@@ -4834,6 +4839,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         name: 'Binary Cross-Entropy Loss & Exact Gradient Cancellation',
         latex: '\\mathcal{L}_{\\text{BCE}} = -\\big[y\\log p + (1 - y)\\log(1 - p)\\big], \\qquad \\frac{\\partial \\mathcal{L}_{\\text{BCE}}}{\\partial \\mathbf{w}} = (p - y)\\,\\mathbf{x}, \\qquad \\frac{\\partial \\mathcal{L}_{\\text{BCE}}}{\\partial b} = p - y',
         explanation: 'The chain rule cancels σ\'(z) = p(1-p) against the log denominators, yielding a convex loss with no saturation slowdown.'
+      },
+      {
+        name: 'Derivation of Sigmoid Derivative & BCE Gradient',
+        latex: '\\sigma\'(z) = \\frac{e^{-z}}{(1+e^{-z})^2} = p(1-p) \\implies \\frac{\\partial \\mathcal{L}_{\\text{BCE}}}{\\partial z} = -\\left(\\frac{y}{p} - \\frac{1-y}{1-p}\\right)\\!p(1-p) = -y(1-p) + (1-y)p = p - y',
+        explanation: 'Step-by-step chain-rule cancellation proving why Logistic Regression has such a clean linear residual gradient (p - y).'
       }
     ],
     workedExample: {
@@ -4941,6 +4951,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         name: 'Bias-Variance Decomposition of Expected Squared Error',
         latex: '\\mathbb{E}_{\\mathcal{D}, \\epsilon}\\!\\left[(y - \\hat{f}_{\\mathcal{D}}(x))^2\\right] = \\underbrace{\\big(\\mathbb{E}_{\\mathcal{D}}[\\hat{f}_{\\mathcal{D}}(x)] - f(x)\\big)^2}_{\\text{Bias}^2} + \\underbrace{\\mathbb{E}_{\\mathcal{D}}\\!\\left[\\big(\\hat{f}_{\\mathcal{D}}(x) - \\mathbb{E}_{\\mathcal{D}}[\\hat{f}_{\\mathcal{D}}(x)]\\big)^2\\right]}_{\\text{Variance}} + \\underbrace{\\sigma_\\epsilon^2}_{\\text{Irreducible Noise}}',
         explanation: 'Decomposes out-of-sample generalization error into systematic approximation error (Bias²), estimation sensitivity (Variance), and noise floor (σ_ε²).'
+      },
+      {
+        name: 'Algebraic Derivation (Adding & Subtracting f(x) and E[f̂])',
+        latex: '\\mathbb{E}[(f + \\varepsilon - \\hat{f})^2] = \\mathbb{E}[(f - \\bar{f} + \\bar{f} - \\hat{f} + \\varepsilon)^2] = (f - \\bar{f})^2 + \\mathbb{E}[(\\hat{f} - \\bar{f})^2] + \\mathbb{E}[\\varepsilon^2] + 0 \\quad (\\bar{f} = \\mathbb{E}[\\hat{f}])',
+        explanation: 'Cross-terms vanish because E[ε] = 0 (independent of D) and E[f̂ - f̄] = 0.'
       }
     ],
     workedExample: {
@@ -5042,6 +5057,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         name: 'Information Gain & Random Forest Ensemble Variance',
         latex: '\\text{IG}(S, A) = H(S) - \\sum_{v \\in \\{L, R\\}} \\frac{|S_v|}{|S|} H(S_v), \\qquad \\text{Var}\\!\\left(\\frac{1}{B}\\sum_{b=1}^B T_b(x)\\right) = \\rho\\sigma^2 + \\frac{1 - \\rho}{B}\\sigma^2',
         explanation: 'As number of trees B → ∞, the second variance term vanishes and remaining variance is governed by inter-tree correlation ρ.'
+      },
+      {
+        name: 'Derivation of Bagging & Random Forest Variance',
+        latex: '\\text{Var}\\!\\left(\\frac{1}{B}\\sum_{b=1}^B T_b\\right) = \\frac{1}{B^2}\\left[\\sum_{b=1}^B \\text{Var}(T_b) + \\sum_{a \\neq b} \\text{Cov}(T_a, T_b)\\right] = \\frac{1}{B^2}\\big[B\\sigma^2 + B(B-1)\\rho\\sigma^2\\big] = \\rho\\sigma^2 + \\frac{1-\\rho}{B}\\sigma^2',
+        explanation: 'Proves why Random Forests subsample features (max_features) at every split: lowering pairwise tree correlation ρ directly shrinks the irreducible ρσ² floor.'
       }
     ],
     workedExample: {
@@ -5155,6 +5175,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         name: 'PCA Covariance Eigendecomposition & Explained Variance Ratio',
         latex: '\\boldsymbol{\\Sigma}\\mathbf{v}_i = \\lambda_i \\mathbf{v}_i, \\qquad \\text{EVR}_i = \\frac{\\lambda_i}{\\sum_{j=1}^{D} \\lambda_j} = \\frac{\\lambda_i}{\\text{Tr}(\\boldsymbol{\\Sigma})}',
         explanation: 'The sum of all eigenvalues equals the trace of the covariance matrix (total variance across all features).'
+      },
+      {
+        name: 'Derivation of PCA via Lagrange Multipliers',
+        latex: '\\max_{\\mathbf{v}^\\top \\mathbf{v} = 1} \\mathbf{v}^\\top \\boldsymbol{\\Sigma}\\mathbf{v} \\implies \\mathcal{L}(\\mathbf{v}, \\lambda) = \\mathbf{v}^\\top\\boldsymbol{\\Sigma}\\mathbf{v} - \\lambda(\\mathbf{v}^\\top\\mathbf{v} - 1) \\implies \\nabla_{\\mathbf{v}}\\mathcal{L} = 2\\boldsymbol{\\Sigma}\\mathbf{v} - 2\\lambda\\mathbf{v} = \\mathbf{0} \\implies \\boldsymbol{\\Sigma}\\mathbf{v} = \\lambda\\mathbf{v}',
+        explanation: 'Maximizing projected variance vᵀΣv subject to unit length ||v||₂ = 1 directly yields the eigenvalue equation Σv = λv, with maximum variance vᵀΣv = λ.'
       }
     ],
     workedExample: {
@@ -5648,6 +5673,442 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Expected value E[X] and variance Var(X) = E[(X - μ)²] summarize the center and spread of random variables.',
       'Maximum Likelihood Estimation (MLE) chooses parameters that minimize Negative Log-Likelihood (NLL) over the training set.',
       'Bernoulli NLL yields Binary Cross-Entropy; Gaussian NLL yields Mean Squared Error.'
+    ]
+  },
+
+  'matrix-operations-and-linear-transformations': {
+    slug: 'matrix-operations-and-linear-transformations',
+    scene: {
+      title: 'Rotating, Stretching & Shearing a Sheet of Graph Paper Without Bending Its Grid Lines',
+      narrative:
+        'Every linear layer y = Wx + b in a neural network does something deeply visual: it takes the coordinate grid of your input features and rotates, stretches, shears, or squashes it into a new space. The columns of a matrix A tell you literally where the unit basis vectors î and ĵ land after the transformation. Multiplying two matrices A·B simply applies transformation B first and then A—which is why order matters (rotating then stretching is NOT the same as stretching then rotating!). And if a transformation squashes 2D space onto a 1D line (det(A) = 0), information is lost forever and no inverse matrix A⁻¹ can undo it.'
+    },
+    mapping: [
+      {
+        scenePart: 'Applying transformation B first, then transformation A',
+        modelPart: 'Matrix Multiplication',
+        symbol: 'C = A · B,  C_{ij} = Σ_k A_{ik} B_{kj}',
+        role: 'Composes linear layers; inner dimensions must match (m×n)·(n×p) → (m×p), and generally AB ≠ BA'
+      },
+      {
+        scenePart: 'Flipping rows and columns of a weight matrix during backpropagation',
+        modelPart: 'Matrix Transpose',
+        symbol: '(Aᵀ)_{ij} = A_{ji},   (A·B)ᵀ = Bᵀ·Aᵀ',
+        role: 'Routes backward gradients through Wᵀ in every neural network layer'
+      },
+      {
+        scenePart: 'Running a transformation backward to recover the original input',
+        modelPart: 'Matrix Inverse',
+        symbol: 'A · A⁻¹ = A⁻¹ · A = I',
+        role: 'Exists if and only if det(A) ≠ 0 (full rank / non-singular)'
+      },
+      {
+        scenePart: 'Signed area (or volume) scaling factor of the transformed unit square',
+        modelPart: 'Determinant',
+        symbol: 'det(A) = ad - bc',
+        role: 'det(A) = 0 means space collapsed onto a lower-dimensional line or plane'
+      }
+    ],
+    playWithItPrompt:
+      'Open Tab 0.5 ("Matrix Ops & Transforms"). Click each Matrix A preset (30° Rotation, Horizontal Shear, Anisotropic Scale, Singular) and watch the unit square and basis vectors A·î and A·ĵ deform. Notice that when you pick "Singular (det=0)", the 2D square collapses into a flat line and A⁻¹ becomes undefined!',
+    analogyBreaks:
+      'Pure linear transformations keep the origin fixed at (0, 0) and keep all grid lines parallel and evenly spaced; real neural layers add a bias (+ b) for translation and a non-linear activation (ReLU/GELU) to bend the grid.',
+    intuition: [
+      'Columns Are Where Basis Vectors Land: For any 2×2 matrix A = [[a, b], [c, d]], the first column [a, c]ᵀ is where î = [1, 0]ᵀ lands, and the second column [b, d]ᵀ is where ĵ = [0, 1]ᵀ lands.',
+      'Why AB ≠ BA: Matrix multiplication is function composition (A(B(x))). Rotating by 90° and then stretching along X gives a different result than stretching along X and then rotating by 90°.',
+      'Transpose Reverses Order: Just like putting on socks then shoes reverses to taking off shoes then socks, (AB)ᵀ = BᵀAᵀ and (AB)⁻¹ = B⁻¹A⁻¹.'
+    ],
+    mathFormulas: [
+      {
+        name: '2×2 Matrix Multiplication & Determinant',
+        latex: 'C = AB \\implies C_{ij} = \\sum_{k=1}^{n} A_{ik} B_{kj}, \\qquad \\det\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} = ad - bc',
+        explanation: 'Computes each entry of C as a row-by-column dot product; det(A) measures signed area scaling.'
+      },
+      {
+        name: '2×2 Matrix Inverse & Transpose',
+        latex: 'A^{-1} = \\frac{1}{ad - bc}\\begin{pmatrix} d & -b \\\\ -c & a \\end{pmatrix} \\quad (ad - bc \\neq 0), \\qquad (A^T)_{ij} = A_{ji}',
+        explanation: 'A⁻¹ undoes the linear transformation A whenever det(A) ≠ 0.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Given A = [[2, 1], [1, 3]], find det(A), Aᵀ, and A⁻¹.',
+      steps: [
+        {
+          label: 'Step 1: Compute Determinant',
+          math: '\\det(A) = (2)(3) - (1)(1) = 6 - 1 = 5 \\neq 0',
+          note: 'Since det(A) = 5 ≠ 0, A scales area by 5× and is invertible.'
+        },
+        {
+          label: 'Step 2: Compute Transpose Aᵀ',
+          math: 'A^T = \\begin{pmatrix} 2 & 1 \\\\ 1 & 3 \\end{pmatrix}',
+          note: 'A happens to be symmetric (Aᵀ = A).'
+        },
+        {
+          label: 'Step 3: Compute Inverse A⁻¹',
+          math: 'A^{-1} = \\frac{1}{5}\\begin{pmatrix} 3 & -1 \\\\ -1 & 2 \\end{pmatrix} = \\begin{pmatrix} 0.6 & -0.2 \\\\ -0.2 & 0.4 \\end{pmatrix}',
+          note: 'Check: A · A⁻¹ = [[1, 0], [0, 1]] = I.'
+        }
+      ],
+      result: 'det(A) = 5, A⁻¹ = [[0.6, -0.2], [-0.2, 0.4]].',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'matops-q1',
+        question: 'If matrix A has shape (4 × 3) and matrix B has shape (3 × 5), what is the shape of A · B, and is B · A defined?',
+        options: [
+          'A·B has shape (3 × 3), and B·A has shape (4 × 5).',
+          'A·B has shape (4 × 5), and B·A is undefined because 5 ≠ 4.',
+          'A·B has shape (5 × 4), and B·A has shape (4 × 5).',
+          'Both A·B and B·A are undefined because the matrices are not square.'
+        ],
+        correctIndex: 1,
+        explanation: 'Matrix multiplication (m × n) · (n × p) requires matching inner dimensions and yields (m × p) = (4 × 5). Reversing to (3 × 5) · (4 × 3) fails because 5 ≠ 4.'
+      },
+      {
+        id: 'matops-q2',
+        question: 'Geometrically, what happens when a 2×2 matrix A has determinant det(A) = 0?',
+        options: [
+          'It rotates every vector by exactly 90 degrees counterclockwise.',
+          'It doubles the area of the unit square while preserving orientation.',
+          'It collapses 2D space onto a 1D line or point, making A non-invertible.',
+          'It acts as the identity matrix leaving all vectors unchanged.'
+        ],
+        correctIndex: 2,
+        explanation: 'det(A) = 0 means the columns of A are linearly dependent, collapsing 2D area to 0 so multiple inputs map to the same output and A⁻¹ cannot exist.'
+      }
+    ],
+    summary: [
+      'Matrix multiplication composes linear transformations and is generally non-commutative (AB ≠ BA).',
+      'The columns of a matrix show where the standard basis vectors land geometrically.',
+      'A square matrix has an inverse A⁻¹ if and only if det(A) ≠ 0.'
+    ]
+  },
+
+  'norms-distances-and-eigenvalues-pca': {
+    slug: 'norms-distances-and-eigenvalues-pca',
+    scene: {
+      title: 'Walking City Blocks (L1) vs Flying Straight (L2), and Finding the Longest Shadow of a Tilted Football',
+      narrative:
+        'How do we measure how big a weight vector is or how far apart two embeddings are? On a Manhattan street grid, you walk along blocks: |x| + |y| (the L1 norm). A crow flies straight across rooftops: √(x² + y²) (the L2 Euclidean norm). Meanwhile, imagine shining a flashlight on a tilted 3D/2D cloud of data points: which axis captures the widest spread? Those special invariant axes of the covariance matrix—directions that only stretch and never rotate—are Eigenvectors, and their stretch factors are Eigenvalues. That is the exact engine behind Principal Component Analysis (PCA)!'
+    },
+    mapping: [
+      {
+        scenePart: 'Walking along grid blocks (sum of absolute steps)',
+        modelPart: 'L1 Norm (Manhattan)',
+        symbol: '||x||₁ = Σ |xᵢ|',
+        role: 'Encourages sparse weights (Lasso / L1 regularization) due to sharp diamond corners'
+      },
+      {
+        scenePart: 'Straight-line distance as the crow flies',
+        modelPart: 'L2 Norm & Euclidean Distance',
+        symbol: '||x||₂ = √(Σ xᵢ²),   d₂(u, v) = ||u - v||₂',
+        role: 'Smooth circular penalty (Ridge / Weight Decay) and k-NN / embedding distance'
+      },
+      {
+        scenePart: 'Special axis v that only stretches by λ without rotating under A',
+        modelPart: 'Eigenvector & Eigenvalue',
+        symbol: 'A v = λ v',
+        role: 'Reveals invariant scaling directions of linear systems and Hessian/covariance matrices'
+      },
+      {
+        scenePart: 'Top eigenvectors of the data covariance matrix',
+        modelPart: 'PCA Principal Components',
+        symbol: 'Σ vᵢ = λᵢ vᵢ   (λ₁ ≥ λ₂ ≥ …)',
+        role: 'Projects high-dimensional data onto directions of maximum variance'
+      }
+    ],
+    playWithItPrompt:
+      'Open Tab 0.6 ("Norms & Eigen/PCA"). Move u_x and u_y to compare the diamond L1 ball vs circular L2 ball. Then drag the Covariance slider Cov(X, Y) from 0.0 to 0.95 on the right and watch PC1 (λ₁) grow to capture over 90% of the total variance!',
+    analogyBreaks:
+      'PCA only finds linear orthogonal axes of maximum variance; curved manifolds (like a Swiss roll) require non-linear methods such as autoencoders or UMAP.',
+    intuition: [
+      'Why L1 Produces Sparsity: The L1 unit ball is a diamond with sharp corners sitting right on the coordinate axes, so loss contours hit those zero-coordinate corners first.',
+      'Eigenvectors Do Not Rotate: Most vectors change direction when multiplied by A, but an eigenvector v stays on its exact same span line, scaled by λ.',
+      'PCA Variance Explained: For a covariance matrix Σ, the trace (sum of variances) equals the sum of eigenvalues Σ λᵢ, so λ₁ / (λ₁ + λ₂) is the exact fraction of variance captured by PC1.'
+    ],
+    mathFormulas: [
+      {
+        name: 'L1, L2 Norms & Euclidean Distance',
+        latex: '\\|u\\|_1 = \\sum_{i=1}^n |u_i|, \\qquad \\|u\\|_2 = \\sqrt{\\sum_{i=1}^n u_i^2}, \\qquad d_2(u, v) = \\|u - v\\|_2',
+        explanation: 'L1 sums absolute magnitudes; L2 measures straight-line Euclidean length.'
+      },
+      {
+        name: 'Eigenvalue Equation & PCA Variance Ratio',
+        latex: 'A v = \\lambda v \\iff (A - \\lambda I) v = 0, \\qquad \\text{Explained Var}_k = \\frac{\\lambda_k}{\\sum_j \\lambda_j}',
+        explanation: 'Symmetric covariance matrices have orthogonal eigenvectors ordered by descending eigenvalue λ.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Compute ||u||₁ and ||u||₂ for u = [3, -4], and find the eigenvalues of Σ = [[2.0, 1.2], [1.2, 2.0]].',
+      steps: [
+        {
+          label: 'Step 1: Compute L1 and L2 Norms of u = [3, -4]',
+          math: '\\|u\\|_1 = |3| + |-4| = 7, \\qquad \\|u\\|_2 = \\sqrt{3^2 + (-4)^2} = \\sqrt{25} = 5',
+          note: 'L1 is always ≥ L2 (7 ≥ 5).'
+        },
+        {
+          label: 'Step 2: Solve Eigenvalues from Trace & Determinant',
+          math: '\\text{tr}(\\Sigma) = 2 + 2 = 4, \\quad \\det(\\Sigma) = 4 - 1.44 = 2.56 \\implies \\lambda = 2 \\pm 1.2',
+          note: 'Eigenvalues are λ₁ = 3.2 and λ₂ = 0.8.'
+        },
+        {
+          label: 'Step 3: Compute PC1 Variance Explained',
+          math: '\\frac{\\lambda_1}{\\lambda_1 + \\lambda_2} = \\frac{3.2}{3.2 + 0.8} = 0.80 = 80\\%',
+          note: 'Dropping PC2 keeps 80% of the dataset variance in just 1 dimension!'
+        }
+      ],
+      result: '||u||₁ = 7, ||u||₂ = 5; λ₁ = 3.2 (80% variance), λ₂ = 0.8.',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'norm-pca-q1',
+        question: 'For vector u = [3, -4], what are its L1 norm and L2 norm?',
+        options: [
+          'L1 = 5 and L2 = 7',
+          'L1 = 7 and L2 = 5',
+          'L1 = 1 and L2 = 25',
+          'L1 = 12 and L2 = 5'
+        ],
+        correctIndex: 1,
+        explanation: '||u||₁ = |3| + |-4| = 7, while ||u||₂ = √(3² + (-4)²) = √25 = 5.'
+      },
+      {
+        id: 'norm-pca-q2',
+        question: 'In Principal Component Analysis (PCA), what do the top eigenvectors of the covariance matrix represent?',
+        options: [
+          'The individual outlier points with the largest Euclidean distance from zero.',
+          'The training labels that minimize cross-entropy loss on a validation split.',
+          'The orthogonal directions along which the data has the greatest variance.',
+          'The learning rates needed for each weight in stochastic gradient descent.'
+        ],
+        correctIndex: 2,
+        explanation: 'Covariance eigenvectors point along uncorrelated orthogonal axes, ordered from largest eigenvalue (highest variance) to smallest.'
+      }
+    ],
+    summary: [
+      'L1 norm sums absolute values (encouraging sparsity); L2 norm measures Euclidean distance.',
+      'Eigenvectors satisfy Av = λv: invariant directions that scale by λ without rotating.',
+      'PCA projects data onto the top eigenvectors of the covariance matrix to compress dimensions while preserving variance.'
+    ]
+  },
+
+  'partial-derivatives-jacobian-and-hessian': {
+    slug: 'partial-derivatives-jacobian-and-hessian',
+    scene: {
+      title: 'Adjusting One Soundboard Lever at a Time (Partials), Mapping All Speakers (Jacobian), and Feeling Bowl vs Saddle Curvature (Hessian)',
+      narrative:
+        'Deep networks are multivariable functions with millions of inputs and outputs. A partial derivative ∂f/∂x holds every slider still except x and measures the slope along that single slice. When a layer maps an entire vector x ∈ ℝⁿ to a vector y ∈ ℝᵐ, stacking all m×n partial derivatives into a grid gives the Jacobian matrix J—the exact linear map that backpropagation multiplies by its transpose Jᵀ! And if you take second derivatives of a scalar loss L(w), you get the Hessian matrix H, which tells optimizers whether they are standing in a smooth convex bowl (minimum), on a peak (maximum), or on a treacherous Pringles-chip saddle point!'
+    },
+    mapping: [
+      {
+        scenePart: 'Nudging one knob while freezing every other knob',
+        modelPart: 'Partial Derivative',
+        symbol: '∂f / ∂xᵢ',
+        role: 'Measures sensitivity of one output with respect to one input coordinate'
+      },
+      {
+        scenePart: 'Complete m×n table of how every output speaker responds to every input lever',
+        modelPart: 'Jacobian Matrix',
+        symbol: 'J_{ij} = ∂Fᵢ / ∂xⱼ',
+        role: 'Chain rule for vector-valued layers: backprop computes ∂L/∂x = Jᵀ (∂L/∂y)'
+      },
+      {
+        scenePart: 'Second-derivative curvature grid of a scalar loss surface',
+        modelPart: 'Hessian Matrix',
+        symbol: 'H_{ij} = ∂²f / (∂xᵢ ∂xⱼ)',
+        role: 'Eigenvalues classify minima (all > 0), maxima (all < 0), and saddles (mixed signs)'
+      },
+      {
+        scenePart: 'Ratio of steepest to flattest curvature in a valley',
+        modelPart: 'Condition Number',
+        symbol: 'κ(H) = |λ_max| / |λ_min|',
+        role: 'High κ creates narrow ravines where plain SGD zig-zags; motivates Adam & Newton’s method'
+      }
+    ],
+    playWithItPrompt:
+      'Open Tab 0.7 ("Jacobian & Hessian"). Move x and y to watch all 4 entries of the 2×2 Jacobian J and det(J) update live. Then set Curvature a = +1.4 and c = -1.2 to see the Hessian eigenvalues switch to opposite signs and trigger the SADDLE badge!',
+    analogyBreaks:
+      'Computing the full N×N Hessian for a billion-parameter LLM would take 10¹⁸ numbers—completely impossible in RAM—so modern optimizers use diagonal approximations (Adam) or Hessian-vector products instead.',
+    intuition: [
+      'Jacobian Is Backprop’s Engine: Forward pass applies a non-linear layer F(x); locally around x, F behaves like multiplication by J, so the backward pass multiplies upstream gradients by Jᵀ.',
+      'Saddle Points Dominate High Dimensions: In 1M dimensions, having all 1M Hessian eigenvalues positive (a true local minimum) is rare—most flat points where ∇L = 0 are saddle points with mixed-sign eigenvalues.',
+      'Condition Number & Learning Rate: If λ_max ≫ λ_min (large κ), a step size safe for the steep direction barely moves along the flat canyon floor.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Jacobian Matrix of Vector-Valued Map F: ℝⁿ → ℝᵐ',
+        latex: 'J_F(x) = \\begin{pmatrix} \\frac{\\partial F_1}{\\partial x_1} & \\cdots & \\frac{\\partial F_1}{\\partial x_n} \\\\ \\vdots & \\ddots & \\vdots \\\\ \\frac{\\partial F_m}{\\partial x_1} & \\cdots & \\frac{\\partial F_m}{\\partial x_n} \\end{pmatrix}',
+        explanation: 'Each row is the gradient of one output component Fᵢ with respect to all inputs x.'
+      },
+      {
+        name: 'Hessian Matrix & Second-Order Taylor Curvature',
+        latex: 'H_f(x)_{ij} = \\frac{\\partial^2 f}{\\partial x_i \\partial x_j}, \\qquad f(x + \\Delta x) \\approx f(x) + \\nabla f^T \\Delta x + \\frac{1}{2} \\Delta x^T H \\Delta x',
+        explanation: 'When all eigenvalues of H are positive (positive definite), the critical point is a strict local minimum.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Find the Jacobian of F(x, y) = [x² + y, sin(x)·y] at (x, y) = (0, 2), and classify f(x, y) = x² - y².',
+      steps: [
+        {
+          label: 'Step 1: Compute Partial Derivatives for Row 1 (F₁ = x² + y)',
+          math: '\\frac{\\partial F_1}{\\partial x} = 2x = 0, \\qquad \\frac{\\partial F_1}{\\partial y} = 1',
+          note: 'First row of J at (0, 2) is [0, 1].'
+        },
+        {
+          label: 'Step 2: Compute Partial Derivatives for Row 2 (F₂ = sin(x)·y)',
+          math: '\\frac{\\partial F_2}{\\partial x} = \\cos(x)\\cdot y = 1\\cdot 2 = 2, \\qquad \\frac{\\partial F_2}{\\partial y} = \\sin(0) = 0',
+          note: 'So J(0, 2) = [[0, 1], [2, 0]] with det(J) = -2.'
+        },
+        {
+          label: 'Step 3: Compute Hessian of f(x, y) = x² - y²',
+          math: 'H = \\begin{pmatrix} 2 & 0 \\\\ 0 & -2 \\end{pmatrix} \\implies \\lambda_1 = +2, \\; \\lambda_2 = -2',
+          note: 'Mixed-sign eigenvalues prove (0, 0) is a saddle point!'
+        }
+      ],
+      result: 'J(0, 2) = [[0, 1], [2, 0]]; H has eigenvalues +2 and -2 (saddle point).',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'jac-hess-q1',
+        question: 'If a neural network layer maps an input vector x ∈ ℝ¹²⁸ to an output vector y ∈ ℝ⁶⁴, what is the shape of its Jacobian matrix J = ∂y/∂x?',
+        options: [
+          '128 × 128',
+          '64 × 128',
+          '128 × 1',
+          '64 × 64'
+        ],
+        correctIndex: 1,
+        explanation: 'A Jacobian for F: ℝⁿ → ℝᵐ always has m rows (outputs) and n columns (inputs), so 64 × 128.'
+      },
+      {
+        id: 'jac-hess-q2',
+        question: 'At a point where the gradient is zero (∇f = 0), the Hessian matrix has eigenvalues λ₁ = +4.0 and λ₂ = -1.5. What kind of point is this?',
+        options: [
+          'A strict local minimum (convex bowl)',
+          'A strict local maximum (peak)',
+          'A saddle point (curves up in one direction, down in another)',
+          'A flat plateau with zero curvature in all directions'
+        ],
+        correctIndex: 2,
+        explanation: 'Opposite-signed Hessian eigenvalues mean the surface curves upward along one eigenvector and downward along the other—the definition of a saddle point.'
+      }
+    ],
+    summary: [
+      'Partial derivatives isolate the rate of change along one coordinate axis at a time.',
+      'The Jacobian matrix generalizes gradients to vector-valued functions and powers vector backpropagation via Jᵀ.',
+      'The Hessian matrix captures second-order curvature, distinguishing minima, maxima, and saddle points via its eigenvalues.'
+    ]
+  },
+
+  'conditional-probability-bayes-covariance-distributions': {
+    slug: 'conditional-probability-bayes-covariance-distributions',
+    scene: {
+      title: 'Updating a Medical Test Result With Base Rates (Bayes) & Choosing the Right Probability Ruler',
+      narrative:
+        'Suppose a rapid test for a rare 1% condition has 95% sensitivity and a 5% false-positive rate. If you test positive, is there a 95% chance you have the condition? No! Because 99% of people do not have it, false positives outnumber true positives—the true posterior probability is only ~16%! Conditional probability P(A | B) shrinks the universe to event B, Bayes’ theorem flips conditioning cleanly, covariance & correlation measure how two features move together, and four core distributions (Bernoulli, Binomial, Gaussian, Uniform) describe almost every random process in ML.'
+    },
+    mapping: [
+      {
+        scenePart: 'Zooming into only the cases where evidence B happened',
+        modelPart: 'Conditional Probability',
+        symbol: 'P(A | B) = P(A ∩ B) / P(B)',
+        role: 'Defines P(label | features), the foundation of every classifier'
+      },
+      {
+        scenePart: 'Updating prior belief P(H) after observing evidence E',
+        modelPart: 'Bayes’ Theorem',
+        symbol: 'P(H | E) = P(E | H) P(H) / P(E)',
+        role: 'Powers Naive Bayes, Bayesian inference, and base-rate reasoning'
+      },
+      {
+        scenePart: 'Whether two features rise together or move opposite',
+        modelPart: 'Covariance & Pearson Correlation',
+        symbol: 'Cov(X, Y) = E[(X - μ_X)(Y - μ_Y)],   ρ = Cov(X, Y)/(σ_X σ_Y)',
+        role: 'ρ ∈ [-1, 1] is scale-free linear correlation; basis of covariance matrices'
+      },
+      {
+        scenePart: 'Choosing the right distribution for binary, count, continuous, or flat random draws',
+        modelPart: 'Bernoulli, Binomial, Gaussian, Uniform',
+        symbol: 'Bern(p), Bin(n, p), N(μ, σ²), U(a, b)',
+        role: 'Models labels, k-of-n successes, continuous noise, and weight initialization'
+      }
+    ],
+    playWithItPrompt:
+      'Open Tab 0.8 ("Bayes & Distributions"). Set Prior P(H) = 2%, Sensitivity = 95%, and False Positive Rate = 5% to see why Posterior P(H|E) is only 27.9%! Then drag the Correlation slider r from -0.95 to +0.95 and explore Bernoulli, Binomial, Gaussian, and Uniform.',
+    analogyBreaks:
+      'Pearson correlation ρ = 0 only proves there is no LINEAR relationship; two variables can still have a strong non-linear relationship (like y = x² centered at 0) while having ρ = 0.',
+    intuition: [
+      'Base-Rate Neglect: Never ignore P(H)! Even a 95%-accurate test yields mostly false alarms when the disease is very rare.',
+      'Bernoulli vs Binomial: Bernoulli is a single coin flip (n = 1); Binomial is the sum of n independent Bernoulli flips.',
+      'Uniform vs Gaussian: Uniform U(a, b) gives every point in [a, b] equal density 1/(b - a) (great for random seeds & Xavier/He init bounds), while Gaussian concentrates density near μ.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Conditional Probability & Bayes’ Theorem',
+        latex: 'P(H \\mid E) = \\frac{P(E \\mid H)\\,P(H)}{P(E)}, \\qquad P(E) = P(E \\mid H)P(H) + P(E \\mid \\neg H)P(\\neg H)',
+        explanation: 'Computes the exact posterior belief after combining prior P(H) with likelihood P(E | H).'
+      },
+      {
+        name: 'Covariance, Correlation & Binomial PMF',
+        latex: '\\rho_{X,Y} = \\frac{\\text{Cov}(X, Y)}{\\sigma_X \\sigma_Y} \\in [-1, 1], \\qquad P(K = k) = \\binom{n}{k} p^k (1 - p)^{n - k}',
+        explanation: 'Pearson ρ normalizes covariance by standard deviations; Binomial models k successes in n trials.'
+      }
+    ],
+    workedExample: {
+      scenario: 'A rare condition affects P(H) = 0.01 (1%). A test has sensitivity P(E|H) = 0.99 and false positive rate P(E|¬H) = 0.05. Compute P(H|E).',
+      steps: [
+        {
+          label: 'Step 1: Compute True Positive & False Positive Joint Probabilities',
+          math: 'P(E \\cap H) = 0.99 \\times 0.01 = 0.0099, \\qquad P(E \\cap \\neg H) = 0.05 \\times 0.99 = 0.0495',
+          note: 'Notice false positives (0.0495) are 5× larger than true positives (0.0099)!'
+        },
+        {
+          label: 'Step 2: Compute Total Evidence P(E)',
+          math: 'P(E) = 0.0099 + 0.0495 = 0.0594',
+          note: 'Total fraction of people testing positive.'
+        },
+        {
+          label: 'Step 3: Divide for Posterior P(H|E)',
+          math: 'P(H \\mid E) = \\frac{0.0099}{0.0594} = \\frac{1}{6} \\approx 16.67\\%',
+          note: 'Only 1 in 6 positive tests is actually positive!'
+        }
+      ],
+      result: 'Posterior P(H | E) ≈ 16.67%.',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'bayes-dist-q1',
+        question: 'If two random variables X and Y have Pearson correlation ρ = 0, what can we conclude?',
+        options: [
+          'X and Y are guaranteed to be completely statistically independent.',
+          'X and Y have no linear relationship, though a non-linear link may exist.',
+          'The variance of both X and Y must be equal to zero everywhere.',
+          'Both X and Y must follow an identical Uniform probability distribution.'
+        ],
+        correctIndex: 1,
+        explanation: 'Correlation ρ only measures linear dependence. For example, Y = X² for symmetric X around 0 has ρ = 0 despite exact deterministic dependence.'
+      },
+      {
+        id: 'bayes-dist-q2',
+        question: 'Which distribution models the number of heads k observed in n independent flips of a biased coin with probability p?',
+        options: [
+          'Uniform distribution U(0, n)',
+          'Gaussian distribution N(μ, σ²)',
+          'Binomial distribution Bin(n, p)',
+          'Exponential distribution Exp(λ)'
+        ],
+        correctIndex: 2,
+        explanation: 'The Binomial distribution Bin(n, p) gives P(K = k) = C(n, k) p^k (1-p)^(n-k) for n independent Bernoulli(p) trials.'
+      }
+    ],
+    summary: [
+      'Conditional probability P(A|B) restricts the sample space to B; Bayes’ theorem updates priors using likelihoods.',
+      'Covariance and correlation ρ ∈ [-1, 1] quantify linear co-movement between two variables.',
+      'Bernoulli, Binomial, Gaussian, and Uniform cover binary events, trial counts, continuous noise, and flat intervals.'
     ]
   },
 

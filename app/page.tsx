@@ -158,7 +158,7 @@ export default function HomePage() {
             href="/learn"
             className="text-xs font-semibold text-[#6E1A2B] hover:text-[#54111F] flex items-center gap-1 transition-colors"
           >
-            <span>View Full 57-Lesson Syllabus</span>
+            <span>View Full {ALL_LESSONS.length}-Lesson Syllabus</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

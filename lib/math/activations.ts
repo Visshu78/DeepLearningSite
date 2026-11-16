@@ -14,8 +14,8 @@ export const ACTIVATION_METADATA: Record<ActivationType, ActivationInfo> = {
   sigmoid: {
     id: 'sigmoid',
     name: 'Sigmoid',
-    formula: 'σ(z) = 1 / (1 + e^(-z))',
-    derivativeFormula: "σ'(z) = σ(z) · (1 - σ(z))",
+    formula: '\\sigma(z) = \\frac{1}{1 + e^{-z}}',
+    derivativeFormula: "\\sigma'(z) = \\sigma(z) \\cdot (1 - \\sigma(z))",
     outputRange: '(0, 1)',
     description: 'S-shaped curve smoothly mapping any real input into a probability-like range between 0 and 1.',
     saturationBehavior: 'Saturates for large |z|, leading to near-zero gradients (vanishing gradient problem).'
@@ -23,8 +23,8 @@ export const ACTIVATION_METADATA: Record<ActivationType, ActivationInfo> = {
   tanh: {
     id: 'tanh',
     name: 'Hyperbolic Tangent (Tanh)',
-    formula: 'tanh(z) = (e^z - e^(-z)) / (e^z + e^(-z))',
-    derivativeFormula: "tanh'(z) = 1 - tanh²(z)",
+    formula: '\\tanh(z) = \\frac{e^z - e^{-z}}{e^z + e^{-z}}',
+    derivativeFormula: "\\tanh'(z) = 1 - \\tanh^2(z)",
     outputRange: '(-1, 1)',
     description: 'Zero-centered S-shaped curve. Often converges faster than sigmoid because average activations are centered near zero.',
     saturationBehavior: 'Strongly saturates when |z| > 2.5, causing gradients to diminish rapidly.'
@@ -32,8 +32,8 @@ export const ACTIVATION_METADATA: Record<ActivationType, ActivationInfo> = {
   relu: {
     id: 'relu',
     name: 'Rectified Linear Unit (ReLU)',
-    formula: 'ReLU(z) = max(0, z)',
-    derivativeFormula: "ReLU'(z) = 1 if z > 0 else 0",
+    formula: '\\text{ReLU}(z) = \\max(0, z)',
+    derivativeFormula: "\\text{ReLU}'(z) = \\begin{cases} 1 & z > 0 \\\\ 0 & z \\le 0 \\end{cases}",
     outputRange: '[0, ∞)',
     description: 'The standard activation for modern deep networks. Highly efficient to compute and avoids saturation for positive values.',
     saturationBehavior: 'Completely flat (gradient = 0) for negative inputs, which can cause dead neurons.'
@@ -41,8 +41,8 @@ export const ACTIVATION_METADATA: Record<ActivationType, ActivationInfo> = {
   leaky_relu: {
     id: 'leaky_relu',
     name: 'Leaky ReLU',
-    formula: 'LeakyReLU(z) = z if z > 0 else α · z',
-    derivativeFormula: "LeakyReLU'(z) = 1 if z > 0 else α",
+    formula: '\\text{LeakyReLU}(z) = \\begin{cases} z & z > 0 \\\\ \\alpha z & z \\le 0 \\end{cases}',
+    derivativeFormula: "\\text{LeakyReLU}'(z) = \\begin{cases} 1 & z > 0 \\\\ \\alpha & z \\le 0 \\end{cases}",
     outputRange: '(-∞, ∞)',
     description: 'Variation of ReLU that allows a small, non-zero gradient (α ≈ 0.01) when z < 0 to prevent dead neurons.',
     saturationBehavior: 'Never completely saturates; keeps a small constant slope for negative values.'

@@ -106,6 +106,14 @@ function getVisualizerForSlug(slug: string): React.ReactNode {
       return <MathToolkitVisualizer defaultTab="chainrule" />;
     case 'probability-and-distributions':
       return <MathToolkitVisualizer defaultTab="probability" />;
+    case 'matrix-operations-and-linear-transformations':
+      return <MathToolkitVisualizer defaultTab="matrix-transforms" />;
+    case 'norms-distances-and-eigenvalues-pca':
+      return <MathToolkitVisualizer defaultTab="norms-eigen" />;
+    case 'partial-derivatives-jacobian-and-hessian':
+      return <MathToolkitVisualizer defaultTab="jacobian-hessian" />;
+    case 'conditional-probability-bayes-covariance-distributions':
+      return <MathToolkitVisualizer defaultTab="bayes-distributions" />;
     // Track 1: Classical ML
     case 'linear-regression':
       return <ClassicalMLVisualizer defaultTab="linreg" />;
