@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { LessonMeta, getAdjacentLessons } from '@/lib/lesson-data/curriculum';
 import { DetailedLessonContent } from '@/lib/lesson-data/lessonContent';
@@ -11,6 +11,8 @@ import { MathEquation } from '@/components/equations/MathEquation';
 import {
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
+  BookOpen,
   CheckCircle2,
   Clock,
   ArrowRight,
@@ -34,6 +36,7 @@ interface LessonLayoutProps {
 export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
   const { isCompleted, toggleLesson, mounted } = useLearningProgress();
   const completed = mounted && isCompleted(meta.slug);
+  const [showMathDepth, setShowMathDepth] = useState(false);
   const { prev, next } = getAdjacentLessons(meta.slug);
   const relatedProject = meta.relatedProjectSlug
     ? getProjectBySlug(meta.relatedProjectSlug)
@@ -123,6 +126,23 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
         )}
       </header>
 
+      {/* What You'll Learn (Beginner-Friendly Overview) */}
+      {meta.keyTakeaways.length > 0 && (
+        <section className="bg-white border border-[#E8E2D9] rounded-xl p-5 sm:p-6 space-y-3 shadow-2xs">
+          <div className="flex items-center gap-2 text-xs font-mono-num font-bold uppercase tracking-wider text-[#6E1A2B]">
+            <BookOpen className="w-4 h-4 text-[#C28E38]" />
+            <span>What You&apos;ll Learn in {meta.duration}</span>
+          </div>
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm text-[#2C2426]">
+            {meta.keyTakeaways.map((item, idx) => (
+              <li key={idx} className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3 leading-relaxed">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* PART 1: The Scene (Everyday Anchor) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -189,15 +209,15 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
         </div>
       </section>
 
-      {/* PART 3: Play With It (Interactive Visualization) */}
-      <section className="space-y-4">
+      {/* PART 3: Play With It (Prominent Interactive Visualization) */}
+      <section className="bg-[#FAF5EE]/70 border-2 border-[#E2D3BD] rounded-2xl p-4 sm:p-6 space-y-4 shadow-xs">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h2 className="font-serif-editorial text-2xl sm:text-3xl font-bold text-[#1D1819] flex items-center gap-2.5">
             <span className="w-3 h-3 rounded-full bg-[#C28E38]"></span>
             <span>3. Play With It: Interactive Workbench</span>
           </h2>
-          <span className="text-xs sm:text-sm text-[#968A86] font-mono-num font-medium">
-            Scene-Labeled Parameter Controls
+          <span className="text-xs font-mono-num uppercase tracking-wider px-2.5 py-1 rounded bg-[#6E1A2B] text-white font-semibold">
+            Hands-On Visual Lab
           </span>
         </div>
 
@@ -215,10 +235,15 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
       {/* PART 4: The Math & Step-by-Step Numerical Trace */}
       <section className="space-y-8 pt-4 border-t border-[#E8E2D9]">
         <div className="space-y-4">
-          <h2 className="font-serif-editorial text-2xl sm:text-3xl font-bold text-[#1D1819] flex items-center gap-2.5">
-            <span className="w-3 h-3 rounded-full bg-[#6E1A2B]"></span>
-            <span>4. The Math: Analytical Formulation & Worked Trace</span>
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-serif-editorial text-2xl sm:text-3xl font-bold text-[#1D1819] flex items-center gap-2.5">
+              <span className="w-3 h-3 rounded-full bg-[#6E1A2B]"></span>
+              <span>4. Intuition &amp; Mathematical Depth</span>
+            </h2>
+            <span className="text-[11px] font-mono-num uppercase tracking-wider px-2.5 py-0.5 rounded bg-[#F0FDF4] border border-[#BBF7D0] text-[#166534] font-semibold">
+              Beginner Intuition First
+            </span>
+          </div>
 
           <div className="space-y-4 text-base sm:text-lg text-[#2C2426] leading-relaxed max-w-4xl">
             {content.intuition.map((p, i) => (
@@ -229,59 +254,83 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
           </div>
         </div>
 
-        {/* KaTeX Formulas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {content.mathFormulas.map((f, i) => (
-            <div
-              key={i}
-              className="bg-white border border-[#E8E2D9] border-t-2 border-t-[#6E1A2B] rounded-lg p-5 sm:p-6 space-y-3.5 shadow-2xs hover:shadow-xs hover:border-[#D6CCC0] transition-all"
-            >
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#6E1A2B]">
-                {f.name}
-              </h3>
-              <div className="bg-[#FAF8F5] border-l-3 border-[#6E1A2B] p-3.5 rounded-r text-[#1D1819] overflow-x-auto text-base">
-                <MathEquation math={f.latex} block />
+        {/* Expandable Advanced Mathematical Depth */}
+        <div className="border border-[#E2D3BD] rounded-xl bg-[#FAF5EE]/50 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowMathDepth(v => !v)}
+            aria-expanded={showMathDepth}
+            className="w-full px-5 py-4 flex items-center justify-between gap-3 text-left hover:bg-[#FAF5EE] transition-colors cursor-pointer"
+          >
+            <div>
+              <div className="text-[11px] font-mono-num uppercase tracking-wider font-bold text-[#7A1C30]">
+                Advanced Mathematical Depth (Optional Deep Dive)
               </div>
-              <p className="text-sm sm:text-base text-[#54484E] leading-relaxed">
-                {f.explanation}
-              </p>
+              <div className="text-sm sm:text-base font-bold text-[#1D1819]">
+                {showMathDepth ? 'Hide' : 'Expand'} Formal Equations &amp; Step-by-Step Numerical Trace ({content.mathFormulas.length} Formulas • {content.workedExample.steps.length} Steps)
+              </div>
             </div>
-          ))}
-        </div>
+            <ChevronDown className={`w-5 h-5 text-[#7A1C30] transition-transform shrink-0 ${showMathDepth ? 'rotate-180' : ''}`} />
+          </button>
 
-        {/* Step-by-Step Worked Numerical Example */}
-        <div className="bg-white border border-[#E8E2D9] rounded-lg p-5 sm:p-6 space-y-4 shadow-2xs">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <h3 className="font-serif-editorial text-xl font-bold text-[#1D1819]">
-              Step-by-Step Worked Numerical Trace
-            </h3>
-            <span className="text-xs font-mono-num uppercase tracking-wider text-[#7A1C30] bg-[#FAF2E6] px-2.5 py-1 rounded">
-              Exact Arithmetic
-            </span>
-          </div>
-
-          <div className="text-sm sm:text-base font-medium text-[#625956] italic">
-            Scenario: {content.workedExample.scenario}
-          </div>
-
-          <div className="space-y-3">
-            {content.workedExample.steps.map((st, i) => (
-              <div
-                key={i}
-                className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-4 space-y-2 text-sm"
-              >
-                <div className="font-bold text-[#1D1819] text-sm sm:text-base">{st.label}</div>
-                <div className="bg-white p-2.5 rounded border border-[#E8E2D9] overflow-x-auto text-[#6E1A2B] text-base">
-                  <MathEquation math={st.math} block />
-                </div>
-                <div className="text-xs sm:text-sm text-[#54484E]">{st.note}</div>
+          {showMathDepth && (
+            <div className="p-5 pt-2 space-y-6 border-t border-[#E2D3BD]">
+              {/* KaTeX Formulas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {content.mathFormulas.map((f, i) => (
+                  <div
+                    key={i}
+                    className="bg-white border border-[#E8E2D9] border-t-2 border-t-[#6E1A2B] rounded-lg p-5 sm:p-6 space-y-3.5 shadow-2xs hover:shadow-xs hover:border-[#D6CCC0] transition-all"
+                  >
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-[#6E1A2B]">
+                      {f.name}
+                    </h3>
+                    <div className="bg-[#FAF8F5] border-l-3 border-[#6E1A2B] p-3.5 rounded-r text-[#1D1819] overflow-x-auto text-base">
+                      <MathEquation math={f.latex} block />
+                    </div>
+                    <p className="text-sm sm:text-base text-[#54484E] leading-relaxed">
+                      {f.explanation}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <div className="p-3.5 bg-[#FBF6EB] border border-[#E8D3A8] rounded-md text-sm sm:text-base font-semibold text-[#6E1A2B]">
-            {content.workedExample.result}
-          </div>
+              {/* Step-by-Step Worked Numerical Example */}
+              <div className="bg-white border border-[#E8E2D9] rounded-lg p-5 sm:p-6 space-y-4 shadow-2xs">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h3 className="font-serif-editorial text-xl font-bold text-[#1D1819]">
+                    Step-by-Step Worked Numerical Trace
+                  </h3>
+                  <span className="text-xs font-mono-num uppercase tracking-wider text-[#7A1C30] bg-[#FAF2E6] px-2.5 py-1 rounded">
+                    Exact Arithmetic
+                  </span>
+                </div>
+
+                <div className="text-sm sm:text-base font-medium text-[#625956] italic">
+                  Scenario: {content.workedExample.scenario}
+                </div>
+
+                <div className="space-y-3">
+                  {content.workedExample.steps.map((st, i) => (
+                    <div
+                      key={i}
+                      className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-4 space-y-2 text-sm"
+                    >
+                      <div className="font-bold text-[#1D1819] text-sm sm:text-base">{st.label}</div>
+                      <div className="bg-white p-2.5 rounded border border-[#E8E2D9] overflow-x-auto text-[#6E1A2B] text-base">
+                        <MathEquation math={st.math} block />
+                      </div>
+                      <div className="text-xs sm:text-sm text-[#54484E]">{st.note}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-3.5 bg-[#FBF6EB] border border-[#E8D3A8] rounded-md text-sm sm:text-base font-semibold text-[#6E1A2B]">
+                  {content.workedExample.result}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -404,6 +453,34 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
             </Link>
           </div>
         )}
+      </section>
+
+      {/* Clear Completion & Next-Step Experience */}
+      <section className={`rounded-xl p-5 border flex flex-wrap items-center justify-between gap-4 ${completed ? 'bg-[#F0FDF4] border-[#BBF7D0]' : 'bg-[#FAF5EE] border-[#E2D3BD]'}`}>
+        <div className="space-y-1">
+          <div className={`text-xs font-mono-num font-bold uppercase tracking-wider ${completed ? 'text-[#166534]' : 'text-[#7A1C30]'}`}>
+            {completed ? 'Lesson Completed' : 'Ready to Move On?'}
+          </div>
+          <p className="text-sm text-[#1D1819] font-medium">
+            {completed
+              ? next
+                ? `Great work! Continue to Lesson ${next.lessonCode}: ${next.title}.`
+                : 'You have reached the end of this track—explore the full roadmap or try an optional project.'
+              : 'Pass the Quick Check above or mark this lesson complete to save your progress.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => toggleLesson(meta.slug)}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors border cursor-pointer ${
+            completed
+              ? 'bg-white border-[#86EFAC] text-[#166534]'
+              : 'bg-[#7A1C30] border-[#7A1C30] text-white hover:bg-[#5E1424]'
+          }`}
+        >
+          <CheckCircle2 className="w-4 h-4" />
+          <span>{completed ? 'Completed ✓' : 'Mark Lesson Complete'}</span>
+        </button>
       </section>
 
       {/* Lesson Navigation Footer */}

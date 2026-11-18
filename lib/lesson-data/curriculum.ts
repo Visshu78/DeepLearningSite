@@ -1669,6 +1669,23 @@ export const CURRICULUM: ModuleMeta[] = [
 
 export const ALL_LESSONS = CURRICULUM.flatMap(m => m.lessons);
 
+export function getTrackStageLabel(trackNumber: number): string {
+  switch (trackNumber) {
+    case 0:
+      return 'Stage 1: Foundations';
+    case 9:
+      return 'Stage 2: Data Preparation';
+    case 1:
+      return 'Stage 3: Classical ML';
+    case 2:
+    case 3:
+    case 4:
+      return 'Stage 4: Deep Learning';
+    default:
+      return 'Stage 5: Advanced AI';
+  }
+}
+
 export function getLessonBySlug(slug: string): LessonMeta | undefined {
   return ALL_LESSONS.find(l => l.slug === slug);
 }

@@ -65,7 +65,7 @@ export function Navbar() {
           <Link
             href="/learn"
             className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[#E8E2D9] bg-white text-[11px] font-mono-num text-[#1D1819] hover:border-[#C28E38] transition-colors shadow-2xs"
-            title="Completed lessons out of 57 lessons across 10 tracks"
+            title={`Completed lessons out of ${availableCount} lessons across 10 tracks`}
           >
             <span className="w-2 h-2 rounded-full bg-[#C28E38]" aria-hidden="true"></span>
             <span>Progress:</span>

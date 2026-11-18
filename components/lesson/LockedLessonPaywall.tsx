@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Lock, Sparkles, ArrowLeft, CheckCircle2, ShieldCheck } from 'lucide-react';
-import type { LessonMeta } from '@/lib/lesson-data/curriculum';
+import { ALL_LESSONS, type LessonMeta } from '@/lib/lesson-data/curriculum';
+import { TRACK_PROJECTS } from '@/lib/lesson-data/projects';
 
 interface LockedLessonPaywallProps {
   meta: LessonMeta;
@@ -103,7 +104,7 @@ export function LockedLessonPaywall({ meta, sceneTitle }: LockedLessonPaywallPro
           </div>
           <div className="space-y-1">
             <h2 className="text-lg sm:text-xl font-extrabold text-[#1F191B]">
-              Unlock All 57 Interactive Lessons &amp; 21 Guided Projects
+              Unlock All {ALL_LESSONS.length} Interactive Lessons &amp; {TRACK_PROJECTS.length} Guided Projects
             </h2>
             <p className="text-xs sm:text-sm text-[#54484E] leading-relaxed">
               This lesson is served from a protected server route after an access check so paid lesson content and quiz solutions never leak into the client bundle or page source.

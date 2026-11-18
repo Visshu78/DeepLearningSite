@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { CURRICULUM } from '@/lib/lesson-data/curriculum';
+import { CURRICULUM, ALL_LESSONS } from '@/lib/lesson-data/curriculum';
 
 export function Footer() {
   return (
@@ -15,11 +15,11 @@ export function Footer() {
               </div>
               <span className="font-semibold text-sm text-[#1D1819]">NeuroPlay</span>
               <span className="text-[10px] font-mono-num uppercase px-1.5 py-0.5 rounded bg-[#FBF6EB] border border-[#E8D3A8] text-[#6E1A2B] font-semibold">
-                10 Tracks • 57 Lessons
+                {CURRICULUM.length} Tracks • {ALL_LESSONS.length} Lessons
               </span>
             </div>
             <p className="text-xs leading-relaxed">
-              A visual-first deep learning platform for college students in CS, AI, and ML. Understand deep learning by seeing it work: every lesson opens with a relatable daily-life scene, maps each piece to exact tested math, and links to resume-ready projects.
+              A visual-first deep learning platform for college students in CS, AI, and ML. Understand deep learning by seeing it work: every lesson opens with a relatable daily-life scene, maps each piece to exact tested math, and links to optional guided projects.
             </p>
             <div className="text-[11px] text-[#968A86]">
               Strict mathematical correctness: all visualizations are generated from pure analytical equations and verified derivatives.

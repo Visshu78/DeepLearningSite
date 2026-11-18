@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CURRICULUM, ALL_LESSONS, getLessonBySlug } from '@/lib/lesson-data/curriculum';
+import { CURRICULUM, ALL_LESSONS, getLessonBySlug, getTrackStageLabel } from '@/lib/lesson-data/curriculum';
 import { getProjectsByTrack, TRACK_PROJECTS } from '@/lib/lesson-data/projects';
 import { useLearningProgress } from '@/lib/progress/progressStore';
 import { CheckCircle2, Clock, Lock, ArrowRight, Layers, Compass, FolderGit2, Sparkles } from 'lucide-react';
@@ -37,7 +37,7 @@ export default function LearnRoadmapPage() {
           Learning Roadmap
         </h1>
         <p className="text-base text-[#54484E] max-w-3xl leading-relaxed">
-          Master machine learning and deep learning in the exact engineering order: start with the Math Toolkit (Track 0) and Data Preparation (Track 9) before training Classical ML (Track 1), Neural Foundations (Track 2), Optimization &amp; Debugging (Track 3), Vision (Track 4), Sequences (Track 5), Transformers (Track 6), Generative Models (Track 7), and Modern LLM Practice (Track 8). Every track includes a marked <strong>Free Preview</strong> lesson.
+          Track numbers are permanent topic IDs, not sequence numbers—so <strong>Stage 2: Data Preparation (Track 9)</strong> comes right after <strong>Stage 1: Foundations (Track 0)</strong> and before <strong>Stage 3: Classical ML (Track 1)</strong>, <strong>Stage 4: Deep Learning (Tracks 2–4)</strong>, and <strong>Stage 5: Advanced AI (Tracks 5–8)</strong>. Every track includes a marked <strong>Free Preview</strong> lesson.
         </p>
       </div>
 
@@ -69,7 +69,7 @@ export default function LearnRoadmapPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[11px] font-mono-num font-bold uppercase tracking-wider text-[#7A1C30] bg-[#FAF2E6] border border-[#EEDAA2] px-2 py-0.5 rounded">
-                      Step {module.learningOrder} • Track {module.number}
+                      {getTrackStageLabel(module.number)} • Step {module.learningOrder} (Track {module.number})
                     </span>
                     {hasAvailableLessons ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-mono-num px-2 py-0.5 rounded bg-[#FBF6EB] border border-[#E8D3A8] text-[#6E1A2B] font-semibold">

@@ -42,7 +42,7 @@ export default function ProjectsIndexPage() {
           Hands-On Track Projects &amp; Capstones
         </h1>
         <p className="text-base sm:text-lg text-[#54484E] max-w-3xl leading-relaxed">
-          Every track culminates in a real, resume-worthy build. Each project links directly to verified public datasets (with lightweight subsets for free Colab GPUs), step-by-step milestones, interview-style rubric questions, and a fill-in-the-numbers resume bullet.
+          Every track pairs its lessons with an <strong>optional, independent guided project</strong>—you can jump into any build whenever you&apos;re ready. Each project includes verified public dataset links (with lightweight subsets for free Colab GPUs), step-by-step milestones, interview-style rubric questions, and a fill-in-the-numbers resume bullet.
         </p>
       </header>
 

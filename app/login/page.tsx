@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { CURRICULUM, ALL_LESSONS } from '@/lib/lesson-data/curriculum';
 import { ShieldCheck, Lock, Unlock, LogOut, CheckCircle2 } from 'lucide-react';
 
 interface SessionInfo {
@@ -172,7 +173,7 @@ export default function LoginPage() {
               >
                 <div className="text-xs font-bold text-[#7A1C30]">NeuroPlay Pro (₹500)</div>
                 <div className="text-[11px] text-[#54484E] mt-0.5">
-                  All 57 lessons across 10 tracks
+                  All {ALL_LESSONS.length} lessons across {CURRICULUM.length} tracks
                 </div>
               </button>
             </div>

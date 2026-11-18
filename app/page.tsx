@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, Sliders, Sparkles, Compass, FolderGit2, Layers } from 'lucide-react';
 import { NeuronVisualizer } from '@/components/visualizers/NeuronVisualizer';
-import { CURRICULUM, ALL_LESSONS } from '@/lib/lesson-data/curriculum';
+import { CURRICULUM, ALL_LESSONS, getTrackStageLabel } from '@/lib/lesson-data/curriculum';
 import { TRACK_PROJECTS } from '@/lib/lesson-data/projects';
 
 export default function HomePage() {
@@ -54,11 +54,11 @@ export default function HomePage() {
           </div>
 
           <h1 className="hero-title text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#1D1819] tracking-tight leading-[1.1]">
-            Understand Deep Learning by seeing it work.
+            Understand Machine Learning and Deep Learning by seeing how they actually work.
           </h1>
 
           <p className="hero-description text-base sm:text-lg text-[#625956] leading-relaxed max-w-2xl mx-auto">
-            Taught through scenes from everyday life, backed by rigorous verified calculus, and proven by resume-ready projects. Start with the Math Toolkit (Track 0) and Data Preparation (Track 9) all the way through Transformers, Diffusion, and Modern LLMs.
+            Learn through intuitive explanations, interactive visualizations, mathematical walkthroughs, and hands-on projects—all in one structured learning path.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -90,9 +90,9 @@ export default function HomePage() {
           <div className="pt-2 flex flex-wrap items-center justify-center gap-5 text-xs text-[#968A86] font-mono-num">
             <span>10 Free Preview Lessons (1 Per Track)</span>
             <span className="text-[#C28E38]">•</span>
-            <span>Verified Analytical Derivatives</span>
+            <span>Interactive Visual Workbenches</span>
             <span className="text-[#C28E38]">•</span>
-            <span>21 Resume-Ready Projects</span>
+            <span>Optional Guided Projects</span>
           </div>
         </div>
 
@@ -148,11 +148,14 @@ export default function HomePage() {
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#E8E2D9] pb-4">
           <div className="space-y-1">
             <div className="text-xs font-mono-num font-semibold uppercase tracking-wider text-[#C28E38]">
-              10-Track Engineering Path (Track 0 → Track 9 → Tracks 1–8)
+              5-Stage Learning Sequence (Track IDs: 0 → 9 → 1–8)
             </div>
             <h2 className="font-serif-editorial text-2xl sm:text-3xl font-bold text-[#1D1819] tracking-tight">
               Curriculum Roadmap ({ALL_LESSONS.length} Lessons)
             </h2>
+            <p className="text-xs text-[#625956] max-w-2xl">
+              Track numbers are permanent topic IDs, not sequence numbers—so Stage 2 (Data Preparation, Track 9) comes right before Stage 3 (Classical ML, Track 1). Every track also pairs with an optional guided project.
+            </p>
           </div>
           <Link
             href="/learn"
@@ -174,7 +177,7 @@ export default function HomePage() {
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between text-[11px] font-mono-num text-[#968A86]">
                     <span className="font-bold text-[#6E1A2B] bg-[#FAF2E6] border border-[#EEDAA2] px-2 py-0.5 rounded">
-                      Step {module.learningOrder} • Track {module.number}
+                      {getTrackStageLabel(module.number)} • Track {module.number}
                     </span>
                     <span className="text-[#C28E38] font-semibold">{module.lessons.length} Lessons</span>
                   </div>
