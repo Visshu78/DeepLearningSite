@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { CURRICULUM, ALL_LESSONS } from '@/lib/lesson-data/curriculum';
+import { TRACK_PROJECTS } from '@/lib/lesson-data/projects';
 
 export function Footer() {
   return (
@@ -54,8 +55,8 @@ export function Footer() {
           <div className="md:col-span-3 space-y-2 text-xs">
             <h5 className="font-semibold uppercase tracking-wider text-[#1D1819]">Platform &amp; Labs</h5>
             <ul className="space-y-1.5">
-              <li><Link href="/learn" className="hover:text-[#6E1A2B] transition-colors">10-Track Curriculum Roadmap (57 Lessons)</Link></li>
-              <li><Link href="/projects" className="hover:text-[#6E1A2B] transition-colors">Hands-On Projects &amp; Capstones (21 Projects)</Link></li>
+              <li><Link href="/learn" className="hover:text-[#6E1A2B] transition-colors">10-Track Curriculum Roadmap ({ALL_LESSONS.length} Lessons)</Link></li>
+              <li><Link href="/projects" className="hover:text-[#6E1A2B] transition-colors">Hands-On Projects &amp; Capstones ({TRACK_PROJECTS.length} Projects)</Link></li>
               <li><Link href="/playground" className="hover:text-[#6E1A2B] transition-colors">Neural Network Playground</Link></li>
               <li><Link href="/practice" className="hover:text-[#6E1A2B] transition-colors">Concept Challenges &amp; Practice</Link></li>
               <li><Link href="/about" className="hover:text-[#6E1A2B] transition-colors">Design &amp; Pedagogy Mission</Link></li>
@@ -65,10 +66,10 @@ export function Footer() {
 
         <div className="pt-6 border-t border-[#E8E2D9] flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#968A86] gap-3">
           <div>
-            © 2026 NeuroPlay — Visual Deep Learning Platform (10 Tracks • 57 Lessons • 21 Projects).
+            © 2026 NeuroPlay — Visual Deep Learning Platform ({CURRICULUM.length} Tracks • {ALL_LESSONS.length} Lessons • {TRACK_PROJECTS.length} Projects).
           </div>
           <div className="text-[#C28E38] font-medium">
-            Scene first, rigorous verified math second.
+            Intuition first, mathematical depth when you want it.
           </div>
         </div>
       </div>

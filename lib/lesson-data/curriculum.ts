@@ -235,7 +235,7 @@ export const CURRICULUM: ModuleMeta[] = [
     learningOrder: 2,
     title: 'Classical ML',
     description:
-      'Master the workhorse algorithms of tabular data: Linear and Logistic Regression, Bias-Variance, Random Forests, k-Means, and PCA.',
+      'Master the workhorse algorithms of tabular data: Linear and Logistic Regression, Bias-Variance, Random Forests, k-Means, and practical ML applications of PCA (building on Track 0’s mathematical intuition).',
     status: 'available',
     projectSlugs: ['house-price-predictor', 'telco-customer-churn'],
     lessons: [
@@ -970,7 +970,7 @@ export const CURRICULUM: ModuleMeta[] = [
         moduleNumber: 4,
         lessonNumber: 11,
         duration: '20 min',
-        prerequisites: ['transfer-learning', 'image-segmentation-unet'],
+        prerequisites: ['transfer-learning'],
         status: 'available',
         relatedProjectSlug: 'chest-xray-classifier',
         keyTakeaways: [
@@ -1008,7 +1008,7 @@ export const CURRICULUM: ModuleMeta[] = [
         moduleNumber: 5,
         lessonNumber: 1,
         duration: '18 min',
-        prerequisites: ['forward-propagation'],
+        prerequisites: ['vectors-matrices-and-dot-products'],
         status: 'available',
         relatedProjectSlug: 'lstm-food-review-sentiment',
         keyTakeaways: [
@@ -1131,7 +1131,7 @@ export const CURRICULUM: ModuleMeta[] = [
         moduleNumber: 6,
         lessonNumber: 1,
         duration: '22 min',
-        prerequisites: ['forward-propagation'],
+        prerequisites: ['embeddings-and-word-vectors'],
         status: 'available',
         relatedProjectSlug: 'tiny-chatgpt-from-scratch',
         keyTakeaways: [
