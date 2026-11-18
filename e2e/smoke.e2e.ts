@@ -87,3 +87,27 @@ test('unknown lesson renders the not-found page', async ({ page }) => {
   await expect(page.getByText('Error 404')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Browse Curriculum' })).toBeVisible();
 });
+
+test('header/footer show 67 lessons and lesson progress persists across reload and login', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('footer')).toContainText('10 Tracks • 67 Lessons');
+  await expect(page.getByRole('banner')).toContainText('0/67');
+
+  await page.goto('/learn/vectors-matrices-and-dot-products');
+  await page.getByRole('button', { name: /Mark Lesson Complete/i }).click();
+  await expect(page.getByRole('banner')).toContainText('1/67');
+
+  // Login and verify progress still persists
+  await page.goto('/login');
+  await page.getByRole('button', { name: /Save Server Session/i }).click();
+  await page.goto('/learn');
+  await expect(page.getByText('1 / 67 Lessons Completed')).toBeVisible();
+});
+
+test('project detail page shows prerequisites, deliverables, and interactive completion tracker', async ({ page }) => {
+  await page.goto('/projects/clean-the-messy-dataset');
+  await expect(page.getByText(/Prerequisites \(Recommended Before Starting\)/i)).toBeVisible();
+  await expect(page.getByText(/Concrete Deliverables/i)).toBeVisible();
+  await page.getByRole('button', { name: /Mark Project Complete/i }).click();
+  await expect(page.getByText('Project Completed')).toBeVisible();
+});

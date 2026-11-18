@@ -22,7 +22,7 @@ export function Footer() {
               A visual-first deep learning platform for college students in CS, AI, and ML. Understand deep learning by seeing it work: every lesson opens with a relatable daily-life scene, maps each piece to exact tested math, and links to optional guided projects.
             </p>
             <div className="text-[11px] text-[#968A86]">
-              Strict mathematical correctness: all visualizations are generated from pure analytical equations and verified derivatives.
+              Learn by doing: interactive visual workbenches, clear mathematical walkthroughs, and optional hands-on projects.
             </div>
           </div>
 

@@ -112,7 +112,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
           <div className="max-w-2xl space-y-2">
             <div className="text-xs font-mono-num font-semibold uppercase tracking-wider text-[#C28E38]">
-              Scene First, Verified Math Second
+              Intuition First, Math When You Want It
             </div>
             <h2 className="font-serif-editorial text-2xl sm:text-3xl font-bold text-[#1D1819] tracking-tight">
               Inside Every NeuroPlay Lesson

@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   BookOpen,
 } from 'lucide-react';
+import { ProjectCompletionTracker } from '@/components/projects/ProjectCompletionTracker';
 import type { Metadata } from 'next';
 
 export async function generateStaticParams() {
@@ -125,6 +126,28 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             <span>Visit Official Dataset Source</span>
             <ExternalLink className="w-3.5 h-3.5 text-[#7A1C30]" />
           </a>
+        </div>
+
+        {/* Prerequisites & Concrete Deliverables */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 text-xs sm:text-sm">
+          <div className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-4 space-y-1.5">
+            <div className="font-mono-num text-[11px] font-bold uppercase tracking-wider text-[#6E1A2B]">
+              Prerequisites (Recommended Before Starting)
+            </div>
+            <p className="text-[#54484E] leading-relaxed">
+              {relatedLessons.length > 0
+                ? `Complete Track ${project.trackNumber} lessons (${relatedLessons.slice(0, 3).map(l => l.lessonCode).join(', ')}) or jump in directly if you already know the concepts.`
+                : 'Recommended after completing the core tracks; you can also start independently.'}
+            </p>
+          </div>
+          <div className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-4 space-y-1.5">
+            <div className="font-mono-num text-[11px] font-bold uppercase tracking-wider text-[#166534]">
+              Concrete Deliverables
+            </div>
+            <p className="text-[#54484E] leading-relaxed">
+              Reproducible notebook completing all {project.milestones.length} milestones, logged evaluation metrics, answers to the 3 rubric questions, and your filled-in resume bullet.
+            </p>
+          </div>
         </div>
       </header>
 
@@ -310,6 +333,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </ul>
         </div>
       </section>
+
+      {/* Interactive Project Completion Tracker */}
+      <ProjectCompletionTracker
+        projectSlug={project.slug}
+        milestones={project.milestones.map(m => ({ number: m.number, title: m.title }))}
+      />
 
       {/* Related Track Lessons */}
       {relatedLessons.length > 0 && (
