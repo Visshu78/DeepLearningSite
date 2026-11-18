@@ -148,13 +148,13 @@ export default function HomePage() {
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#E8E2D9] pb-4">
           <div className="space-y-1">
             <div className="text-xs font-mono-num font-semibold uppercase tracking-wider text-[#C28E38]">
-              5-Stage Learning Sequence (Track IDs: 0 → 9 → 1–8)
+              Sequential Learning Path (Tracks 0 → 9)
             </div>
             <h2 className="font-serif-editorial text-2xl sm:text-3xl font-bold text-[#1D1819] tracking-tight">
               Curriculum Roadmap ({ALL_LESSONS.length} Lessons)
             </h2>
             <p className="text-xs text-[#625956] max-w-2xl">
-              Track numbers are permanent topic IDs, not sequence numbers—so Stage 2 (Data Preparation, Track 9) comes right before Stage 3 (Classical ML, Track 1). Every track also pairs with an optional guided project.
+              Follow Tracks 0 through 9 in order—from math foundations and classical ML to deep neural networks, transformers, and production data engineering. Every track also pairs with an optional guided project.
             </p>
           </div>
           <Link

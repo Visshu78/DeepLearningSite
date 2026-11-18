@@ -227,182 +227,12 @@ export const CURRICULUM: ModuleMeta[] = [
   },
 
   // =========================================================================
-  // TRACK 9: Data Preparation and Feature Engineering (Learning Order #2)
-  // =========================================================================
-  {
-    id: 'track-9',
-    number: 9,
-    learningOrder: 2,
-    title: 'Data Preparation and Feature Engineering',
-    description:
-      'Clean messy real-world tables, impute missing values, scale features, encode categories, and build leak-free pipelines before touching any model.',
-    status: 'available',
-    projectSlugs: ['clean-the-messy-dataset'],
-    lessons: [
-      {
-        id: 'lesson-9-1',
-        lessonCode: '9.1',
-        slug: 'first-look-at-data-eda',
-        title: 'First Look at Data (Types, Summary Stats, Quick EDA)',
-        subtitle: 'Distinguishing numeric, categorical, ordinal, and timestamp columns; mean vs median and skewness.',
-        everydayScene: 'Inspecting a fruit basket before making juice',
-        isFreePreview: false,
-        moduleId: 'track-9',
-        moduleName: 'Data Preparation and Feature Engineering',
-        moduleNumber: 9,
-        lessonNumber: 1,
-        duration: '15 min',
-        prerequisites: [],
-        status: 'available',
-        relatedProjectSlug: 'clean-the-messy-dataset',
-        keyTakeaways: [
-          'Always inspect column types, cardinality, and missing counts before modeling',
-          'Median and IQR are robust to skewed distributions where the mean gets pulled by extremes',
-          'Visualizing distributions catches data-entry bugs (like negative ages or 9999 placeholders) early'
-        ]
-      },
-      {
-        id: 'lesson-9-2',
-        lessonCode: '9.2',
-        slug: 'handling-missing-data',
-        title: 'Handling Missing Data',
-        subtitle: 'Dropping rows, mean/median imputation, missingness indicator flags, and KNN imputation.',
-        everydayScene: 'Blank answers on a form, and what to do with them',
-        isFreePreview: true,
-        moduleId: 'track-9',
-        moduleName: 'Data Preparation and Feature Engineering',
-        moduleNumber: 9,
-        lessonNumber: 2,
-        duration: '18 min',
-        prerequisites: ['first-look-at-data-eda'],
-        status: 'available',
-        relatedProjectSlug: 'clean-the-messy-dataset',
-        keyTakeaways: [
-          'Drop rows only when <5% are missing completely at random; drop columns over ~60% empty',
-          'Impute numeric columns with the median (or mean when symmetric) and add a "was_missing" flag when missingness is informative',
-          'Fit imputers strictly on the training split to prevent test-set leakage'
-        ]
-      },
-      {
-        id: 'lesson-9-3',
-        lessonCode: '9.3',
-        slug: 'outliers-and-feature-scaling',
-        title: 'Outliers and Feature Scaling',
-        subtitle: 'Z-score standardization, Min-Max scaling, Robust IQR scaling, and when tree models skip scaling.',
-        everydayScene: 'One billionaire in a tea stall\'s customer list; comparing centimeters with kilometers',
-        isFreePreview: false,
-        moduleId: 'track-9',
-        moduleName: 'Data Preparation and Feature Engineering',
-        moduleNumber: 9,
-        lessonNumber: 3,
-        duration: '18 min',
-        prerequisites: ['handling-missing-data'],
-        status: 'available',
-        relatedProjectSlug: 'clean-the-messy-dataset',
-        keyTakeaways: [
-          'Tukey IQR fences [Q₁ - 1.5·IQR, Q₃ + 1.5·IQR] detect outliers without the masking effect that inflates Z-score standard deviations',
-          'Standardization z = (x - μ)/σ centers features for linear models, SVMs, k-means, PCA, and neural networks; RobustScaler uses median and IQR to resist outliers',
-          'Min-Max scaling maps training values into [0, 1] (though unseen test values outside the training range can fall outside [0, 1]), while tree models do not require scaling'
-        ]
-      },
-      {
-        id: 'lesson-9-4',
-        lessonCode: '9.4',
-        slug: 'encoding-categorical-features',
-        title: 'Encoding Categorical Features',
-        subtitle: 'One-hot, ordinal, frequency, and smoothed cross-validated target encoding without leakage.',
-        everydayScene: 'Turning city names into numbers without implying Mumbai is "greater" than Delhi',
-        isFreePreview: false,
-        moduleId: 'track-9',
-        moduleName: 'Data Preparation and Feature Engineering',
-        moduleNumber: 9,
-        lessonNumber: 4,
-        duration: '20 min',
-        prerequisites: ['outliers-and-feature-scaling'],
-        status: 'available',
-        relatedProjectSlug: 'clean-the-messy-dataset',
-        keyTakeaways: [
-          'Use One-Hot encoding for low-cardinality unordered categories (<15 values) and Ordinal encoding only when true order exists',
-          'Never feed arbitrary integer label encodings of unordered categories into linear models or neural networks',
-          'High-cardinality features (pincode, city) use smoothed target encoding computed strictly inside cross-validation folds'
-        ]
-      },
-      {
-        id: 'lesson-9-5',
-        lessonCode: '9.5',
-        slug: 'splits-cross-validation-and-leakage',
-        title: 'Train/Validation/Test Split, Cross-Validation and Data Leakage',
-        subtitle: 'K-fold cross-validation, time-based splits, and catching subtle preprocessing and target leakage.',
-        everydayScene: 'Seeing the exam paper beforehand',
-        isFreePreview: false,
-        moduleId: 'track-9',
-        moduleName: 'Data Preparation and Feature Engineering',
-        moduleNumber: 9,
-        lessonNumber: 5,
-        duration: '20 min',
-        prerequisites: ['encoding-categorical-features'],
-        status: 'available',
-        relatedProjectSlug: 'clean-the-messy-dataset',
-        keyTakeaways: [
-          'Fit every imputer, scaler, and encoder on the training split only, then transform validation and test splits',
-          'K-Fold cross-validation reduces evaluation variance by rotating the validation fold across all samples',
-          'Fitting preprocessing on the full dataset before splitting leaks test statistics and produces fake, inflated accuracy'
-        ]
-      },
-      {
-        id: 'lesson-9-6',
-        lessonCode: '9.6',
-        slug: 'imbalanced-data-and-metrics',
-        title: 'Imbalanced Data (SMOTE, Class Weights, Right Metrics)',
-        subtitle: 'Why 99.9% accuracy can be useless; Precision, Recall, F1, PR-AUC, class weighting, and SMOTE.',
-        everydayScene: 'Finding one thief among 10,000 visitors',
-        isFreePreview: false,
-        moduleId: 'track-9',
-        moduleName: 'Data Preparation and Feature Engineering',
-        moduleNumber: 9,
-        lessonNumber: 6,
-        duration: '18 min',
-        prerequisites: ['splits-cross-validation-and-leakage'],
-        status: 'available',
-        relatedProjectSlug: 'clean-the-messy-dataset',
-        keyTakeaways: [
-          'On 99:1 imbalanced data, a dummy classifier scores 99% accuracy while catching 0% of minority cases',
-          'Precision measures how many flagged alerts are real; Recall measures how many real positives were caught; F1 is their harmonic mean',
-          'Apply inverse class weights in the loss function or synthesize minority training points via SMOTE (on the training fold only)'
-        ]
-      },
-      {
-        id: 'lesson-9-7',
-        lessonCode: '9.7',
-        slug: 'feature-engineering-and-pipelines',
-        title: 'Feature Engineering, Selection and Pipelines',
-        subtitle: 'Interaction ratios, cyclical date features, mutual information selection, and reproducible pipelines.',
-        everydayScene: 'Cooking a recipe in a repeatable order',
-        isFreePreview: false,
-        moduleId: 'track-9',
-        moduleName: 'Data Preparation and Feature Engineering',
-        moduleNumber: 9,
-        lessonNumber: 7,
-        duration: '20 min',
-        prerequisites: ['imbalanced-data-and-metrics'],
-        status: 'available',
-        relatedProjectSlug: 'clean-the-messy-dataset',
-        keyTakeaways: [
-          'Domain ratios (like EMI-to-income) and sin/cos cyclical time encodings expose linear relationships to simple models',
-          'Feature selection via variance thresholds, L1 sparsity, and permutation importance prunes noisy columns',
-          'Wrapping all steps in a single Pipeline guarantees identical, leak-free execution during cross-validation and production inference'
-        ]
-      }
-    ]
-  },
-
-  // =========================================================================
-  // TRACK 1: Classical ML (Learning Order #3)
+  // TRACK 1: Classical ML (Learning Order #2)
   // =========================================================================
   {
     id: 'track-1',
     number: 1,
-    learningOrder: 3,
+    learningOrder: 2,
     title: 'Classical ML',
     description:
       'Master the workhorse algorithms of tabular data: Linear and Logistic Regression, Bias-Variance, Random Forests, k-Means, and PCA.',
@@ -567,12 +397,12 @@ export const CURRICULUM: ModuleMeta[] = [
   },
 
   // =========================================================================
-  // TRACK 2: Neural Network Foundations (Learning Order #4)
+  // TRACK 2: Neural Network Foundations (Learning Order #3)
   // =========================================================================
   {
     id: 'track-2',
     number: 2,
-    learningOrder: 4,
+    learningOrder: 3,
     title: 'Neural Network Foundations',
     description:
       'See how artificial neurons, non-linear activations, forward passes, loss landscapes, gradient descent, and backpropagation work from first principles.',
@@ -742,12 +572,12 @@ export const CURRICULUM: ModuleMeta[] = [
   },
 
   // =========================================================================
-  // TRACK 3: Training Neural Networks Well (Learning Order #5)
+  // TRACK 3: Training Neural Networks Well (Learning Order #4)
   // =========================================================================
   {
     id: 'track-3',
     number: 3,
-    learningOrder: 5,
+    learningOrder: 4,
     title: 'Training Neural Networks Well',
     description:
       'Diagnose and stabilize deep network training with weight initialization, normalization, L2 & Dropout, adaptive optimizers, schedules, and loss curve debugging.',
@@ -890,12 +720,12 @@ export const CURRICULUM: ModuleMeta[] = [
   },
 
   // =========================================================================
-  // TRACK 4: Computer Vision (Learning Order #6)
+  // TRACK 4: Computer Vision (Learning Order #5)
   // =========================================================================
   {
     id: 'track-4',
     number: 4,
-    learningOrder: 6,
+    learningOrder: 5,
     title: 'Computer Vision',
     description:
       'Understand spatial filtering, receptive fields, CNN inference, backpropagation through kernels, ResNet, EfficientNet, Transfer Learning, YOLO, and U-Net.',
@@ -1153,12 +983,12 @@ export const CURRICULUM: ModuleMeta[] = [
   },
 
   // =========================================================================
-  // TRACK 5: Sequence Models (Learning Order #7)
+  // TRACK 5: Sequence Models (Learning Order #6)
   // =========================================================================
   {
     id: 'track-5',
     number: 5,
-    learningOrder: 7,
+    learningOrder: 6,
     title: 'Sequence Models',
     description:
       'Represent words as dense vectors and process sequential text and time-series with RNNs, BPTT, LSTMs, GRUs, and Seq2Seq.',
@@ -1276,12 +1106,12 @@ export const CURRICULUM: ModuleMeta[] = [
   },
 
   // =========================================================================
-  // TRACK 6: Attention and Transformers (Learning Order #8)
+  // TRACK 6: Attention and Transformers (Learning Order #7)
   // =========================================================================
   {
     id: 'track-6',
     number: 6,
-    learningOrder: 8,
+    learningOrder: 7,
     title: 'Attention and Transformers',
     description:
       'Master the architectural revolution behind modern AI: Scaled Dot-Product Attention, Multi-Head Attention, Positional Encoding, BERT vs GPT, and Vision Transformers.',
@@ -1423,12 +1253,12 @@ export const CURRICULUM: ModuleMeta[] = [
   },
 
   // =========================================================================
-  // TRACK 7: Generative Models (Learning Order #9)
+  // TRACK 7: Generative Models (Learning Order #8)
   // =========================================================================
   {
     id: 'track-7',
     number: 7,
-    learningOrder: 9,
+    learningOrder: 8,
     title: 'Generative Models',
     description:
       'Compress data into latent manifolds and synthesize realistic new images with Autoencoders, VAEs, GANs, and Denoising Diffusion Models.',
@@ -1523,12 +1353,12 @@ export const CURRICULUM: ModuleMeta[] = [
   },
 
   // =========================================================================
-  // TRACK 8: Modern LLM Practice (Learning Order #10)
+  // TRACK 8: Modern LLM Practice (Learning Order #9)
   // =========================================================================
   {
     id: 'track-8',
     number: 8,
-    learningOrder: 10,
+    learningOrder: 9,
     title: 'Modern LLM Practice',
     description:
       'Go from Transformer theory to real-world LLM engineering: BPE tokenization, LoRA fine-tuning, Retrieval-Augmented Generation (RAG), and RLHF.',
@@ -1664,6 +1494,176 @@ export const CURRICULUM: ModuleMeta[] = [
         ]
       }
     ]
+  },
+
+  // =========================================================================
+  // TRACK 9: Data Preparation and Feature Engineering (Learning Order #10)
+  // =========================================================================
+  {
+    id: 'track-9',
+    number: 9,
+    learningOrder: 10,
+    title: 'Data Preparation and Feature Engineering',
+    description:
+      'Clean messy real-world tables, impute missing values, scale features, encode categories, and build leak-free pipelines before touching any model.',
+    status: 'available',
+    projectSlugs: ['clean-the-messy-dataset'],
+    lessons: [
+      {
+        id: 'lesson-9-1',
+        lessonCode: '9.1',
+        slug: 'first-look-at-data-eda',
+        title: 'First Look at Data (Types, Summary Stats, Quick EDA)',
+        subtitle: 'Distinguishing numeric, categorical, ordinal, and timestamp columns; mean vs median and skewness.',
+        everydayScene: 'Inspecting a fruit basket before making juice',
+        isFreePreview: false,
+        moduleId: 'track-9',
+        moduleName: 'Data Preparation and Feature Engineering',
+        moduleNumber: 9,
+        lessonNumber: 1,
+        duration: '15 min',
+        prerequisites: [],
+        status: 'available',
+        relatedProjectSlug: 'clean-the-messy-dataset',
+        keyTakeaways: [
+          'Always inspect column types, cardinality, and missing counts before modeling',
+          'Median and IQR are robust to skewed distributions where the mean gets pulled by extremes',
+          'Visualizing distributions catches data-entry bugs (like negative ages or 9999 placeholders) early'
+        ]
+      },
+      {
+        id: 'lesson-9-2',
+        lessonCode: '9.2',
+        slug: 'handling-missing-data',
+        title: 'Handling Missing Data',
+        subtitle: 'Dropping rows, mean/median imputation, missingness indicator flags, and KNN imputation.',
+        everydayScene: 'Blank answers on a form, and what to do with them',
+        isFreePreview: true,
+        moduleId: 'track-9',
+        moduleName: 'Data Preparation and Feature Engineering',
+        moduleNumber: 9,
+        lessonNumber: 2,
+        duration: '18 min',
+        prerequisites: ['first-look-at-data-eda'],
+        status: 'available',
+        relatedProjectSlug: 'clean-the-messy-dataset',
+        keyTakeaways: [
+          'Drop rows only when <5% are missing completely at random; drop columns over ~60% empty',
+          'Impute numeric columns with the median (or mean when symmetric) and add a "was_missing" flag when missingness is informative',
+          'Fit imputers strictly on the training split to prevent test-set leakage'
+        ]
+      },
+      {
+        id: 'lesson-9-3',
+        lessonCode: '9.3',
+        slug: 'outliers-and-feature-scaling',
+        title: 'Outliers and Feature Scaling',
+        subtitle: 'Z-score standardization, Min-Max scaling, Robust IQR scaling, and when tree models skip scaling.',
+        everydayScene: 'One billionaire in a tea stall\'s customer list; comparing centimeters with kilometers',
+        isFreePreview: false,
+        moduleId: 'track-9',
+        moduleName: 'Data Preparation and Feature Engineering',
+        moduleNumber: 9,
+        lessonNumber: 3,
+        duration: '18 min',
+        prerequisites: ['handling-missing-data'],
+        status: 'available',
+        relatedProjectSlug: 'clean-the-messy-dataset',
+        keyTakeaways: [
+          'Tukey IQR fences [Q₁ - 1.5·IQR, Q₃ + 1.5·IQR] detect outliers without the masking effect that inflates Z-score standard deviations',
+          'Standardization z = (x - μ)/σ centers features for linear models, SVMs, k-means, PCA, and neural networks; RobustScaler uses median and IQR to resist outliers',
+          'Min-Max scaling maps training values into [0, 1] (though unseen test values outside the training range can fall outside [0, 1]), while tree models do not require scaling'
+        ]
+      },
+      {
+        id: 'lesson-9-4',
+        lessonCode: '9.4',
+        slug: 'encoding-categorical-features',
+        title: 'Encoding Categorical Features',
+        subtitle: 'One-hot, ordinal, frequency, and smoothed cross-validated target encoding without leakage.',
+        everydayScene: 'Turning city names into numbers without implying Mumbai is "greater" than Delhi',
+        isFreePreview: false,
+        moduleId: 'track-9',
+        moduleName: 'Data Preparation and Feature Engineering',
+        moduleNumber: 9,
+        lessonNumber: 4,
+        duration: '20 min',
+        prerequisites: ['outliers-and-feature-scaling'],
+        status: 'available',
+        relatedProjectSlug: 'clean-the-messy-dataset',
+        keyTakeaways: [
+          'Use One-Hot encoding for low-cardinality unordered categories (<15 values) and Ordinal encoding only when true order exists',
+          'Never feed arbitrary integer label encodings of unordered categories into linear models or neural networks',
+          'High-cardinality features (pincode, city) use smoothed target encoding computed strictly inside cross-validation folds'
+        ]
+      },
+      {
+        id: 'lesson-9-5',
+        lessonCode: '9.5',
+        slug: 'splits-cross-validation-and-leakage',
+        title: 'Train/Validation/Test Split, Cross-Validation and Data Leakage',
+        subtitle: 'K-fold cross-validation, time-based splits, and catching subtle preprocessing and target leakage.',
+        everydayScene: 'Seeing the exam paper beforehand',
+        isFreePreview: false,
+        moduleId: 'track-9',
+        moduleName: 'Data Preparation and Feature Engineering',
+        moduleNumber: 9,
+        lessonNumber: 5,
+        duration: '20 min',
+        prerequisites: ['encoding-categorical-features'],
+        status: 'available',
+        relatedProjectSlug: 'clean-the-messy-dataset',
+        keyTakeaways: [
+          'Fit every imputer, scaler, and encoder on the training split only, then transform validation and test splits',
+          'K-Fold cross-validation reduces evaluation variance by rotating the validation fold across all samples',
+          'Fitting preprocessing on the full dataset before splitting leaks test statistics and produces fake, inflated accuracy'
+        ]
+      },
+      {
+        id: 'lesson-9-6',
+        lessonCode: '9.6',
+        slug: 'imbalanced-data-and-metrics',
+        title: 'Imbalanced Data (SMOTE, Class Weights, Right Metrics)',
+        subtitle: 'Why 99.9% accuracy can be useless; Precision, Recall, F1, PR-AUC, class weighting, and SMOTE.',
+        everydayScene: 'Finding one thief among 10,000 visitors',
+        isFreePreview: false,
+        moduleId: 'track-9',
+        moduleName: 'Data Preparation and Feature Engineering',
+        moduleNumber: 9,
+        lessonNumber: 6,
+        duration: '18 min',
+        prerequisites: ['splits-cross-validation-and-leakage'],
+        status: 'available',
+        relatedProjectSlug: 'clean-the-messy-dataset',
+        keyTakeaways: [
+          'On 99:1 imbalanced data, a dummy classifier scores 99% accuracy while catching 0% of minority cases',
+          'Precision measures how many flagged alerts are real; Recall measures how many real positives were caught; F1 is their harmonic mean',
+          'Apply inverse class weights in the loss function or synthesize minority training points via SMOTE (on the training fold only)'
+        ]
+      },
+      {
+        id: 'lesson-9-7',
+        lessonCode: '9.7',
+        slug: 'feature-engineering-and-pipelines',
+        title: 'Feature Engineering, Selection and Pipelines',
+        subtitle: 'Interaction ratios, cyclical date features, mutual information selection, and reproducible pipelines.',
+        everydayScene: 'Cooking a recipe in a repeatable order',
+        isFreePreview: false,
+        moduleId: 'track-9',
+        moduleName: 'Data Preparation and Feature Engineering',
+        moduleNumber: 9,
+        lessonNumber: 7,
+        duration: '20 min',
+        prerequisites: ['imbalanced-data-and-metrics'],
+        status: 'available',
+        relatedProjectSlug: 'clean-the-messy-dataset',
+        keyTakeaways: [
+          'Domain ratios (like EMI-to-income) and sin/cos cyclical time encodings expose linear relationships to simple models',
+          'Feature selection via variance thresholds, L1 sparsity, and permutation importance prunes noisy columns',
+          'Wrapping all steps in a single Pipeline guarantees identical, leak-free execution during cross-validation and production inference'
+        ]
+      }
+    ]
   }
 ];
 
@@ -1673,16 +1673,20 @@ export function getTrackStageLabel(trackNumber: number): string {
   switch (trackNumber) {
     case 0:
       return 'Stage 1: Foundations';
-    case 9:
-      return 'Stage 2: Data Preparation';
     case 1:
-      return 'Stage 3: Classical ML';
+      return 'Stage 2: Classical ML';
     case 2:
     case 3:
     case 4:
-      return 'Stage 4: Deep Learning';
+      return 'Stage 3: Deep Learning';
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+      return 'Stage 4: Advanced AI';
+    case 9:
     default:
-      return 'Stage 5: Advanced AI';
+      return 'Stage 5: Data Engineering';
   }
 }
 

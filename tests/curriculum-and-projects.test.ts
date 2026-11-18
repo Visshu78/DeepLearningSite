@@ -4,10 +4,10 @@ import { LESSON_DETAILS } from '../lib/lesson-data/lessonContent';
 import { TRACK_PROJECTS, getProjectBySlug } from '../lib/lesson-data/projects';
 
 describe('NeuroPlay PRD v2.1 Curriculum & Lesson Structure', () => {
-  it('defines all 10 tracks in the exact learning order (0 -> 9 -> 1..8) with 67 total lessons', () => {
+  it('defines all 10 tracks in sequential order (0..9) with 67 total lessons', () => {
     expect(CURRICULUM.length).toBe(10);
     const trackNumbers = CURRICULUM.map(t => t.number);
-    expect(trackNumbers).toEqual([0, 9, 1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(trackNumbers).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(ALL_LESSONS.length).toBe(67);
   });
 

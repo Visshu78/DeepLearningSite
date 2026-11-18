@@ -53,7 +53,7 @@ export default function ProjectsIndexPage() {
             Track Projects (In Learning Order)
           </h2>
           <p className="text-xs sm:text-sm text-[#625956]">
-            Follow the official NeuroPlay progression: Track 0 (Math Toolkit) → Track 9 (Data Prep) → Tracks 1 through 8.
+            Follow the NeuroPlay progression sequentially from Track 0 through Track 9, or jump into any project independently.
           </p>
         </div>
 

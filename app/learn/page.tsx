@@ -37,7 +37,7 @@ export default function LearnRoadmapPage() {
           Learning Roadmap
         </h1>
         <p className="text-base text-[#54484E] max-w-3xl leading-relaxed">
-          Track numbers are permanent topic IDs, not sequence numbers—so <strong>Stage 2: Data Preparation (Track 9)</strong> comes right after <strong>Stage 1: Foundations (Track 0)</strong> and before <strong>Stage 3: Classical ML (Track 1)</strong>, <strong>Stage 4: Deep Learning (Tracks 2–4)</strong>, and <strong>Stage 5: Advanced AI (Tracks 5–8)</strong>. Every track includes a marked <strong>Free Preview</strong> lesson.
+          Progress cleanly from <strong>Track 0 to Track 9</strong>: start with <strong>Stage 1: Foundations (Track 0)</strong> and <strong>Stage 2: Classical ML (Track 1)</strong>, then move through <strong>Stage 3: Deep Learning (Tracks 2–4)</strong>, <strong>Stage 4: Advanced AI (Tracks 5–8)</strong>, and <strong>Stage 5: Data Engineering (Track 9)</strong>. Every track includes a marked <strong>Free Preview</strong> lesson.
         </p>
       </div>
 
