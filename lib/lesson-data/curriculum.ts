@@ -518,6 +518,50 @@ export const CURRICULUM: ModuleMeta[] = [
           'Principal Component Analysis (PCA) projects data onto the top eigenvectors of the covariance matrix',
           'The explained variance ratio λᵢ / Σλⱼ tells you how much signal survives dimensionality compression'
         ]
+      },
+      {
+        id: 'lesson-1-6',
+        lessonCode: '1.6',
+        slug: 'knn-svm-and-naive-bayes',
+        title: 'k-NN, Support Vector Machines (SVM) & Naive Bayes',
+        subtitle: 'Distance-based voting, maximum-margin hyperplanes with the kernel trick, and probabilistic Bayes classification.',
+        everydayScene: 'Asking your 5 closest neighbors (k-NN), widening the road median between lanes (SVM), and scoring spam clues independently (Naive Bayes)',
+        isFreePreview: false,
+        moduleId: 'track-1',
+        moduleName: 'Classical Machine Learning Foundations',
+        moduleNumber: 1,
+        lessonNumber: 6,
+        duration: '20 min',
+        prerequisites: ['logistic-regression', 'norms-distances-and-eigenvalues-pca'],
+        status: 'available',
+        relatedProjectSlug: 'titanic-or-churn-classifier',
+        keyTakeaways: [
+          'k-NN is non-parametric and sensitive to feature scaling and the curse of dimensionality',
+          'SVMs maximize the geometric margin 2/||w||₂ using support vectors and can separate non-linear data via kernels K(x, x′)',
+          'Naive Bayes applies Bayes’ theorem assuming conditional independence of features given the class label'
+        ]
+      },
+      {
+        id: 'lesson-1-7',
+        lessonCode: '1.7',
+        slug: 'gradient-boosting-and-xgboost',
+        title: 'Gradient Boosting & XGBoost',
+        subtitle: 'Sequential residual fitting, learning-rate shrinkage, and second-order Newton tree leaf weights.',
+        everydayScene: 'A relay team of coaches where each new coach focuses strictly on fixing the previous coach’s mistakes',
+        isFreePreview: false,
+        moduleId: 'track-1',
+        moduleName: 'Classical Machine Learning Foundations',
+        moduleNumber: 1,
+        lessonNumber: 7,
+        duration: '20 min',
+        prerequisites: ['decision-trees-and-random-forests'],
+        status: 'available',
+        relatedProjectSlug: 'titanic-or-churn-classifier',
+        keyTakeaways: [
+          'Bagging (Random Forests) trains deep trees in parallel to cut variance; Boosting trains shallow trees sequentially to cut bias',
+          'Gradient Boosting fits each new tree to the negative gradient (pseudo-residuals) of the loss function',
+          'XGBoost uses both first-order gradients gᵢ and second-order Hessians hᵢ with L2 leaf regularization λ'
+        ]
       }
     ]
   },
@@ -1082,6 +1126,28 @@ export const CURRICULUM: ModuleMeta[] = [
           'U-Net pairs a contracting encoder with an expanding decoder linked by channel-wise skip concatenations',
           'Dice coefficient 2|P ∩ G| / (|P| + |G|) directly optimizes pixel overlap even when foreground objects are tiny'
         ]
+      },
+      {
+        id: 'lesson-4-11',
+        lessonCode: '4.11',
+        slug: 'cv-augmentation-explainability-and-domain-shift',
+        title: 'Image Preprocessing, Augmentation, Grad-CAM & Domain Shift',
+        subtitle: 'Channel normalization, CutMix/MixUp augmentation, Grad-CAM visual saliency, and handling out-of-distribution domain shift.',
+        everydayScene: 'Training a radiologist on rotated/brightened scans, highlighting which lung region drove the diagnosis, and testing on a new hospital’s X-ray machine',
+        isFreePreview: false,
+        moduleId: 'track-4',
+        moduleName: 'Computer Vision',
+        moduleNumber: 4,
+        lessonNumber: 11,
+        duration: '20 min',
+        prerequisites: ['transfer-learning', 'image-segmentation-unet'],
+        status: 'available',
+        relatedProjectSlug: 'chest-xray-classifier',
+        keyTakeaways: [
+          'ImageNet channel normalization and label-preserving augmentations (flips, RandAugment, MixUp/CutMix) dramatically boost generalization',
+          'Grad-CAM weights the final conv feature maps by global-average-pooled class gradients to localize what the CNN actually looked at',
+          'Domain shift occurs when P_test(X) ≠ P_train(X) (different camera, lighting, or scanner), often causing silent overconfident failures'
+        ]
       }
     ]
   },
@@ -1330,6 +1396,28 @@ export const CURRICULUM: ModuleMeta[] = [
           'ViT reshapes an H×W×C image into N = (HW)/P² flattened patches and projects each patch into d_model dimensions',
           'Unlike CNNs with local 3×3 receptive fields, ViT layers can attend globally across the entire image from Layer 1'
         ]
+      },
+      {
+        id: 'lesson-6-6',
+        lessonCode: '6.6',
+        slug: 'text-generation-decoding-and-llm-evaluation',
+        title: 'Text Generation Decoding & LLM Evaluation',
+        subtitle: 'Greedy decoding, Beam Search, Temperature, Top-k & Top-p (Nucleus) sampling, plus Perplexity, BLEU/ROUGE & LLM-as-a-Judge.',
+        everydayScene: 'Choosing between the safest word, the top-k creative phrases, or judging an essay with a rubric',
+        isFreePreview: false,
+        moduleId: 'track-6',
+        moduleName: 'Attention and Transformers',
+        moduleNumber: 6,
+        lessonNumber: 6,
+        duration: '20 min',
+        prerequisites: ['bert-vs-gpt'],
+        status: 'available',
+        relatedProjectSlug: 'mini-gpt-shakespeare',
+        keyTakeaways: [
+          'Temperature T scales logits z/T before softmax; Top-k keeps the k highest-probability tokens and Top-p keeps the smallest set summing to p',
+          'Beam search tracks top-B sequences for translation/summarization, whereas Top-p nucleus sampling avoids repetitive text in open generation',
+          'Perplexity measures next-token surprise; n-gram metrics (BLEU/ROUGE) miss semantics, motivating benchmark suites and LLM-as-a-Judge'
+        ]
       }
     ]
   },
@@ -1529,6 +1617,50 @@ export const CURRICULUM: ModuleMeta[] = [
         keyTakeaways: [
           'Human preference pairs (y_w ≻ y_l) train a Reward Model via L_RM = -log σ(r(x, y_w) - r(x, y_l))',
           'KL penalty β · D_KL(π_θ || π_ref) prevents the policy from reward-hacking into degenerate text'
+        ]
+      },
+      {
+        id: 'lesson-8-5',
+        lessonCode: '8.5',
+        slug: 'advanced-rag-reranking-and-retrieval-eval',
+        title: 'Reranking & Retrieval Evaluation (Recall@k, MRR, NDCG)',
+        subtitle: 'Two-stage retrieval (Bi-Encoder + Cross-Encoder Reranking), hybrid BM25+dense search, and measuring RAG quality.',
+        everydayScene: 'Scanning 1,000 library books by title first, then reading the top 20 tables of contents carefully',
+        isFreePreview: false,
+        moduleId: 'track-8',
+        moduleName: 'Modern LLM Practice',
+        moduleNumber: 8,
+        lessonNumber: 5,
+        duration: '20 min',
+        prerequisites: ['retrieval-augmented-generation-rag'],
+        status: 'available',
+        relatedProjectSlug: 'chat-with-syllabus-rag',
+        keyTakeaways: [
+          'Bi-encoders embed query and document separately for fast ANN lookup; Cross-encoders attend jointly over (query, doc) for accurate reranking',
+          'Recall@k checks whether the right chunk appeared in the top k; MRR and NDCG reward placing the best chunk at rank #1',
+          'Evaluating RAG separates Retrieval quality (Context Recall/Precision) from Generation quality (Faithfulness & Answer Relevance)'
+        ]
+      },
+      {
+        id: 'lesson-8-6',
+        lessonCode: '8.6',
+        slug: 'llm-quantization-kv-cache-and-inference',
+        title: 'Quantization, KV Cache & Inference Optimization',
+        subtitle: 'FP16/INT8/INT4 weight quantization, autoregressive KV caching, memory bandwidth bottlenecks, and continuous batching.',
+        everydayScene: 'Writing down the notes from earlier chapters so you don’t re-read the whole book for every new word',
+        isFreePreview: false,
+        moduleId: 'track-8',
+        moduleName: 'Modern LLM Practice',
+        moduleNumber: 8,
+        lessonNumber: 6,
+        duration: '22 min',
+        prerequisites: ['finetuning-and-lora', 'transformer-block-multihead-attention'],
+        status: 'available',
+        relatedProjectSlug: 'lora-finetuning-open-llm',
+        keyTakeaways: [
+          'Without a KV cache, generating T tokens recomputes Keys and Values in O(T²) per step; caching past K,V tensors cuts step cost to O(T)',
+          'Quantization maps FP16 weights to INT8/INT4 (e.g., AWQ/GPTQ), slashing VRAM by 2–4× and accelerating memory-bound decoding',
+          'PagedAttention, FlashAttention, and speculative decoding maximize GPU utilization in production serving'
         ]
       }
     ]

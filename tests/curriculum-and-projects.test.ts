@@ -4,19 +4,19 @@ import { LESSON_DETAILS } from '../lib/lesson-data/lessonContent';
 import { TRACK_PROJECTS, getProjectBySlug } from '../lib/lesson-data/projects';
 
 describe('NeuroPlay PRD v2.1 Curriculum & Lesson Structure', () => {
-  it('defines all 10 tracks in the exact learning order (0 -> 9 -> 1..8) with 61 total lessons', () => {
+  it('defines all 10 tracks in the exact learning order (0 -> 9 -> 1..8) with 67 total lessons', () => {
     expect(CURRICULUM.length).toBe(10);
     const trackNumbers = CURRICULUM.map(t => t.number);
     expect(trackNumbers).toEqual([0, 9, 1, 2, 3, 4, 5, 6, 7, 8]);
-    expect(ALL_LESSONS.length).toBe(61);
+    expect(ALL_LESSONS.length).toBe(67);
   });
 
-  it('includes all 61 available interactive lessons across all 10 tracks with full Section 5 template fields', () => {
+  it('includes all 67 available interactive lessons across all 10 tracks with full Section 5 template fields', () => {
     const availableTracks = CURRICULUM.filter(t => t.status === 'available');
     expect(availableTracks.length).toBe(10);
 
     const availableLessons = ALL_LESSONS.filter(l => l.status === 'available');
-    expect(availableLessons.length).toBe(61);
+    expect(availableLessons.length).toBe(67);
 
     for (const lesson of availableLessons) {
       const detail = LESSON_DETAILS[lesson.slug];

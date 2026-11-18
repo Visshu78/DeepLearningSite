@@ -648,6 +648,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         name: 'Hidden Layer Error Propagation',
         latex: '\\delta_j^{[l]} = \\left( \\sum_k w_{kj}^{[l+1]} \\delta_k^{[l+1]} \\right) \\cdot \\phi\'(z_j^{[l]})',
         explanation: 'Error signals flow backward across the transpose of the weight matrix and are scaled by the hidden activation derivative.'
+      },
+      {
+        name: 'Finite-Difference Gradient Checking',
+        latex: 'g_{\\text{num}} = \\frac{L(\\theta + \\varepsilon) - L(\\theta - \\varepsilon)}{2\\varepsilon}, \\qquad \\text{rel\\_err} = \\frac{\\|g_{\\text{backprop}} - g_{\\text{num}}\\|_2}{\\|g_{\\text{backprop}}\\|_2 + \\|g_{\\text{num}}\\|_2} < 10^{-7}',
+        explanation: 'Debugging rule: compare analytical backpropagation gradients against centered finite differences (ε ≈ 10⁻⁵) on a tiny batch to verify zero sign or chain-rule bugs.'
       }
     ],
     workedExample: {
@@ -3718,6 +3723,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         name: 'DDPM Noise-Prediction Objective & Clean Estimate',
         latex: '\\mathcal{L}_{\\text{simple}}(\\boldsymbol{\\theta}) = \\mathbb{E}_{t, \\mathbf{x}_0, \\boldsymbol{\\epsilon}}\\left[\\|\\boldsymbol{\\epsilon} - \\boldsymbol{\\epsilon}_{\\boldsymbol{\\theta}}(\\mathbf{x}_t, t)\\|_2^2\\right], \\quad \\hat{\\mathbf{x}}_0 = \\frac{\\mathbf{x}_t - \\sqrt{1 - \\bar{\\alpha}_t}\\,\\boldsymbol{\\epsilon}_{\\boldsymbol{\\theta}}(\\mathbf{x}_t, t)}{\\sqrt{\\bar{\\alpha}_t}}',
         explanation: 'Trains the network to predict the added standard normal noise ε; rearranging recovers the clean image estimate x̂_0.'
+      },
+      {
+        name: 'Conditioning & Classifier-Free Guidance (CFG)',
+        latex: '\\tilde{\\boldsymbol{\\epsilon}}_{\\boldsymbol{\\theta}}(\\mathbf{x}_t, t, \\mathbf{c}) = \\boldsymbol{\\epsilon}_{\\boldsymbol{\\theta}}(\\mathbf{x}_t, t, \\varnothing) + s\\,\\big(\\boldsymbol{\\epsilon}_{\\boldsymbol{\\theta}}(\\mathbf{x}_t, t, \\mathbf{c}) - \\boldsymbol{\\epsilon}_{\\boldsymbol{\\theta}}(\\mathbf{x}_t, t, \\varnothing)\\big)',
+        explanation: 'Steers generation toward text/class condition c with guidance scale s > 1 (typically s ≈ 7.5), trading sample diversity for sharp prompt adherence; DDIM skips steps deterministically (20–50 steps vs 1000).'
       }
     ],
     workedExample: {
@@ -6941,6 +6951,653 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'A learnable [CLS] token is prepended (L = N + 1) and 1D positional embeddings are added before the Transformer Encoder.',
       'ViT trades CNN locality bias for global Layer-1 self-attention, dominating modern multimodal and foundation vision models.',
       'Compare them head-to-head in the Track 6 Project: Vision Transformer vs CNN on CIFAR-10!'
+    ]
+  },
+
+  // =========================================================================
+  // TRACK 1 — LESSON 1.6: k-NN, SVM & NAIVE BAYES
+  // =========================================================================
+  'knn-svm-and-naive-bayes': {
+    slug: 'knn-svm-and-naive-bayes',
+    scene: {
+      title: 'Asking Your 5 Closest Neighbors (k-NN), Widening the Road Median (SVM) & Scoring Clues (Naive Bayes)',
+      narrative:
+        'Before neural networks took over, three classical classifiers solved huge swaths of industry ML with completely different philosophies. k-Nearest Neighbors (k-NN) stores the training data and votes using the k closest points—no training loop at all, just distance! Support Vector Machines (SVM) draw the hyperplane with the widest possible safety street (margin) between classes, relying only on the edge boundary points called Support Vectors—and use the Kernel Trick to bend boundaries into circles or curves. Naive Bayes flips classification into probability: it assumes features are conditionally independent given the label and applies Bayes’ theorem in milliseconds, making it unbeatable as a lightning-fast text/spam baseline.'
+    },
+    mapping: [
+      {
+        scenePart: 'Majority vote among the k closest neighbors on a map',
+        modelPart: 'k-Nearest Neighbors (k-NN)',
+        symbol: 'ŷ = mode{ yᵢ : xᵢ ∈ N_k(x) }',
+        role: 'Non-parametric; requires feature scaling and slows down as N or dimension D grows'
+      },
+      {
+        scenePart: 'Widest two-lane safety median separating two neighborhoods',
+        modelPart: 'Support Vector Machine (SVM)',
+        symbol: 'min ½||w||² + C Σ ξᵢ   s.t. yᵢ(wᵀxᵢ + b) ≥ 1 - ξᵢ',
+        role: 'Maximizes margin 2/||w||₂; only support vectors near the boundary determine w'
+      },
+      {
+        scenePart: 'Measuring curved similarity without explicitly lifting to 10,000D',
+        modelPart: 'RBF / Gaussian Kernel Trick',
+        symbol: 'K(x, x′) = exp(-γ ||x - x′||₂²)',
+        role: 'Computes inner products in infinite-dimensional space cheaply'
+      },
+      {
+        scenePart: 'Multiplying independent clue likelihoods for Spam vs Ham',
+        modelPart: 'Naive Bayes Classifier',
+        symbol: 'P(y | x) ∝ P(y) ∏ P(xⱼ | y)',
+        role: 'Fast, low-variance generative baseline; uses log-sum + Laplace smoothing'
+      }
+    ],
+    playWithItPrompt:
+      'Use the Logistic Regression & Decision Boundary workbench in Tab 1.2 alongside this lesson to see how linear decision margins and classification thresholds separate classes.',
+    analogyBreaks:
+      'k-NN’s neighborhood intuition collapses in high dimensions (Curse of Dimensionality): in 1,000D, almost every point is nearly equidistant from every other point, so distances lose contrast.',
+    intuition: [
+      'Why k-NN Needs Feature Scaling: If feature 1 is Age (20–60) and feature 2 is Annual Income (₹300,000–₹3,000,000), Euclidean distance completely ignores Age unless you standardize both features first.',
+      'Soft-Margin SVM & C: Real data isn’t linearly separable. Regularization parameter C controls the tradeoff: large C penalizes margin violations heavily (narrow margin, low bias, risk of overfitting); small C allows slack ξᵢ for a wider, smoother margin.',
+      'Why Naive Bayes Works Even When Features Are Correlated: Even though words in an email aren’t truly independent, classification only needs the argmax class—not calibrated exact probabilities.'
+    ],
+    mathFormulas: [
+      {
+        name: 'SVM Hinge Loss & Margin Maximization',
+        latex: '\\mathcal{L}_{\\text{SVM}} = \\frac{1}{2}\\|\\mathbf{w}\\|_2^2 + C\\sum_{i=1}^N \\max\\big(0,\\, 1 - y_i(\\mathbf{w}^\\top\\mathbf{x}_i + b)\\big), \\quad y_i \\in \\{-1, +1\\}',
+        explanation: 'Points outside the margin (yᵢ(wᵀxᵢ + b) ≥ 1) incur zero hinge loss and zero gradient.'
+      },
+      {
+        name: 'Log-Space Naive Bayes with Laplace Smoothing',
+        latex: '\\hat{y} = \\arg\\max_c \\left[\\log P(c) + \\sum_{j=1}^D \\log P(x_j \\mid c)\\right], \\qquad P(w_j \\mid c) = \\frac{\\text{count}(w_j, c) + \\alpha}{N_c + \\alpha |V|}',
+        explanation: 'Adding α = 1 (Laplace smoothing) prevents zero probability when a test word never appeared in class c.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Given SVM weight vector w = [3, 4] and bias b = -5, compute the geometric margin width 2 / ||w||₂ and the hinge loss for a point x = [1, 1] with label y = +1.',
+      steps: [
+        {
+          label: 'Step 1: Compute ||w||₂ and Margin Width',
+          math: '\\|\\mathbf{w}\\|_2 = \\sqrt{3^2 + 4^2} = 5, \\qquad \\text{Margin} = \\frac{2}{5} = 0.40',
+          note: 'Distance between positive and negative support hyperplanes is 0.40.'
+        },
+        {
+          label: 'Step 2: Evaluate Margin Score y(wᵀx + b)',
+          math: 'y(\\mathbf{w}^\\top\\mathbf{x} + b) = +1 \\cdot (3(1) + 4(1) - 5) = +2',
+          note: 'Since +2 ≥ 1, the point is safely outside the margin!'
+        },
+        {
+          label: 'Step 3: Compute Hinge Loss',
+          math: '\\max(0,\\; 1 - 2) = 0',
+          note: 'Zero hinge loss—this point is NOT a support vector.'
+        }
+      ],
+      result: 'Margin width = 0.40; hinge loss = 0.',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'knn-svm-q1',
+        question: 'Why must you standardize features before running k-Nearest Neighbors (k-NN) or an RBF-kernel SVM?',
+        options: [
+          'Because unscaled large-magnitude features dominate Euclidean distances.',
+          'Because k-NN and SVM cannot accept negative numbers as inputs.',
+          'Because standardization converts discrete labels into continuous floats.',
+          'Because feature scaling reduces the number of classes in the target.'
+        ],
+        correctIndex: 0,
+        explanation: 'Both k-NN and the RBF kernel exp(-γ||x - x′||₂²) depend directly on Euclidean distances, so a feature measured in lakhs/millions drowns out features measured in [0, 1].'
+      },
+      {
+        id: 'knn-svm-q2',
+        question: 'In Multinomial Naive Bayes for spam detection, why do we add Laplace smoothing (α = 1) to word counts?',
+        options: [
+          'To force every word in the vocabulary to have the exact same probability.',
+          'To prevent a single unseen word from multiplying the class probability by 0.',
+          'To convert the generative Bayes classifier into a linear SVM hyperplane.',
+          'To eliminate the prior probability P(c) from the decision rule.'
+        ],
+        correctIndex: 1,
+        explanation: 'Without smoothing, an unseen word gives P(w | c) = 0, wiping out the entire product ∏ P(xⱼ | c) regardless of all other evidence.'
+      }
+    ],
+    summary: [
+      'k-NN classifies via distance-weighted neighbor votes; it needs feature scaling and degrades in high dimensions.',
+      'SVMs maximize the geometric margin 2/||w||₂ using support vectors and handle non-linearity via kernels.',
+      'Naive Bayes uses conditional feature independence for fast, low-variance probabilistic classification.'
+    ]
+  },
+
+  // =========================================================================
+  // TRACK 1 — LESSON 1.7: GRADIENT BOOSTING & XGBOOST
+  // =========================================================================
+  'gradient-boosting-and-xgboost': {
+    slug: 'gradient-boosting-and-xgboost',
+    scene: {
+      title: 'A Relay Team of Coaches Where Each New Tree Fixes the Previous Ensemble’s Residual Mistakes',
+      narrative:
+        'Random Forests build hundreds of deep trees independently in parallel and average them to crush variance. Gradient Boosting (and its industrial powerhouse XGBoost / LightGBM) flips that script: it starts with a simple base prediction, measures every row’s residual error, and trains a tiny, shallow decision tree specifically to predict and fix those mistakes—repeating hundreds of times in sequence! By scaling each tree’s correction by a small learning rate η (shrinkage) and using second-order Hessian curvature in XGBoost, Gradient Boosted Decision Trees (GBDTs) remain the undisputed king of structured tabular data.'
+    },
+    mapping: [
+      {
+        scenePart: 'Passing the baton sequentially so each coach fixes remaining errors',
+        modelPart: 'Additive Stagewise Boosting',
+        symbol: 'F_m(x) = F_{m-1}(x) + η · h_m(x)',
+        role: 'Builds shallow trees sequentially to reduce bias step-by-step'
+      },
+      {
+        scenePart: 'Each new tree targets the remaining error (yᵢ - ŷᵢ) for MSE',
+        modelPart: 'Negative Gradient (Pseudo-Residuals)',
+        symbol: 'r_{im} = -[∂L(yᵢ, F(xᵢ)) / ∂F(xᵢ)]',
+        role: 'Generalizes boosting to any differentiable loss (MSE, Log-Loss, Huber)'
+      },
+      {
+        scenePart: 'Using both slope (gᵢ) and curvature (hᵢ) to pick optimal leaf values',
+        modelPart: 'XGBoost Second-Order Leaf Weight',
+        symbol: 'w_j* = - (Σ gᵢ) / (Σ hᵢ + λ)',
+        role: 'Newton step with L2 regularization λ shrinks noisy small-leaf updates'
+      },
+      {
+        scenePart: 'Taking small cautious steps η ∈ [0.01, 0.1] instead of full leaps',
+        modelPart: 'Shrinkage (Learning Rate)',
+        symbol: '0 < η ≤ 1',
+        role: 'Prevents overfitting; pair small η with early stopping on validation loss'
+      }
+    ],
+    playWithItPrompt:
+      'Compare parallel tree variance reduction in Tab 1.4 ("Trees & Forests") and see how individual shallow splits combine into strong ensembles.',
+    analogyBreaks:
+      'Unlike Random Forests where adding more trees rarely overfits, Gradient Boosting CAN overfit if you add too many trees (M too large) or make trees too deep—always use validation early stopping.',
+    intuition: [
+      'Bagging vs Boosting in One Sentence: Bagging averages high-variance deep trees in parallel to reduce variance; Boosting sums low-variance shallow trees (depth 3–6) sequentially to reduce bias.',
+      'Why XGBoost Is Faster & More Accurate Than Vanilla GBDT: Instead of only using first-order gradients gᵢ, XGBoost expands the loss to second order with Hessians hᵢ = ∂²L/∂F², giving an exact closed-form split gain formula and native missing-value routing.',
+      'Tabular ML Reality Check: On structured tables (< 1M rows with mixed numeric/categorical columns), XGBoost/LightGBM/CatBoost regularly match or beat deep MLPs while training 10–50× faster.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Stagewise Gradient Boosting Update',
+        latex: 'F_m(\\mathbf{x}) = F_{m-1}(\\mathbf{x}) + \\eta\\,h_m(\\mathbf{x}), \\qquad r_{im} = -\\left.\\frac{\\partial L(y_i, F(\\mathbf{x}_i))}{\\partial F(\\mathbf{x}_i)}\\right|_{F = F_{m-1}}',
+        explanation: 'Tree h_m is fit to the negative gradient pseudo-residuals r_{im} and added with shrinkage η.'
+      },
+      {
+        name: 'XGBoost Optimal Leaf Weight & Split Gain',
+        latex: 'w_j^* = -\\frac{\\sum_{i \\in I_j} g_i}{\\sum_{i \\in I_j} h_i + \\lambda}, \\qquad \\text{Gain} = \\frac{1}{2}\\left[\\frac{G_L^2}{H_L + \\lambda} + \\frac{G_R^2}{H_R + \\lambda} - \\frac{(G_L+G_R)^2}{H_L+H_R+\\lambda}\\right] - \\gamma',
+        explanation: 'Regularization λ dampens leaf weights with small Hessian sum H_j; γ prunes splits whose gain is below threshold.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Under MSE loss L = ½(y - F)², a leaf contains 2 samples with gradients g₁ = -4.0, g₂ = -2.0 and Hessians h₁ = 1.0, h₂ = 1.0. Compute the optimal XGBoost leaf weight w* with λ = 2.0.',
+      steps: [
+        {
+          label: 'Step 1: Sum First-Order Gradients G and Second-Order Hessians H',
+          math: 'G = g_1 + g_2 = -4.0 + (-2.0) = -6.0, \\qquad H = h_1 + h_2 = 1.0 + 1.0 = 2.0',
+          note: 'Negative gradient sum means predictions were too low by an average of 3.0.'
+        },
+        {
+          label: 'Step 2: Apply XGBoost Regularized Newton Formula',
+          math: 'w^* = -\\frac{G}{H + \\lambda} = -\\frac{-6.0}{2.0 + 2.0} = \\frac{6.0}{4.0} = +1.50',
+          note: 'Without λ = 2.0, the unregularized step would be +3.0; λ shrinks it to +1.50 to prevent overfitting.'
+        }
+      ],
+      result: 'Optimal regularized leaf weight w* = +1.50.',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'gbdt-q1',
+        question: 'How does Gradient Boosting fundamentally differ from a Random Forest?',
+        options: [
+          'Boosting trains shallow trees sequentially on residuals; Random Forest trains trees in parallel.',
+          'Gradient Boosting only supports regression tasks, whereas Random Forest only supports binary classification.',
+          'Gradient Boosting averages predictions equally with no shrinkage, whereas Random Forest uses a learning rate.',
+          'Gradient Boosting uses only a single decision stump, whereas Random Forest uses neural network layers.'
+        ],
+        correctIndex: 0,
+        explanation: 'Random Forest reduces variance by averaging independent deep trees in parallel; Gradient Boosting reduces bias by sequentially fitting shallow trees to residual errors.'
+      },
+      {
+        id: 'gbdt-q2',
+        question: 'In XGBoost’s leaf weight formula w* = -G / (H + λ), what happens when you increase L2 regularization λ?',
+        options: [
+          'Each leaf’s predicted adjustment shrinks closer to zero, reducing overfitting.',
+          'The tree depth automatically doubles on every boosting round.',
+          'All missing values in the dataset are dropped before computing splits.',
+          'The second-order Hessian H is replaced with a random Gaussian sample.'
+        ],
+        correctIndex: 0,
+        explanation: 'Increasing λ in the denominator shrinks leaf weights toward 0, making the ensemble more conservative.'
+      }
+    ],
+    summary: [
+      'Gradient Boosting builds additive shallow trees sequentially on negative gradient pseudo-residuals.',
+      'Shrinkage η and early stopping prevent boosting from overfitting noisy training rows.',
+      'XGBoost uses second-order Taylor expansion (gradients gᵢ + Hessians hᵢ) and L2 leaf regularization λ.'
+    ]
+  },
+
+  // =========================================================================
+  // TRACK 4 — LESSON 4.11: PREPROCESSING, AUGMENTATION, GRAD-CAM & DOMAIN SHIFT
+  // =========================================================================
+  'cv-augmentation-explainability-and-domain-shift': {
+    slug: 'cv-augmentation-explainability-and-domain-shift',
+    scene: {
+      title: 'Training a Radiologist on Augmented Scans, Highlighting What the CNN Looked At (Grad-CAM) & Testing at a New Hospital',
+      narrative:
+        'A CNN with 98% validation accuracy can still fail catastrophically in deployment for three practical reasons: (1) raw pixel scales or lack of augmentation let it memorize lighting and orientation; (2) it cheats on spurious shortcuts (like a hospital watermark!) unless you inspect its saliency with Grad-CAM; and (3) real-world Domain Shift—a different camera, rain, or new hospital scanner—breaks its learned feature statistics. Mastering preprocessing, CutMix/MixUp augmentation, Grad-CAM explainability, and domain adaptation turns a fragile notebook model into a trustworthy vision system.'
+    },
+    mapping: [
+      {
+        scenePart: 'Standardizing pixel brightness and contrast across RGB channels',
+        modelPart: 'Image Preprocessing & Normalization',
+        symbol: 'x̂_c = (x_c / 255 - μ_c) / σ_c',
+        role: 'Must match pretrained backbone stats (e.g. ImageNet μ, σ) during transfer learning'
+      },
+      {
+        scenePart: 'Generating varied crops, flips, color jitters, or blended CutMix patches',
+        modelPart: 'Label-Preserving & Mixing Augmentation',
+        symbol: 'x̃ = λx₁ + (1 - λ)x₂,  ỹ = λy₁ + (1 - λ)y₂',
+        role: 'Expands effective dataset size and calibrates MixUp/CutMix decision boundaries'
+      },
+      {
+        scenePart: 'Highlighting the exact lung pixels that triggered a Pneumonia prediction',
+        modelPart: 'Grad-CAM Saliency Map',
+        symbol: 'L^c = ReLU( Σ_k α_k^c A^k ),  α_k^c = (1/Z) Σ_{i,j} ∂y^c / ∂A_{ij}^k',
+        role: 'Weights final conv feature maps A^k by pooled class gradients to expose shortcut learning'
+      },
+      {
+        scenePart: 'Model accuracy dropping when deployed on a new hospital’s X-ray scanner',
+        modelPart: 'Covariate / Domain Shift',
+        symbol: 'P_test(X) ≠ P_train(X)',
+        role: 'Diagnosed via OOD monitoring; mitigated with domain-randomized augmentation and test-time adaptation'
+      }
+    ],
+    playWithItPrompt:
+      'Review Transfer Learning in Tab 4.8 ("Transfer Learning") and note how frozen early Conv layers rely on consistent preprocessing and domain alignment.',
+    analogyBreaks:
+      'Data augmentation must be domain-safe: horizontal flipping is great for dogs/cars, but flipping a chest X-ray reverses the heart (dextrocardia!) and flipping digits turns 6 into 9.',
+    intuition: [
+      'Why Grad-CAM Uses the Last Conv Layer: Early conv layers only know edges; the last conv layer preserves spatial layout (e.g. 7×7 grid) while encoding high-level semantic objects, making α_k^c · A^k sharp and class-specific.',
+      'ReLU Inside Grad-CAM: We apply ReLU(Σ α_k^c A^k) because we only want pixels with a POSITIVE influence on class c—negative weights belong to competing classes.',
+      'Spotting Shortcut Learning: If Grad-CAM lights up the corner text label ("PORTABLE") instead of the lungs on an X-ray, your model has 99% accuracy for the wrong reason and will collapse on external hospitals (Domain Shift).'
+    ],
+    mathFormulas: [
+      {
+        name: 'Grad-CAM Channel Importance & Heatmap',
+        latex: '\\alpha_k^c = \\frac{1}{H W}\\sum_{i=1}^H \\sum_{j=1}^W \\frac{\\partial y^c}{\\partial A_{ij}^k}, \\qquad L_{\\text{Grad-CAM}}^c = \\text{ReLU}\\!\\left(\\sum_k \\alpha_k^c A^k\\right)',
+        explanation: 'Global-average-pools the gradient of class logit y^c over spatial locations (i, j) of feature map A^k.'
+      },
+      {
+        name: 'MixUp Regularization Augmentation',
+        latex: '\\tilde{\\mathbf{x}} = \\lambda\\mathbf{x}_1 + (1 - \\lambda)\\mathbf{x}_2, \\qquad \\tilde{\\mathbf{y}} = \\lambda\\mathbf{y}_1 + (1 - \\lambda)\\mathbf{y}_2, \\qquad \\lambda \\sim \\text{Beta}(\\alpha, \\alpha)',
+        explanation: 'Forces the network to behave linearly in-between training examples, reducing overconfidence.'
+      }
+    ],
+    workedExample: {
+      scenario: 'For class c, the last conv layer has 2 feature maps A¹ and A² with pooled gradient weights α₁ = +0.8 and α₂ = -0.5. At pixel (i, j), A¹ = 2.0 and A² = 4.0. Compute the Grad-CAM value.',
+      steps: [
+        {
+          label: 'Step 1: Compute Weighted Sum of Feature Activations',
+          math: '\\sum_k \\alpha_k^c A_{ij}^k = (0.8)(2.0) + (-0.5)(4.0) = 1.6 - 2.0 = -0.4',
+          note: 'Negative sum means this pixel actually argues against class c.'
+        },
+        {
+          label: 'Step 2: Apply ReLU Filter',
+          math: 'L_{\\text{Grad-CAM}}^c(i, j) = \\max(0,\\; -0.4) = 0.0',
+          note: 'Zeroed out so the heatmap highlights only positive evidence for class c.'
+        }
+      ],
+      result: 'Grad-CAM intensity at (i, j) = 0.0.',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'cv-aug-q1',
+        question: 'Why does Grad-CAM apply ReLU to the weighted sum Σ α_k^c A^k of feature maps?',
+        options: [
+          'To keep only regions that have a positive influence on predicting class c.',
+          'To normalize pixel values into the exact ImageNet RGB mean range.',
+          'To double the spatial resolution of the input image before pooling.',
+          'To convert multi-class softmax outputs into binary hinge losses.'
+        ],
+        correctIndex: 0,
+        explanation: 'Negative values in the linear combination correspond to features supporting other classes; ReLU isolates positive evidence for class c.'
+      },
+      {
+        id: 'cv-aug-q2',
+        question: 'A pneumonia classifier gets 97% accuracy on Hospital A’s test split, but drops to 68% on Hospital B’s X-rays. What phenomenon is this?',
+        options: [
+          'Gradient explosion during weight initialization.',
+          'Domain shift (P_test(X) ≠ P_train(X)) across scanners.',
+          'Vanishing gradients in the final softmax layer.',
+          'Integer overflow during uint8 pixel normalization.'
+        ],
+        correctIndex: 1,
+        explanation: 'Differences in scanner calibration, patient demographics, or acquisition protocols create covariate/domain shift between training and deployment distributions.'
+      }
+    ],
+    summary: [
+      'Always match preprocessing (mean/std normalization) to your pretrained backbone and use domain-safe augmentations.',
+      'Grad-CAM exposes shortcut learning by projecting class-specific gradients onto the last conv feature maps.',
+      'Test on out-of-distribution splits to catch Domain Shift before clinical or production deployment.'
+    ]
+  },
+
+  // =========================================================================
+  // TRACK 6 — LESSON 6.6: TEXT GENERATION DECODING & LLM EVALUATION
+  // =========================================================================
+  'text-generation-decoding-and-llm-evaluation': {
+    slug: 'text-generation-decoding-and-llm-evaluation',
+    scene: {
+      title: 'Choosing the Next Word: Safe Robot (Greedy), Careful Planner (Beam Search), Creative Writer (Top-p) & Grading Essays',
+      narrative:
+        'An autoregressive LLM outputs a probability distribution over 50,000+ vocabulary tokens at every step—it does NOT automatically output text! How you sample from that distribution completely changes the personality of the model: Greedy decoding picks argmax every time (often repetitive); Beam Search keeps the top-B sequence hypotheses (great for translation); Temperature T sharpens or flattens logits; Top-k caps the candidate pool; and Top-p (Nucleus Sampling) dynamically picks the smallest set of tokens summing to probability p. Finally, once generated, how do we evaluate text when there is no single right answer? We combine Perplexity, n-gram overlap (BLEU/ROUGE), benchmarks, and LLM-as-a-Judge.'
+    },
+    mapping: [
+      {
+        scenePart: 'Always picking the #1 highest-probability next word',
+        modelPart: 'Greedy Decoding',
+        symbol: 'w_t = argmax_w P(w | w_{<t})',
+        role: 'Deterministic and fast, but prone to boring loops and misses higher-total-prob phrases'
+      },
+      {
+        scenePart: 'Keeping the B best partial sentences alive at every step',
+        modelPart: 'Beam Search',
+        symbol: 'argmax_{y_{1:T}} Σ log P(y_t | y_{<t})  (beam width B)',
+        role: 'Strong for constrained tasks (translation/ASR), too generic for creative chat'
+      },
+      {
+        scenePart: 'Controlling randomness by rescaling logits before Softmax',
+        modelPart: 'Temperature, Top-k & Top-p (Nucleus)',
+        symbol: 'p_i = softmax(z_i / T),   Σ_{i ∈ V_p} p_i ≥ p',
+        role: 'T < 1 sharpens (factual/code); Top-p adapts candidate count dynamically to uncertainty'
+      },
+      {
+        scenePart: 'Measuring model surprise, word overlap, or rubric-based grading',
+        modelPart: 'Perplexity, BLEU/ROUGE & LLM-as-a-Judge',
+        symbol: 'PPL = exp( - (1/T) Σ log P(x_t | x_{<t}) )',
+        role: 'Lower PPL = better next-token prediction; LLM-as-a-Judge captures semantics BLEU misses'
+      }
+    ],
+    playWithItPrompt:
+      'Inspect how decoder-only GPT models produce next-token logits in Tab 6.4 ("BERT vs GPT").',
+    analogyBreaks:
+      'Lower Perplexity proves an LLM predicts held-out text fluently, NOT that it tells the truth or follows instructions—an aligned chat model often has slightly higher base-corpus perplexity than its raw pretrained checkpoint.',
+    intuition: [
+      'Why Top-p Beats Fixed Top-k: When the model is 99% sure the next word after "New" is "York", Top-k=50 still lets 49 weird tail words stay in the pool; Top-p=0.90 shrinks the pool to just 1–2 tokens! When the sentence is open-ended ("Once upon a..."), Top-p widens automatically.',
+      'Temperature Math: As T → 0, softmax(z/T) collapses onto the single argmax token (greedy); as T → ∞, it approaches a flat Uniform distribution.',
+      'Why BLEU/ROUGE Fail on Open-Ended Chat: Two valid answers can share zero exact n-grams ("The capital is Paris" vs "Paris serves as France’s capital"), so modern evals use semantic benchmarks (MMLU, HumanEval) and pairwise LLM-as-a-Judge.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Temperature-Scaled Softmax & Top-p (Nucleus) Set',
+        latex: 'P_T(w_i) = \\frac{\\exp(z_i / T)}{\\sum_j \\exp(z_j / T)}, \\qquad V^{(p)} = \\text{smallest } V\' \\subseteq V \\text{ s.t. } \\sum_{w \\in V\'} P_T(w) \\ge p',
+        explanation: 'Renormalizes probabilities inside V^(p) before sampling the next token.'
+      },
+      {
+        name: 'Perplexity (Exponential of Average Cross-Entropy)',
+        latex: '\\text{PPL}(X) = \\exp\\!\\left(-\\frac{1}{T}\\sum_{t=1}^T \\ln P_\\theta(x_t \\mid x_{<t})\\right)',
+        explanation: 'Effective branching factor: PPL = 12 means the model is as uncertain as choosing uniformly among 12 words per step.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Given logits z = [4.0, 2.0, 0.0], compare Greedy choice vs Temperature T = 0.5 sharpening on the top logit gap.',
+      steps: [
+        {
+          label: 'Step 1: Compute Softmax at T = 1.0',
+          math: 'e^4 : e^2 : e^0 \\approx 54.60 : 7.39 : 1.00 \\implies P_{T=1}(w_1) = \\frac{54.60}{62.99} \\approx 86.7\\%',
+          note: 'At T = 1.0, token 2 still has ~11.7% chance.'
+        },
+        {
+          label: 'Step 2: Rescale Logits by T = 0.5 (z / 0.5 = [8.0, 4.0, 0.0])',
+          math: 'e^8 : e^4 : e^0 \\approx 2981 : 54.60 : 1.00 \\implies P_{T=0.5}(w_1) \\approx 98.2\\%',
+          note: 'Halving temperature concentrates probability mass sharply onto the top token.'
+        }
+      ],
+      result: 'P(w₁) jumps from 86.7% (T=1.0) to 98.2% (T=0.5).',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'decode-q1',
+        question: 'Why does Top-p (Nucleus) sampling generally produce better open-ended text than fixed Top-k sampling?',
+        options: [
+          'Top-p dynamically adjusts candidate count based on distribution confidence.',
+          'Top-p guarantees zero hallucinated facts by checking a vector database.',
+          'Top-p eliminates the need for a Softmax layer at the end of the Transformer.',
+          'Top-p always selects the single highest-probability token deterministically.'
+        ],
+        correctIndex: 0,
+        explanation: 'Top-p picks the smallest set of tokens whose cumulative probability reaches p, keeping the pool tiny when confident and wider when uncertain.'
+      },
+      {
+        id: 'decode-q2',
+        question: 'An LLM achieves an average cross-entropy loss of ln(10) ≈ 2.3026 nats per token on a test corpus. What is its Perplexity?',
+        options: [
+          '2.3026',
+          '10.0',
+          '100.0',
+          '0.10'
+        ],
+        correctIndex: 1,
+        explanation: 'Perplexity = exp(Cross-Entropy) = exp(ln(10)) = 10.0.'
+      }
+    ],
+    summary: [
+      'Decoding strategy shapes output quality: Greedy/Beam maximize likelihood; Temperature + Top-p control diversity.',
+      'Perplexity exp(H) measures next-token surprise as an effective vocabulary branching factor.',
+      'Modern LLM evaluation combines Perplexity, functional benchmarks, and semantic LLM-as-a-Judge.'
+    ]
+  },
+
+  // =========================================================================
+  // TRACK 8 — LESSON 8.5: RERANKING & RETRIEVAL EVALUATION
+  // =========================================================================
+  'advanced-rag-reranking-and-retrieval-eval': {
+    slug: 'advanced-rag-reranking-and-retrieval-eval',
+    scene: {
+      title: 'Scanning 1,000 Library Books by Title First (Bi-Encoder), Then Reading the Top 20 Carefully (Cross-Encoder Reranker)',
+      narrative:
+        'Basic RAG embeds your query once, finds the top-5 closest chunks by cosine similarity, and hopes for the best. In production, that often fails: a dense bi-encoder compresses a 500-word chunk into a single vector, losing fine-grained keyword or negations—and exact part numbers get missed! Two-stage retrieval solves this: Stage 1 uses fast Hybrid Search (BM25 lexical + Bi-Encoder dense vectors) to pull the top-50 candidates in milliseconds; Stage 2 runs a Cross-Encoder Reranker that feeds (query, chunk) together through full self-attention to score the true top-5. And we measure every change rigorously using Recall@k, MRR, and NDCG.'
+    },
+    mapping: [
+      {
+        scenePart: 'Precomputing one vector per book so lookup takes milliseconds',
+        modelPart: 'Bi-Encoder (Dense Retrieval)',
+        symbol: 'score(q, d) = cos(E(q), E(d))',
+        role: 'Scales to millions of chunks via ANN (HNSW/FAISS), but cannot cross-attend query & doc'
+      },
+      {
+        scenePart: 'Reading query and candidate chunk side-by-side with full attention',
+        modelPart: 'Cross-Encoder Reranker',
+        symbol: 'score(q, d) = Classifier(Transformer([CLS] q [SEP] d))',
+        role: 'Far higher precision on top-50 candidates, too slow for full corpus'
+      },
+      {
+        scenePart: 'Did the true answer chunk appear anywhere in the top k results?',
+        modelPart: 'Recall@k & Mean Reciprocal Rank (MRR)',
+        symbol: 'MRR = (1/|Q|) Σ 1 / rankᵢ',
+        role: 'Recall@k measures coverage; MRR & NDCG reward ranking the best chunk #1'
+      },
+      {
+        scenePart: 'Testing both retrieval accuracy AND whether the LLM hallucinated',
+        modelPart: 'RAG Triad Evaluation',
+        symbol: 'Context Recall · Faithfulness · Answer Relevance',
+        role: 'Isolates whether a bad answer came from missed retrieval or a bad prompt/LLM'
+      }
+    ],
+    playWithItPrompt:
+      'Open Tab 8.3 ("RAG Pipeline") to explore cosine retrieval and grounded prompt assembly, then see how two-stage reranking boosts top-k precision.',
+    analogyBreaks:
+      'High Context Recall does not guarantee a correct answer if the LLM suffers from "Lost in the Middle" when too many noisy chunks are stuffed into the context window—which is why reranking down to top-3–5 crisp chunks matters.',
+    intuition: [
+      'Why Hybrid Search (BM25 + Dense) + Reranking Wins: Dense embeddings understand synonyms ("car" ≈ "automobile"), while BM25 catches exact IDs ("ERR_404_X9"). Combining them via Reciprocal Rank Fusion (RRF) and reranking gives the best of both worlds.',
+      'Recall@k vs MRR: If the right chunk is at rank #5, Recall@5 = 1.0, but MRR = 1/5 = 0.20—telling you the retriever found it, yet a reranker is needed to promote it to #1.',
+      'Separating Retrieval from Generation: Never debug a RAG app only by reading final answers! Log Context Recall first: if the right chunk wasn’t retrieved, upgrading from a 7B to a 70B LLM won’t help.'
+    ],
+    mathFormulas: [
+      {
+        name: 'Reciprocal Rank Fusion (RRF) & Mean Reciprocal Rank (MRR)',
+        latex: '\\text{RRF}(d) = \\sum_{r \\in \\text{retrievers}} \\frac{1}{k + \\text{rank}_r(d)}, \\qquad \\text{MRR} = \\frac{1}{|Q|}\\sum_{i=1}^{|Q|} \\frac{1}{\\text{rank}_i}',
+        explanation: 'RRF fuses BM25 and dense rankings without needing score calibration; MRR averages 1/rank of the first relevant hit.'
+      },
+      {
+        name: 'Normalized Discounted Cumulative Gain (NDCG@k)',
+        latex: '\\text{DCG}@k = \\sum_{i=1}^k \\frac{2^{\\text{rel}_i} - 1}{\\log_2(i + 1)}, \\qquad \\text{NDCG}@k = \\frac{\\text{DCG}@k}{\\text{IDCG}@k}',
+        explanation: 'Handles graded relevance (0, 1, 2) with logarithmic position discount.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Across 3 RAG test queries, the first relevant chunk appears at ranks [1, 4, 2]. Compute Recall@3 and MRR.',
+      steps: [
+        {
+          label: 'Step 1: Compute Recall@3',
+          math: '\\text{Hits in top 3} = \\{1, 2\\} \\implies \\text{Recall}@3 = \\frac{2}{3} \\approx 66.7\\%',
+          note: 'Query 2’s relevant chunk at rank 4 missed the top-3 cutoff.'
+        },
+        {
+          label: 'Step 2: Compute Mean Reciprocal Rank (MRR)',
+          math: '\\text{MRR} = \\frac{1}{3}\\left(\\frac{1}{1} + \\frac{1}{4} + \\frac{1}{2}\\right) = \\frac{1.75}{3} \\approx 0.583',
+          note: 'Adding a cross-encoder reranker over top-10 aims to push rank 4 → rank 1.'
+        }
+      ],
+      result: 'Recall@3 = 66.7%, MRR = 0.583.',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'rag-eval-q1',
+        question: 'Why do production RAG systems use a fast Bi-Encoder for Stage 1 and a Cross-Encoder only for Stage 2 reranking?',
+        options: [
+          'Cross-Encoders jointly attend over (query, doc) accurately, but are slow at scale.',
+          'Bi-Encoders cannot compute cosine similarity on vectors larger than 64 dimensions.',
+          'Cross-Encoders are completely unsupervised and require zero Transformer weights.',
+          'Bi-Encoders can only process exact BM25 keyword matches without embeddings.'
+        ],
+        correctIndex: 0,
+        explanation: 'Bi-encoders allow precomputing document embeddings once for millisecond ANN search, while Cross-encoders run full cross-attention on just the top-50 candidates.'
+      },
+      {
+        id: 'rag-eval-q2',
+        question: 'Which metric specifically rewards placing the most relevant document at rank #1 rather than rank #5?',
+        options: [
+          'Training Perplexity',
+          'Mean Reciprocal Rank (MRR)',
+          'Token Vocabulary Size',
+          'Cosine Warmup Ratio'
+        ],
+        correctIndex: 1,
+        explanation: 'MRR scores 1/rank (1.0 for rank #1 vs 0.2 for rank #5), directly measuring top-rank precision.'
+      }
+    ],
+    summary: [
+      'Two-stage retrieval pairs fast Hybrid Search (BM25 + Bi-Encoder) with an accurate Cross-Encoder Reranker.',
+      'Measure retrieval separately from generation using Recall@k, MRR, and NDCG.',
+      'Evaluate RAG end-to-end with Context Recall, Faithfulness (no hallucination), and Answer Relevance.'
+    ]
+  },
+
+  // =========================================================================
+  // TRACK 8 — LESSON 8.6: QUANTIZATION, KV CACHE & INFERENCE OPTIMIZATION
+  // =========================================================================
+  'llm-quantization-kv-cache-and-inference': {
+    slug: 'llm-quantization-kv-cache-and-inference',
+    scene: {
+      title: 'Remembering Notes From Earlier Chapters (KV Cache) & Compressing Weights From 16-Bit to 4-Bit (Quantization)',
+      narrative:
+        'Training a 7B-parameter LLM is one challenge; serving it to 1,000 concurrent users under 50 ms per token is a completely different systems engineering game! During autoregressive decoding, generating 1 token requires reading ALL model weights from GPU HBM memory (memory-bandwidth bound) and attending to every previous token. Two breakthroughs make real-time LLM serving possible: (1) KV Caching, which stores past Key and Value tensors so each new token takes O(T) instead of O(T²) work; and (2) Weight Quantization (FP16 → INT8 / INT4 via AWQ/GPTQ), which shrinks VRAM and doubles-to-quadruples token generation speed!'
+    },
+    mapping: [
+      {
+        scenePart: 'Saving past Key & Value tensors in GPU memory instead of recomputing them',
+        modelPart: 'Autoregressive KV Cache',
+        symbol: 'Memory = 2 · L · n_kv · d_head · T · bytes',
+        role: 'Avoids O(T²) recomputation per token; GQA shrinks n_kv to save huge VRAM'
+      },
+      {
+        scenePart: 'Rounding FP16 weights into compact INT8 or INT4 integer buckets',
+        modelPart: 'Post-Training Quantization (PTQ)',
+        symbol: 'w_q = round(w / s) + z,   ŵ = s · (w_q - z)',
+        role: '7B model drops from ~14 GB (FP16) to ~3.5 GB (INT4) and runs faster on bandwidth-bound GPUs'
+      },
+      {
+        scenePart: 'Managing KV cache in non-contiguous memory pages like OS virtual RAM',
+        modelPart: 'PagedAttention & Continuous Batching',
+        symbol: 'vLLM / TGI serving engine',
+        role: 'Eliminates KV memory fragmentation and batches incoming requests dynamically'
+      },
+      {
+        scenePart: 'Drafting 4 tokens with a tiny model and verifying all 4 in 1 forward pass',
+        modelPart: 'Speculative Decoding',
+        symbol: 'Lossless exact target distribution',
+        role: '2–3× decoding speedup with mathematically identical output distribution'
+      }
+    ],
+    playWithItPrompt:
+      'Review LoRA parameter memory savings in Tab 8.2 ("Fine-Tuning & LoRA") and compare how 4-bit QLoRA combines NF4 quantization with low-rank adapters.',
+    analogyBreaks:
+      'Quantization speeds up single-user / small-batch decoding because decoding is memory-bandwidth bound; however, during huge-batch prefill (compute-bound), INT4 dequantization overhead can sometimes negate speedups unless specialized kernels (Marlin/FP8 Tensor Cores) are used.',
+    intuition: [
+      'Prefill vs Decode: Prefill processes your entire prompt in parallel (compute-bound, high GPU utilization). Decode generates 1 token at a time (memory-bandwidth bound—GPU cores sit waiting for weights and KV cache to stream from HBM!).',
+      'Why Grouped-Query Attention (GQA) Exists: In Llama-3 / Mistral, multiple Query heads share a single Key/Value head, slashing KV cache memory by 4–8× for long 32k–128k contexts.',
+      'How Much VRAM Does a 7B Model Need? Rule of thumb: FP16 = 2 bytes/param (~14 GB), INT8 = 1 byte/param (~7 GB), INT4 = 0.5 bytes/param (~3.5 GB + ~10% scale metadata) — plus KV cache!'
+    ],
+    mathFormulas: [
+      {
+        name: 'Symmetric Affine Quantization & Dequantization',
+        latex: 's = \\frac{\\max(|W|)}{2^{b-1} - 1}, \\qquad W_q = \\text{clamp}\\!\\left(\\text{round}\\!\\left(\\frac{W}{s}\\right),\\, -2^{b-1}+1,\\, 2^{b-1}-1\\right), \\qquad \\widehat{W} = s \\cdot W_q',
+        explanation: 'Maps b-bit weights (e.g. b = 4 or 8) using group-wise scale factor s.'
+      },
+      {
+        name: 'KV Cache VRAM Footprint (Bytes)',
+        latex: '\\text{KV\\_Bytes} = 2 \\times n_{\\text{layers}} \\times n_{\\text{kv\\_heads}} \\times d_{\\text{head}} \\times \\text{seq\\_len} \\times \\text{batch} \\times \\text{bytes\\_per\\_elem}',
+        explanation: 'Factor of 2 accounts for both Key (K) and Value (V) tensors.'
+      }
+    ],
+    workedExample: {
+      scenario: 'Estimate the weight-only VRAM of a 7B-parameter LLM in FP16 (2 bytes/param) vs INT4 (0.5 bytes/param), and compute the KV cache size for 1 sequence of 2,048 tokens with 32 layers, 8 KV heads (GQA), d_head = 128, FP16 (2 bytes).',
+      steps: [
+        {
+          label: 'Step 1: Compare Weight VRAM (FP16 vs INT4)',
+          math: '\\text{FP16} = 7\\times 10^9 \\times 2\\text{ B} = 14.0\\text{ GB}, \\qquad \\text{INT4} = 7\\times 10^9 \\times 0.5\\text{ B} = 3.5\\text{ GB}',
+          note: 'INT4 cuts weight memory by 4× (fitting on an 8 GB consumer GPU!).'
+        },
+        {
+          label: 'Step 2: Compute KV Cache Size',
+          math: '\\text{KV} = 2 \\times 32 \\times 8 \\times 128 \\times 2048 \\times 2\\text{ B} \\approx 268.4\\text{ MB}',
+          note: 'With 32 KV heads (MHA instead of GQA), this would be 1.07 GB per user!'
+        }
+      ],
+      result: 'Weights: 14.0 GB (FP16) → 3.5 GB (INT4); KV cache at 2k tokens ≈ 268 MB.',
+      params: {}
+    },
+    quiz: [
+      {
+        id: 'llm-inf-q1',
+        question: 'Why does autoregressive token-by-token decoding become faster when weights are quantized from FP16 to INT4?',
+        options: [
+          'Because decoding is memory-bandwidth bound, and INT4 streams 4× fewer bytes from GPU HBM.',
+          'Because INT4 quantization removes all self-attention layers from the Transformer.',
+          'Because INT4 numbers eliminate the need for a Softmax vocabulary projection.',
+          'Because INT4 weights increase the model’s parameter count by four times.'
+        ],
+        correctIndex: 0,
+        explanation: 'Generating one token at a time reads the entire model from GPU memory per step; moving 4× fewer bytes directly speeds up memory-bandwidth-bound decoding.'
+      },
+      {
+        id: 'llm-inf-q2',
+        question: 'What primary computational problem does the KV Cache solve during autoregressive LLM generation?',
+        options: [
+          'It avoids recomputing Keys and Values for all previous tokens at every new step.',
+          'It compresses the tokenizer vocabulary down to 256 ASCII bytes.',
+          'It replaces cross-entropy loss with Mean Squared Error during pretraining.',
+          'It allows the model to attend to future tokens during causal pretraining.'
+        ],
+        correctIndex: 0,
+        explanation: 'Because causal attention for past tokens never changes, caching past K and V tensors reduces per-token work from O(T²) to O(T).'
+      }
+    ],
+    summary: [
+      'KV Caching eliminates O(T²) recomputation during autoregressive decoding; GQA shrinks KV VRAM.',
+      'INT8/INT4 quantization reduces VRAM by 2–4× and accelerates memory-bandwidth-bound token generation.',
+      'PagedAttention, Continuous Batching, and Speculative Decoding maximize production throughput.'
     ]
   }
 };

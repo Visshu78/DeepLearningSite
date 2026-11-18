@@ -217,6 +217,43 @@ export function MathToolkitVisualizer({
                   </div>
                 </div>
               </div>
+
+              {/* Live Formula Trace & 2D Vector Geometry */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3.5 items-center">
+                <div className="sm:col-span-7 space-y-2 text-xs font-mono-num text-[#1D1819]">
+                  <div className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#625956]">
+                    Live Formula Trace
+                  </div>
+                  <div className="p-2 bg-white border border-[#E8E2D9] rounded leading-relaxed">
+                    <div>
+                      <span className="text-[#786970]">a · b</span> = ({vecAx.toFixed(2)})(0.90) + ({vecAy.toFixed(2)})(0.20) ={' '}
+                      <strong className="text-[#7A1C30]">{vecRes.dotProduct.toFixed(3)}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[#786970]">cos(θ)</span> = {vecRes.dotProduct.toFixed(3)} / ({vecRes.normA.toFixed(2)} · {vecRes.normB.toFixed(2)}) ={' '}
+                      <strong className="text-[#166534]">{vecRes.cosineSimilarity.toFixed(3)}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[#786970]">W · a</span> = [1.5({vecAx.toFixed(2)})+0.5({vecAy.toFixed(2)}), -0.5({vecAx.toFixed(2)})+1.2({vecAy.toFixed(2)})]
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sm:col-span-5">
+                  <svg viewBox="0 0 180 120" className="w-full h-28 bg-white rounded border border-[#E8E2D9]">
+                    <line x1="90" y1="8" x2="90" y2="112" stroke="#E8E2D9" strokeWidth="1" />
+                    <line x1="12" y1="60" x2="168" y2="60" stroke="#E8E2D9" strokeWidth="1" />
+                    {/* Friend vector b = [0.9, 0.2] */}
+                    <line x1="90" y1="60" x2={90 + 0.9 * 55} y2={60 - 0.2 * 45} stroke="#166534" strokeWidth="2.5" />
+                    <circle cx={90 + 0.9 * 55} cy={60 - 0.2 * 45} r="3.5" fill="#166534" />
+                    <text x={94 + 0.9 * 55} y={58 - 0.2 * 45} fontSize="9" fontWeight="bold" fill="#166534">b</text>
+                    {/* User vector a */}
+                    <line x1="90" y1="60" x2={90 + vecAx * 55} y2={60 - vecAy * 45} stroke="#7A1C30" strokeWidth="2.5" />
+                    <circle cx={90 + vecAx * 55} cy={60 - vecAy * 45} r="4" fill="#7A1C30" />
+                    <text x={94 + vecAx * 55} y={56 - vecAy * 45} fontSize="9" fontWeight="bold" fill="#7A1C30">a</text>
+                  </svg>
+                </div>
+              </div>
             </div>
 
             <div className="lg:col-span-5 space-y-4">
