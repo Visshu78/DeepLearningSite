@@ -93,14 +93,14 @@ export default function AboutPage() {
             Ready to explore the 10-track curriculum?
           </h3>
           <p className="text-xs text-[#54484E]">
-            Begin with Track 0 Free Preview (Lesson 0.1): Vectors, Matrices and Dot Products.
+            Begin with Track 0 (Lesson 0.1): Vectors, Matrices and Dot Products.
           </p>
         </div>
         <Link
           href="/learn/vectors-matrices-and-dot-products"
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded text-xs font-semibold bg-[#7A1C30] text-white hover:bg-[#5F1424] transition-colors shrink-0"
         >
-          <span>Start Track 0 Free</span>
+          <span>Start Track 0</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </section>

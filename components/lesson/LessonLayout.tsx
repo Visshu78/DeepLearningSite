@@ -20,7 +20,6 @@ import {
   Sliders,
   AlertTriangle,
   FolderGit2,
-  Sparkles,
 } from 'lucide-react';
 
 export type ClientLessonContent = Omit<DetailedLessonContent, 'quiz'> & {
@@ -64,12 +63,6 @@ export function LessonLayout({ meta, content, visualizer }: LessonLayoutProps) {
               <span className="text-[#B8860B]">•</span>
               <span>Lesson {meta.lessonCode}</span>
             </div>
-            {meta.isFreePreview && (
-              <span className="inline-flex items-center gap-1 text-xs font-mono-num font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-md bg-[#DCFCE7] border border-[#86EFAC] text-[#166534]">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Free Preview</span>
-              </span>
-            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">

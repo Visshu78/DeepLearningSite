@@ -1,10 +1,8 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { notFound } from 'next/navigation';
 import { getLessonBySlug, ALL_LESSONS, type LessonMeta } from '@/lib/lesson-data/curriculum';
 import { LESSON_DETAILS } from '@/lib/lesson-data/lessonContent';
-import { hasServerPaidAccess } from '@/lib/auth/session';
 import { LessonLayout } from '@/components/lesson/LessonLayout';
-import { LockedLessonPaywall } from '@/components/lesson/LockedLessonPaywall';
 import { NeuronVisualizer } from '@/components/visualizers/NeuronVisualizer';
 import { ActivationGraphVisualizer } from '@/components/visualizers/ActivationGraphVisualizer';
 import { ForwardPassVisualizer } from '@/components/visualizers/ForwardPassVisualizer';
@@ -223,22 +221,6 @@ function renderFullLesson(slug: string, meta: LessonMeta) {
   );
 }
 
-async function PaidLessonGate({
-  slug,
-  meta,
-  sceneTitle,
-}: {
-  slug: string;
-  meta: LessonMeta;
-  sceneTitle: string;
-}) {
-  const unlocked = await hasServerPaidAccess();
-  if (!unlocked) {
-    return <LockedLessonPaywall meta={meta} sceneTitle={sceneTitle} />;
-  }
-  return renderFullLesson(slug, meta);
-}
-
 export default async function LessonPage({ params }: PageProps) {
   const { slug } = await params;
   const meta = getLessonBySlug(slug);
@@ -248,15 +230,5 @@ export default async function LessonPage({ params }: PageProps) {
     notFound();
   }
 
-  // Free preview lessons (1 per track = 10 lessons) render immediately
-  if (meta.isFreePreview) {
-    return renderFullLesson(slug, meta);
-  }
-
-  // Paid lessons are gated on the server after an access check
-  return (
-    <Suspense fallback={<LockedLessonPaywall meta={meta} sceneTitle={content.scene.title} />}>
-      <PaidLessonGate slug={slug} meta={meta} sceneTitle={content.scene.title} />
-    </Suspense>
-  );
+  return renderFullLesson(slug, meta);
 }

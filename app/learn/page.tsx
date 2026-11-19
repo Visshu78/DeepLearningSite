@@ -10,7 +10,6 @@ import { CheckCircle2, Clock, Lock, ArrowRight, Layers, Compass, FolderGit2, Spa
 export default function LearnRoadmapPage() {
   const { isCompleted, totalCompleted, mounted } = useLearningProgress();
   const totalAvailableLessons = ALL_LESSONS.filter(l => l.status === 'available').length;
-  const totalFreePreviews = ALL_LESSONS.filter(l => l.isFreePreview).length;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-10">
@@ -24,7 +23,7 @@ export default function LearnRoadmapPage() {
             </div>
             <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#DCFCE7] border border-[#86EFAC] text-[#166534] text-xs font-mono-num font-bold">
               <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>{totalFreePreviews} Free Preview Lessons (1 Per Track)</span>
+              <span>All {totalAvailableLessons} Lessons Open</span>
             </div>
           </div>
 
@@ -37,7 +36,7 @@ export default function LearnRoadmapPage() {
           Learning Roadmap
         </h1>
         <p className="text-base text-[#54484E] max-w-3xl leading-relaxed">
-          Progress cleanly from <strong>Track 0 to Track 9</strong>: start with <strong>Stage 1: Foundations (Track 0)</strong> and <strong>Stage 2: Data Preparation (Track 1)</strong> before moving to <strong>Stage 3: Classical ML (Track 2)</strong>, <strong>Stage 4: Deep Learning (Tracks 3–5)</strong>, and <strong>Stage 5: Advanced AI (Tracks 6–9)</strong>. Every track includes a marked <strong>Free Preview</strong> lesson.
+          Progress cleanly from <strong>Track 0 to Track 9</strong>: start with <strong>Stage 1: Foundations (Track 0)</strong> and <strong>Stage 2: Data Preparation (Track 1)</strong> before moving to <strong>Stage 3: Classical ML (Track 2)</strong>, <strong>Stage 4: Deep Learning (Tracks 3–5)</strong>, and <strong>Stage 5: Advanced AI (Tracks 6–9)</strong>.
         </p>
       </div>
 
@@ -87,7 +86,7 @@ export default function LearnRoadmapPage() {
                         className="inline-flex items-center gap-1 text-[10px] font-mono-num px-2 py-0.5 rounded bg-[#DCFCE7] border border-[#86EFAC] text-[#166534] font-bold hover:bg-[#BBF7D0] transition-colors"
                       >
                         <Sparkles className="w-2.5 h-2.5" />
-                        <span>Free Preview: Lesson {freeLesson.lessonCode}</span>
+                        <span>Start Here: Lesson {freeLesson.lessonCode}</span>
                       </Link>
                     )}
                     {isModuleComplete && (
@@ -134,12 +133,6 @@ export default function LearnRoadmapPage() {
                           <h3 className="text-sm font-bold text-[#1F191B]">
                             {lesson.title}
                           </h3>
-                          {lesson.isFreePreview && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-mono-num font-bold uppercase tracking-wider text-[#166534] bg-[#DCFCE7] border border-[#86EFAC] px-2 py-0.5 rounded">
-                              <Sparkles className="w-2.5 h-2.5" />
-                              Free Preview
-                            </span>
-                          )}
                           {completed && (
                             <span className="inline-flex items-center gap-1 text-[11px] font-mono-num text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded">
                               <CheckCircle2 className="w-3 h-3" />
@@ -190,11 +183,7 @@ export default function LearnRoadmapPage() {
                             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#7A1C30] text-white hover:bg-[#5F1424] transition-colors"
                           >
                             <span>
-                              {completed
-                                ? 'Review Lesson'
-                                : lesson.isFreePreview
-                                ? 'Start Free Preview'
-                                : 'Start Lesson'}
+                              {completed ? 'Review Lesson' : 'Start Lesson'}
                             </span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </Link>

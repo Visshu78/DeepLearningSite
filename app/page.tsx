@@ -66,7 +66,7 @@ export default function HomePage() {
               href="/learn/vectors-matrices-and-dot-products"
               className="btn-primary text-xs sm:text-sm font-semibold"
             >
-              <span>Start Track 0 Free (Lesson 0.1)</span>
+              <span>Start Track 0 (Lesson 0.1)</span>
               <ArrowRight className="w-4 h-4 text-[#C28E38]" />
             </Link>
 
@@ -88,7 +88,7 @@ export default function HomePage() {
           </div>
 
           <div className="pt-2 flex flex-wrap items-center justify-center gap-5 text-xs text-[#968A86] font-mono-num">
-            <span>10 Free Preview Lessons (1 Per Track)</span>
+            <span>All {ALL_LESSONS.length} Lessons Open</span>
             <span className="text-[#C28E38]">•</span>
             <span>Interactive Visual Workbenches</span>
             <span className="text-[#C28E38]">•</span>
@@ -100,7 +100,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto pt-2">
           <div className="relative">
             <div className="absolute -top-3.5 left-6 z-10 badge-live shadow-sm">
-              Live Interactive Demonstration (Lesson 2.1 Free Preview)
+              Live Interactive Demonstration (Lesson 3.1)
             </div>
             <NeuronVisualizer />
           </div>
@@ -196,7 +196,7 @@ export default function HomePage() {
                       >
                         <Sparkles className="w-3 h-3 shrink-0" />
                         <span className="truncate">
-                          <strong>Free Preview ({freePreview.lessonCode}):</strong> {freePreview.title}
+                          <strong>Start Here ({freePreview.lessonCode}):</strong> {freePreview.title}
                         </span>
                       </Link>
                     </div>
@@ -225,15 +225,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 10 Free Preview Lessons (One Per Track) */}
+      {/* Featured Lessons (One Per Track) */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#EAE2D5] pb-4">
           <div className="space-y-1">
             <div className="text-xs font-mono-num font-semibold uppercase tracking-wider text-[#166534]">
-              Try 1 Lesson Per Track Free ({freePreviewLessons.length} Free Previews)
+              All {ALL_LESSONS.length} Lessons Open ({freePreviewLessons.length} Featured Starting Points)
             </div>
             <h2 className="font-serif-editorial text-2xl sm:text-3xl font-bold text-[#1F191B] tracking-tight">
-              Free Preview Interactive Lessons
+              Featured Interactive Lessons
             </h2>
           </div>
           <Link
@@ -259,7 +259,7 @@ export default function HomePage() {
                   </span>
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#DCFCE7] border border-[#86EFAC] text-[#166534] font-bold uppercase text-[10px]">
                     <Sparkles className="w-2.5 h-2.5" />
-                    Free Preview
+                    Start Here
                   </span>
                 </div>
                 <h3 className="text-sm font-bold text-[#1F191B] group-hover:text-[#7A1C30] transition-colors">
@@ -275,7 +275,7 @@ export default function HomePage() {
               </div>
 
               <div className="pt-2 border-t border-[#EAE2D5] flex items-center justify-between text-xs font-semibold text-[#7A1C30]">
-                <span>Launch Free Preview ({lesson.duration})</span>
+                <span>Open Lesson ({lesson.duration})</span>
                 <ArrowRight className="w-3.5 h-3.5 text-[#B8860B] group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>

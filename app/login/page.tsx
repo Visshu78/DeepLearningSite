@@ -144,38 +144,10 @@ export default function LoginPage() {
 
           <div>
             <span className="block text-xs font-bold text-[#1F191B] mb-1.5">
-              Access Tier
+              Access Status
             </span>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setTier('free')}
-                className={`p-3 rounded-xl border text-left transition-colors ${
-                  tier === 'free'
-                    ? 'border-[#7A1C30] bg-[#FDF2F4]'
-                    : 'border-[#EAE2D5] bg-[#FAF8F5]'
-                }`}
-              >
-                <div className="text-xs font-bold text-[#1F191B]">Free Tier (₹0)</div>
-                <div className="text-[11px] text-[#54484E] mt-0.5">
-                  10 Free Preview lessons (1 per track)
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTier('pro')}
-                className={`p-3 rounded-xl border text-left transition-colors ${
-                  tier === 'pro'
-                    ? 'border-[#7A1C30] bg-[#FDF2F4]'
-                    : 'border-[#EAE2D5] bg-[#FAF8F5]'
-                }`}
-              >
-                <div className="text-xs font-bold text-[#7A1C30]">NeuroPlay Pro (₹500)</div>
-                <div className="text-[11px] text-[#54484E] mt-0.5">
-                  All {ALL_LESSONS.length} lessons across {CURRICULUM.length} tracks
-                </div>
-              </button>
+            <div className="p-3.5 rounded-xl border border-[#BBF7D0] bg-[#F0FDF4] text-xs text-[#166534]">
+              <strong>Open Access Enabled:</strong> All {ALL_LESSONS.length} interactive lessons across {CURRICULUM.length} tracks are currently open to every learner.
             </div>
           </div>
 
