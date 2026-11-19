@@ -458,21 +458,21 @@ export const CURRICULUM: ModuleMeta[] = [
         lessonCode: '2.3',
         slug: 'bias-variance-and-evaluation-metrics',
         title: 'Bias-Variance and Evaluation Metrics',
-        subtitle: 'Decomposing generalization error into Bias², Variance, and irreducible noise.',
+        subtitle: 'Bias²-Variance decomposition plus choosing & interpreting metrics: Confusion Matrix, Precision/Recall/F1, ROC-AUC vs PR-AUC, thresholds, and MAE/MSE/RMSE/R².',
         everydayScene: 'Memorizing past papers vs understanding concepts',
         isFreePreview: false,
         moduleId: 'track-2',
         moduleName: 'Classical ML',
         moduleNumber: 2,
         lessonNumber: 3,
-        duration: '18 min',
+        duration: '20 min',
         prerequisites: ['logistic-regression'],
         status: 'available',
         relatedProjectSlug: 'telco-customer-churn',
         keyTakeaways: [
           'Expected test error decomposes into Bias² (underfitting) + Variance (overfitting) + σ² (irreducible noise)',
-          'Confusion matrices break classification outcomes into TP, FP, TN, and FN',
-          'ROC-AUC measures ranking quality across all thresholds'
+          'Classification: use Confusion Matrices (TP, FP, TN, FN), Precision/Recall/F1, ROC-AUC vs PR-AUC, and cost-aware threshold selection',
+          'Regression: choose MAE (outlier-robust), MSE/RMSE (penalizes large errors), and R² (explained variance)'
         ]
       },
       {
@@ -698,8 +698,8 @@ export const CURRICULUM: ModuleMeta[] = [
         id: 'lesson-3-6',
         lessonCode: '3.6',
         slug: 'backpropagation-fundamentals',
-        title: 'Backpropagation and the Chain Rule',
-        subtitle: 'Propagating errors backward through layered derivatives to compute exact parameter gradients.',
+        title: 'Computational Graphs & Backpropagation',
+        subtitle: 'Building Directed Acyclic Graphs (DAGs), caching forward intermediates, local derivatives, reverse-mode chain rule, and gradient accumulation.',
         everydayScene: 'After a failed group project, working out who contributed how much to the failure',
         isFreePreview: false,
         moduleId: 'track-3',
@@ -711,10 +711,10 @@ export const CURRICULUM: ModuleMeta[] = [
         status: 'available',
         relatedProjectSlug: 'mnist-in-pure-numpy',
         keyTakeaways: [
-          'Backpropagation evaluates ∂L/∂w by decomposing it into local derivatives via the chain rule',
-          'Errors propagate from the loss node backward toward the inputs: ∂L/∂z = ∂L/∂a · φ\'(z)',
-          'Gradients for weights equal the upstream error multiplied by the corresponding incoming activation: ∂L/∂w = δ · a_in',
-          'Numerical gradient checking with finite differences provides mathematical verification of analytical gradients'
+          'Every neural forward pass constructs a Directed Acyclic Graph (DAG) of elementary ops and caches intermediate values',
+          'Reverse-mode autodiff walks the DAG in reverse topological order, multiplying upstream gradients by local derivatives',
+          'When a node fans out to multiple downstream branches, incoming gradients accumulate via addition (+=)',
+          'Numerical gradient checking with centered finite differences verifies analytical gradients'
         ]
       },
       {
@@ -1087,22 +1087,23 @@ export const CURRICULUM: ModuleMeta[] = [
         id: 'lesson-5-9',
         lessonCode: '5.9',
         slug: 'object-detection-yolo',
-        title: 'Object Detection (YOLO)',
-        subtitle: 'Single-stage grid detection, bounding box coordinates, Intersection over Union (IoU), and Non-Maximum Suppression (NMS).',
+        title: 'Object Detection (YOLO, IoU, NMS & mAP)',
+        subtitle: 'Single-stage grid detection, IoU, Non-Maximum Suppression (NMS), Precision-Recall curves, Average Precision (AP / mAP), and FP/FN error analysis.',
         everydayScene: 'A CCTV guard who spots and labels everything in one glance',
         isFreePreview: false,
         moduleId: 'track-5',
         moduleName: 'Computer Vision',
         moduleNumber: 5,
         lessonNumber: 9,
-        duration: '22 min',
+        duration: '24 min',
         prerequisites: ['cnn-inference-pipeline'],
         status: 'available',
         relatedProjectSlug: 'college-gate-bike-counter-yolo',
         keyTakeaways: [
-          'YOLO divides the image into an S×S grid where each cell predicts bounding boxes (x, y, w, h, confidence) and class probabilities in one pass',
-          'Intersection over Union (IoU) measures overlap area divided by union area between predicted and ground-truth boxes',
-          'Non-Maximum Suppression (NMS) iteratively keeps the highest-scoring box and suppresses overlapping duplicates with IoU > threshold'
+          'YOLO divides the image into an S×S grid predicting bounding boxes (x, y, w, h, confidence) and class probabilities in one pass',
+          'IoU measures box overlap; Non-Maximum Suppression (NMS) removes duplicate predictions with IoU > τ_NMS',
+          'Average Precision (AP) integrates the Precision-Recall curve at an IoU threshold; mAP averages AP across all classes (e.g. mAP@0.5:0.95)',
+          'False-positive and false-negative error analysis diagnoses localization jitter, small-object misses, and background confusion'
         ]
       },
       {

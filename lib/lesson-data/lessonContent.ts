@@ -425,6 +425,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'The loss function outputs a non-negative scalar: a loss of 0 represents a perfect prediction, while larger numbers denote worse performance.',
       'For continuous regression problems, Mean Squared Error (MSE) is standard: it measures the squared difference between the network prediction ŷ and the ground truth target y.',
       'Softmax, Numerical Stability & Cross-Entropy: For multi-class classification (pick 1 of K classes), Softmax converts raw logits z into probabilities p_k = exp(z_k - max(z)) / Σ exp(z_j - max(z))—subtracting max(z) prevents exp() overflow without changing the output. Pairing Softmax with Cross-Entropy L_CE = -Σ y_k log(p_k) yields the clean gradient ∂L/∂z_k = p_k - y_k. For multi-label classification (multiple independent tags per image), use element-wise Sigmoid + Binary Cross-Entropy instead of Softmax.',
+      'Output Activation & Loss Selection Guide: (1) Continuous regression → Linear output + MSE or Huber loss; (2) Binary classification → Sigmoid + Binary Cross-Entropy; (3) Mutually exclusive multi-class (1 of K) → Softmax + Categorical Cross-Entropy; (4) Non-exclusive multi-label tags → Element-wise Sigmoid + BCE.',
       'Note on conventions: In mathematical derivations, single-sample loss is often scaled by 1/2: L = 1/2(ŷ - y)². This ensures the derivative cancels out cleanly: ∂L/∂ŷ = ŷ - y. For reporting dataset metrics, the unscaled average MSE = 1/N Σ(ŷ - y)² is typically cited.'
     ],
     mathFormulas: [
@@ -629,10 +630,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'In a real college group project, teammates argue, deflect blame, or rewrite their part from scratch; in backpropagation, blame (δ) is routed by exact, deterministic calculus derivatives through the transpose of the forward weights.',
     intuition: [
-      'Backpropagation is the mathematical engine of deep learning. It answers one vital question: for every single weight and bias in the network, how much did that parameter contribute to the final loss?',
-      'Because deep networks are compositions of functions (layer 2 depends on layer 1, which depends on layer 0), we compute partial derivatives using the multivariate Calculus Chain Rule.',
-      'Instead of recomputing derivatives from scratch for every parameter, backpropagation works backward from the output loss toward the inputs, reusing intermediate error terms (δ = ∂L/∂z).',
-      'This dynamic programming approach turns what would be an exponential complexity problem into an efficient O(N) calculation proportional to the number of connections in the network.'
+      'Backpropagation is the mathematical engine of deep learning. Every forward pass builds a Computational Graph—a Directed Acyclic Graph (DAG) where inputs, weights, and operations (+, ×, ReLU, matmul) are nodes and intermediate activations are cached.',
+      'During the backward pass, reverse-mode autodiff traverses this DAG in reverse topological order: each node multiplies its incoming upstream gradient by its local derivative (∂node/∂input). When a node fans out to multiple downstream branches, incoming gradients accumulate via addition (+=), turning an exponential chain-rule tree into a single O(E) linear pass.'
     ],
     mathFormulas: [
       {
@@ -3257,7 +3256,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'The Gated Recurrent Unit (GRU, Cho et al. 2014) streamlines the LSTM: it eliminates the separate cell state C_t and uses two gates—the Reset Gate r_t (which gates how much of h_{t-1} enters the candidate h̃_t = tanh(W_h x_t + U_h(r_t ⊙ h_{t-1}) + b_h)) and the Update Gate z_t (which couples forgetting and writing via h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t). Note that PyTorch\'s torch.nn.GRU implementation swaps the roles of z_t and (1 - z_t), writing h_t = (1 - z_t) ⊙ n_t + z_t ⊙ h_{t-1}. A GRU uses 3(Hd + H² + H) parameters instead of 4(Hd + H² + H) (25% smaller).',
       'For tasks where input and output sequences have different lengths—like Machine Translation, Summarization, or Speech-to-Text—Seq2Seq (Encoder-Decoder) pairs an Encoder RNN with a Decoder RNN.',
-      'During training, Seq2Seq uses Teacher Forcing: feeding the ground-truth previous target token y_{t-1} into the decoder at step t (rather than the model\'s own noisy prediction ŷ_{t-1}) so the decoder learns rapidly without compounding early mistakes.',
+      'During training, Seq2Seq uses Teacher Forcing: feeding the ground-truth previous target token y_{t-1} into the decoder at step t (rather than the model\'s own noisy prediction ŷ_{t-1}) so the decoder learns rapidly without compounding early mistakes. However, relying purely on teacher forcing creates Exposure Bias: at inference time the model only sees its own generated tokens ŷ_{t-1}, so one early mistake can snowball unless mitigated by scheduled sampling or beam search.',
       'Crucially, cramming an entire 40-word sentence into a single fixed encoder vector h_S creates an information bottleneck. Adding Attention lets the decoder compute a fresh context vector c_t = Σ α_{ti} h_i at every step—either via Bahdanau (2014) additive attention e_{ti} = v^T tanh(W_1 h_i + W_2 s_t) or Luong (2015) dot-product attention e_{ti} = s_t^T h_i, the direct bridge to Track 7 (Transformers)!',
       'Decoding & Evaluation Tradeoffs: At inference time (without teacher forcing), Greedy decoding picks argmax at every step, whereas Beam Search tracks the top-B sequence hypotheses to avoid dead-end phrases. Classic n-gram overlap metrics like BLEU miss valid paraphrases and semantic meaning, which is why modern systems also use learned metrics and LLM-as-a-Judge.'
     ],
@@ -4958,7 +4957,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'Exact Mathematical Decomposition: Suppose true targets are generated by y = f(x) + ε where E[ε] = 0 and Var(ε) = σ_ε². Across different random training sets D, our learning algorithm produces an estimator f̂_D(x). Expanding E_{D, ε}[(y - f̂_D(x))²] algebraically proves that cross-terms vanish and total expected MSE equals Bias² + Variance + Irreducible Noise!',
       'How to Cure High Bias (Underfitting): Increase model capacity (more layers/neurons, polynomial/interaction features), reduce regularization λ, or train longer. Note: adding more training rows N does NOT fix high bias if your model is a straight line trying to fit a sine wave!',
-      'How to Cure High Variance (Overfitting): Add more training examples N (variance scales as ~1/N), apply L2/L1 regularization or Dropout, prune noisy features, or use Ensembles (Bagging / Random Forests).'
+      'How to Cure High Variance (Overfitting): Add more training examples N (variance scales as ~1/N), apply L2/L1 regularization or Dropout, prune noisy features, or use Ensembles (Bagging / Random Forests).',
+      'Choosing & Interpreting Evaluation Metrics: For classification, start with the Confusion Matrix (TP, FP, TN, FN) → Precision = TP/(TP+FP), Recall = TP/(TP+FN), and F1 = 2PR/(P+R); sweep thresholds with ROC-AUC (ranking across all thresholds) or PR-AUC (preferred when positives are rare), and tune the decision threshold τ to business cost. For regression, choose MAE = (1/N)Σ|y - ŷ| (outlier-robust), MSE/RMSE = √[(1/N)Σ(y - ŷ)²] (penalizes large errors in target units), and R² = 1 - SS_res/SS_tot (variance explained).'
     ],
     mathFormulas: [
       {
@@ -6482,6 +6482,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         name: 'Intersection over Union (IoU / Jaccard Index)',
         latex: '\\text{IoU}(A, B) = \\frac{\\text{Area}(A \\cap B)}{\\text{Area}(A \\cup B)} = \\frac{\\max(0, \\min(x_{2A}, x_{2B}) - \\max(x_{1A}, x_{1B}))\\cdot\\max(0, \\min(y_{2A}, y_{2B}) - \\max(y_{1A}, y_{1B}))}{\\text{Area}(A) + \\text{Area}(B) - \\text{Area}(A \\cap B)}',
         explanation: 'Equals 1.0 when boxes A and B are identical, and 0.0 when they do not overlap.'
+      },
+      {
+        name: 'Average Precision (AP) & Mean Average Precision (mAP)',
+        latex: '\\text{AP}@\\tau = \\int_0^1 P(R)\\,dR, \\qquad \\text{mAP} = \\frac{1}{C}\\sum_{c=1}^C \\text{AP}_c',
+        explanation: 'A detection is a True Positive only if class matches and IoU ≥ τ; mAP@0.5:0.95 averages mAP over 10 IoU thresholds (0.50 to 0.95) to reward tight localization.'
       }
     ],
     workedExample: {

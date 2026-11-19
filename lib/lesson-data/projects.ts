@@ -226,7 +226,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
     funTitle: 'Will this customer ditch their plan?',
     difficulty: 'Intermediate',
     problemStatement:
-      'Build a calibrated customer churn classifier reusing your Track 9 preprocessing pipeline, comparing Logistic Regression against Random Forests and tuning the decision threshold to maximize business retention ROI.',
+      'Build a calibrated customer churn classifier reusing your Track 1 preprocessing pipeline, comparing Logistic Regression against Random Forests and tuning the decision threshold to maximize business retention ROI.',
     learningGoals: [
       'Implement Binary Cross-Entropy loss and Sigmoid gradient descent from scratch',
       'Compare Accuracy vs Precision, Recall, F1, ROC-AUC, and PR-AUC on imbalanced churn data',
@@ -1087,7 +1087,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
       'Identify a real problem from campus, hostel, commute, sports, or public civic data; curate a leak-free dataset; train and benchmark a classical baseline against a deep learning model; deploy a live interactive demo or API; and write a rigorous engineering report.',
     learningGoals: [
       'Scope an ambiguous real-world problem into a measurable ML objective and business/user metric',
-      'Execute a leak-free Track 9 data pipeline and compare a simple baseline against a deep architecture',
+      'Execute a leak-free Track 1 data pipeline and compare a simple baseline against a deep architecture',
       'Ship a reproducible GitHub repository with automated tests, a live Gradio/FastAPI demo, and a failure-mode audit'
     ],
     colabStarterUrl: 'https://colab.research.google.com/',
