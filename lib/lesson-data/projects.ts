@@ -101,7 +101,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   // =========================================================================
   {
     slug: 'clean-the-messy-dataset',
-    trackNumber: 9,
+    trackNumber: 1,
     trackTitle: 'Data Preparation and Feature Engineering',
     title: 'Leak-Free Preprocessing & Feature Engineering Pipeline',
     funTitle: 'Clean the messy dataset',
@@ -163,7 +163,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   // =========================================================================
   {
     slug: 'house-price-predictor',
-    trackNumber: 1,
+    trackNumber: 2,
     trackTitle: 'Classical ML',
     title: 'House & Rent Price Predictor from Scratch',
     funTitle: 'What should my rent be?',
@@ -220,7 +220,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   },
   {
     slug: 'telco-customer-churn',
-    trackNumber: 1,
+    trackNumber: 2,
     trackTitle: 'Classical ML',
     title: 'Customer Churn Early-Warning System',
     funTitle: 'Will this customer ditch their plan?',
@@ -278,7 +278,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   // =========================================================================
   {
     slug: 'mnist-in-pure-numpy',
-    trackNumber: 2,
+    trackNumber: 3,
     trackTitle: 'Neural Network Foundations',
     title: 'Multi-Layer Neural Network in Pure NumPy (MNIST)',
     funTitle: 'Be the cheque scanner',
@@ -337,7 +337,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   // =========================================================================
   {
     slug: 'training-debugging-lab',
-    trackNumber: 3,
+    trackNumber: 4,
     trackTitle: 'Training Neural Networks Well',
     title: 'Neural Network Training Debugging Lab (5 Broken Runs)',
     funTitle: 'Training Debugging Lab (5 broken runs)',
@@ -391,7 +391,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   },
   {
     slug: 'optimizer-benchmark',
-    trackNumber: 3,
+    trackNumber: 4,
     trackTitle: 'Training Neural Networks Well',
     title: 'Optimizer & Learning Rate Schedule Benchmark Suite',
     funTitle: 'Optimizer Benchmark',
@@ -449,7 +449,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   // =========================================================================
   {
     slug: 'plant-disease-resnet-gradcam',
-    trackNumber: 4,
+    trackNumber: 5,
     trackTitle: 'Computer Vision',
     title: 'Plant Disease Classifier with ResNet & Grad-CAM Explainability',
     funTitle: 'Crop doctor for farmers',
@@ -503,7 +503,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   },
   {
     slug: 'chest-xray-classifier',
-    trackNumber: 4,
+    trackNumber: 5,
     trackTitle: 'Computer Vision',
     title: 'Chest X-Ray Transfer Learning & Calibration Study',
     funTitle: 'Chest X-ray classifier (learning only, not diagnosis)',
@@ -559,7 +559,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   },
   {
     slug: 'college-gate-bike-counter-yolo',
-    trackNumber: 4,
+    trackNumber: 5,
     trackTitle: 'Computer Vision',
     title: 'Real-Time Vehicle & Bike Detector with YOLO',
     funTitle: 'Count the bikes at your college gate',
@@ -617,7 +617,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   // =========================================================================
   {
     slug: 'lstm-food-review-sentiment',
-    trackNumber: 5,
+    trackNumber: 6,
     trackTitle: 'Sequence Models',
     title: 'LSTM Sentiment Classifier vs Bag-of-Words Baseline',
     funTitle: 'Is this food review angry or happy?',
@@ -673,7 +673,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   },
   {
     slug: 'character-level-author-generator',
-    trackNumber: 5,
+    trackNumber: 6,
     trackTitle: 'Sequence Models',
     title: 'Character-Level Autoregressive Language Model',
     funTitle: 'Write like your favorite author',
@@ -733,7 +733,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   // =========================================================================
   {
     slug: 'tiny-chatgpt-from-scratch',
-    trackNumber: 6,
+    trackNumber: 7,
     trackTitle: 'Attention and Transformers',
     title: 'Decoder-Only Mini-GPT Transformer from Scratch',
     funTitle: 'Build your own tiny ChatGPT',
@@ -789,7 +789,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   },
   {
     slug: 'vision-transformer-vs-cnn',
-    trackNumber: 6,
+    trackNumber: 7,
     trackTitle: 'Attention and Transformers',
     title: 'Vision Transformer (ViT) vs ResNet on CIFAR-10',
     funTitle: 'Vision Transformer vs CNN',
@@ -847,7 +847,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   // =========================================================================
   {
     slug: 'vae-digit-generator',
-    trackNumber: 7,
+    trackNumber: 8,
     trackTitle: 'Generative Models',
     title: 'Variational Autoencoder (VAE) with 2D Latent Space Explorer',
     funTitle: 'Digit generator with latent-space explorer (VAE)',
@@ -903,7 +903,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   },
   {
     slug: 'anime-gan-or-tiny-diffusion',
-    trackNumber: 7,
+    trackNumber: 8,
     trackTitle: 'Generative Models',
     title: 'Tiny Denoising Diffusion (DDPM) or DCGAN Image Synthesizer',
     funTitle: 'Anime face GAN or tiny diffusion model',
@@ -963,7 +963,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   // =========================================================================
   {
     slug: 'chat-with-syllabus-rag',
-    trackNumber: 8,
+    trackNumber: 9,
     trackTitle: 'Modern LLM Practice',
     title: 'Retrieval-Augmented Generation (RAG) over Course Notes with Eval Suite',
     funTitle: 'Chat with your own syllabus and notes',
@@ -1017,7 +1017,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
   },
   {
     slug: 'lora-finetuning-open-llm',
-    trackNumber: 8,
+    trackNumber: 9,
     trackTitle: 'Modern LLM Practice',
     title: 'Parameter-Efficient LoRA Fine-Tuning of an Open LLM',
     funTitle: 'LoRA fine-tuning on a small open model',

@@ -154,7 +154,7 @@ export default function HomePage() {
               Curriculum Roadmap ({ALL_LESSONS.length} Lessons)
             </h2>
             <p className="text-xs text-[#625956] max-w-2xl">
-              Follow Tracks 0 through 9 in order—from math foundations and classical ML to deep neural networks, transformers, and production data engineering. Every track also pairs with an optional guided project.
+              Follow Tracks 0 through 9 in order—from math foundations and data preparation to classical ML, deep neural networks, transformers, and modern LLMs. Every track also pairs with an optional guided project.
             </p>
           </div>
           <Link
