@@ -227,11 +227,14 @@ export function MathToolkitVisualizer({
                   <div className="p-2 bg-white border border-[#E8E2D9] rounded leading-relaxed">
                     <div>
                       <span className="text-[#786970]">a · b</span> = ({vecAx.toFixed(2)})(0.90) + ({vecAy.toFixed(2)})(0.20) ={' '}
-                      <strong className="text-[#7A1C30]">{vecRes.dotProduct.toFixed(3)}</strong>
+                      <strong className="text-[#7A1C30]">{vecRes.dotProduct.toFixed(4)}</strong>
                     </div>
                     <div>
-                      <span className="text-[#786970]">cos(θ)</span> = {vecRes.dotProduct.toFixed(3)} / ({vecRes.normA.toFixed(2)} · {vecRes.normB.toFixed(2)}) ={' '}
-                      <strong className="text-[#166534]">{vecRes.cosineSimilarity.toFixed(3)}</strong>
+                      <span className="text-[#786970]">cos(θ)</span> = {vecRes.dotProduct.toFixed(4)} / ({vecRes.normA.toFixed(4)} · {vecRes.normB.toFixed(4)}) ={' '}
+                      <strong className="text-[#166534]">{vecRes.cosineSimilarity.toFixed(4)}</strong>
+                    </div>
+                    <div className="text-[10px] text-[#786970]">
+                      (Full precision used internally; values shown rounded to 4 decimals.)
                     </div>
                     <div>
                       <span className="text-[#786970]">W · a</span> = [1.5({vecAx.toFixed(2)})+0.5({vecAy.toFixed(2)}), -0.5({vecAx.toFixed(2)})+1.2({vecAy.toFixed(2)})]

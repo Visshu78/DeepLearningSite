@@ -51,9 +51,9 @@ export const TRACK_PROJECTS: TrackProject[] = [
       'Build a scalar and small-tensor reverse-mode automatic differentiation engine (like Karpathy\'s micrograd) that records a dynamic computation graph and computes exact analytical gradients via the chain rule, verified against PyTorch autograd and finite differences.',
     learningGoals: [
       'Represent mathematical expressions as a Directed Acyclic Graph (DAG) of Value nodes',
-      'Implement forward evaluation and local backward derivative closures for +, ×, tanh, exp, and ReLU',
-      'Topologically sort computation graphs to propagate gradients backward in a single O(E) pass',
-      'Verify every analytical gradient against central finite differences within 1e-6 tolerance'
+      'Implement forward evaluation, local derivative closures (+, ×, tanh, exp, ReLU), and gradient accumulation across fan-out branches',
+      'Topologically sort computation graphs to propagate gradients backward in a single O(E) pass (noting tensor broadcasting reduction rules)',
+      'Verify every analytical gradient against PyTorch autograd and central finite differences within 1e-6 tolerance'
     ],
     colabStarterUrl: 'https://colab.research.google.com/',
     dataset: {
@@ -289,7 +289,7 @@ export const TRACK_PROJECTS: TrackProject[] = [
       'Implement vectorized forward passes for Linear layers, ReLU activations, and numerically stable log-sum-exp Softmax',
       'Derive and code analytical backward passes computing ∂L/∂W, ∂L/∂b, and ∂L/∂A for every layer',
       'Verify your analytical backward pass with finite-difference gradient checking on a tiny 5-unit network',
-      'Train with mini-batch SGD and plot live training vs validation accuracy and confusion matrices'
+      'Train with mini-batch SGD using a strict train/validation split (never tuning hyperparameters on the test set) and plot loss/accuracy curves'
     ],
     colabStarterUrl: 'https://colab.research.google.com/',
     dataset: {
@@ -513,10 +513,10 @@ export const TRACK_PROJECTS: TrackProject[] = [
     problemStatement:
       'Explore transfer learning on grayscale chest radiographs while learning why high raw accuracy on medical datasets can be misleading due to class imbalance, threshold sensitivity, and hospital-scanner shortcuts.',
     learningGoals: [
-      'Adapt a 3-channel RGB pretrained backbone (ResNet / EfficientNet) to single-channel radiographs',
-      'Handle severe train/test class imbalance using weighted cross-entropy and Precision-Recall curves',
-      'Audit model failure modes and shortcut learning (e.g. portable scanner text markers) with Grad-CAM',
-      'Document model limitations, false-negative risks, and calibration gaps honestly'
+      'Enforce patient-level train/val/test splitting so radiographs from the same patient never leak across splits',
+      'Adapt a 3-channel RGB pretrained backbone (ResNet / EfficientNet) and handle class imbalance with weighted BCE & PR-AUC',
+      'Audit dataset bias, scanner differences, and shortcut learning (e.g. portable scanner text markers) with Grad-CAM',
+      'Explain why high validation accuracy does not imply clinical validity, documenting sensitivity, specificity, and calibration gaps'
     ],
     colabStarterUrl: 'https://colab.research.google.com/',
     dataset: {
@@ -569,8 +569,8 @@ export const TRACK_PROJECTS: TrackProject[] = [
     learningGoals: [
       'Write vectorized IoU and greedy Non-Maximum Suppression (NMS) functions and test them on overlapping boxes',
       'Understand anchor-free / grid-based bounding box regression losses (CIoU + focal classification loss)',
-      'Evaluate object detection using Precision-Recall curves and mAP@0.5 / mAP@0.5:0.95',
-      'Build a virtual tripwire counter that tracks bounding-box centroids across video frames'
+      'Evaluate object detection using a strict train/val/test split, Precision-Recall curves, mAP@0.5 / mAP@0.5:0.95, and per-image inference latency (ms)',
+      'Conduct failure analysis (missed small objects, occlusion, false positives) and build a virtual tripwire vehicle counter'
     ],
     colabStarterUrl: 'https://colab.research.google.com/',
     dataset: {
@@ -743,8 +743,8 @@ export const TRACK_PROJECTS: TrackProject[] = [
     learningGoals: [
       'Implement Scaled Dot-Product Attention with an upper-triangular -∞ causal look-ahead mask',
       'Reshape tensors cleanly for Multi-Head Attention (B, T, C) → (B, h, T, d_k) and concatenate head outputs',
-      'Combine Pre-LayerNorm, residual connections, and linear warmup + cosine learning rate decay',
-      'Visualize attention head heatmaps to see induction heads and previous-token heads emerge'
+      'Combine Pre-LayerNorm, residual connections, next-token cross-entropy loss, and linear warmup + cosine decay',
+      'Plot training vs validation loss curves, compare sampling (Greedy, Temperature, Top-p), and analyze overfitting'
     ],
     colabStarterUrl: 'https://colab.research.google.com/',
     dataset: {
@@ -768,12 +768,12 @@ export const TRACK_PROJECTS: TrackProject[] = [
       {
         number: 2,
         title: '4-Layer Pre-LN Transformer Training',
-        expectedOutput: 'Parameter count matches analytical formula; validation loss beats the Track 5 LSTM at the same parameter budget.'
+        expectedOutput: 'Parameter count matches analytical formula; train/val curves and validation loss beat the Track 6 LSTM at the same parameter budget.'
       },
       {
         number: 3,
-        title: 'Attention Heatmap Inspection & Story Generation',
-        expectedOutput: 'Plot of 6 attention heads on a sample sentence plus 3 generated story completions.'
+        title: 'Sampling, Overfitting Analysis & Attention Inspection',
+        expectedOutput: 'Plot of 6 attention heads plus 3 generated story completions comparing Temperature and Top-p sampling.'
       }
     ],
     rubricQuestions: [

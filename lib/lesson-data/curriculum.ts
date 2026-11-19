@@ -1324,7 +1324,7 @@ export const CURRICULUM: ModuleMeta[] = [
         moduleNumber: 7,
         lessonNumber: 2,
         duration: '25 min',
-        prerequisites: ['self-attention-scaled-dot-product', 'resnet-architectures'],
+        prerequisites: ['self-attention-scaled-dot-product'],
         status: 'available',
         relatedProjectSlug: 'tiny-chatgpt-from-scratch',
         keyTakeaways: [
@@ -1389,7 +1389,7 @@ export const CURRICULUM: ModuleMeta[] = [
         moduleNumber: 7,
         lessonNumber: 5,
         duration: '20 min',
-        prerequisites: ['transformer-block-multihead-attention', 'convolutional-filters'],
+        prerequisites: ['transformer-block-multihead-attention'],
         status: 'available',
         relatedProjectSlug: 'vision-transformer-vs-cnn',
         keyTakeaways: [
@@ -1548,7 +1548,7 @@ export const CURRICULUM: ModuleMeta[] = [
         moduleNumber: 9,
         lessonNumber: 1,
         duration: '18 min',
-        prerequisites: ['self-attention-scaled-dot-product'],
+        prerequisites: ['probability-and-distributions'],
         status: 'available',
         relatedProjectSlug: 'chat-with-syllabus-rag',
         keyTakeaways: [
@@ -1603,15 +1603,15 @@ export const CURRICULUM: ModuleMeta[] = [
         lessonCode: '9.4',
         slug: 'reinforcement-learning-and-rlhf',
         title: 'Reinforcement Learning Basics and RLHF',
-        subtitle: 'Bradley-Terry reward modeling, KL-regularized policy optimization, and Direct Preference Optimization (DPO).',
+        subtitle: 'RL fundamentals (agent, state, policy, return), PPO, Bradley-Terry reward modeling, and DPO.',
         everydayScene: 'Training a dog with treats; rating a delivery partner',
         isFreePreview: false,
         moduleId: 'track-9',
         moduleName: 'Modern LLM Practice',
         moduleNumber: 9,
         lessonNumber: 4,
-        duration: '22 min',
-        prerequisites: ['finetuning-and-lora'],
+        duration: '25 min',
+        prerequisites: ['tokenization-and-llm-pretraining'],
         status: 'available',
         relatedProjectSlug: 'lora-finetuning-open-llm',
         keyTakeaways: [
@@ -1689,6 +1689,76 @@ export function getTrackStageLabel(trackNumber: number): string {
       return 'Stage 5: Advanced AI';
   }
 }
+
+export interface TrackCompetencyProfile {
+  intuition: string;
+  math: string;
+  implement: string;
+  evaluate: string;
+}
+
+export const TRACK_COMPETENCIES: Record<number, TrackCompetencyProfile> = {
+  0: {
+    intuition: 'Visualize vectors, matrix transformations, slopes, and Bayes updates geometrically.',
+    math: 'Compute dot products, norms, Jacobians, Hessians, and conditional probabilities by hand.',
+    implement: 'Build a scalar-to-vector autograd engine and verify gradients numerically.',
+    evaluate: 'Check analytical derivatives against centered finite differences (< 1e-7 relative error).',
+  },
+  1: {
+    intuition: 'Spot MCAR/MAR/MNAR missingness, outliers, leakage, and train-serving skew.',
+    math: 'Compare scaling formulas, smoothed target encoding, and cyclical sin/cos encodings.',
+    implement: 'Use scikit-learn ColumnTransformer + Pipeline with time/group-aware splits.',
+    evaluate: 'Audit validation vs production data drift and class-imbalance metrics (PR-AUC, F1).',
+  },
+  2: {
+    intuition: 'Understand linear margins, kernels, bias-variance tradeoffs, bagging, and boosting.',
+    math: 'Derive OLS, logistic BCE gradients, Ridge/Lasso penalties, and XGBoost leaf weights.',
+    implement: 'Train and tune Logistic Regression, SVM, Random Forest, and XGBoost via scikit-learn.',
+    evaluate: 'Interpret confusion matrices, ROC-AUC vs PR-AUC, probability calibration, and RMSE/R².',
+  },
+  3: {
+    intuition: 'Trace forward activations, computational graphs, and backward error signals.',
+    math: 'Derive Softmax + Cross-Entropy gradients and chain-rule backpropagation.',
+    implement: 'Code a 2-layer MLP from scratch in pure NumPy without autograd.',
+    evaluate: 'Verify NumPy gradients with finite-difference gradient checking.',
+  },
+  4: {
+    intuition: 'Diagnose vanishing/exploding gradients, overfitting, and batch-size effects.',
+    math: 'Explain Xavier/He variance scaling, BatchNorm vs LayerNorm, and Adam vs AdamW.',
+    implement: 'Apply warmup + cosine decay, gradient clipping, dropout, and mixed precision in PyTorch.',
+    evaluate: 'Read train/val loss curves to tune learning rates and trigger early stopping.',
+  },
+  5: {
+    intuition: 'Understand receptive fields, residual skip paths, Grad-CAM saliency, and domain shift.',
+    math: 'Compute conv output shapes, IoU, Dice, and Precision-Recall AP/mAP.',
+    implement: 'Fine-tune pretrained CNNs, YOLO detectors, and U-Net segmenters using PyTorch.',
+    evaluate: 'Perform false-positive/false-negative error analysis and OOD scanner-shift checks.',
+  },
+  6: {
+    intuition: 'Explain learned embeddings, RNN memory decay, LSTM/GRU gates, and Seq2Seq attention.',
+    math: 'Derive BPTT gradient products and additive/dot-product Seq2Seq attention weights.',
+    implement: 'Train padded/masked sequence classifiers and Seq2Seq models with teacher forcing.',
+    evaluate: 'Compare greedy vs beam decoding and recognize BLEU limitations.',
+  },
+  7: {
+    intuition: 'Visualize Q/K/V attention routing, causal masking, Pre-LN vs Post-LN, and context limits.',
+    math: 'Compute O(T²) attention complexity, KV-cache memory, and temperature/Top-p distributions.',
+    implement: 'Build a decoder-only Mini-GPT block with causal masking in PyTorch.',
+    evaluate: 'Measure Perplexity and compare encoder-only, decoder-only, and ViT architectures.',
+  },
+  8: {
+    intuition: 'Contrast bottleneck autoencoders, VAE latent sampling, GAN minimax games, and diffusion.',
+    math: 'Explain ELBO (reconstruction vs KL), forward noise schedules, and CFG steering.',
+    implement: 'Train a VAE or tiny DDPM/DDIM sampler and interpolate in latent space.',
+    evaluate: 'Monitor mode collapse, FID/sample diversity, and prompt conditioning adherence.',
+  },
+  9: {
+    intuition: 'Design RAG pipelines, hybrid search, LoRA fine-tuning, RLHF/DPO, and LLM serving.',
+    math: 'Compute LoRA parameter savings, MRR/NDCG@k, INT4 quantization, and KV-cache VRAM.',
+    implement: 'Build a hybrid BM25 + dense + cross-encoder RAG system or QLoRA fine-tune.',
+    evaluate: 'Audit RAG faithfulness, context precision, hallucination rate, latency, and cost/token.',
+  },
+};
 
 export function getLessonBySlug(slug: string): LessonMeta | undefined {
   return ALL_LESSONS.find(l => l.slug === slug);

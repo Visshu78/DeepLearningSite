@@ -424,6 +424,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'To train a neural network, we must quantify how wrong its predictions are. This metric is defined by the loss function (also called objective or cost function).',
       'The loss function outputs a non-negative scalar: a loss of 0 represents a perfect prediction, while larger numbers denote worse performance.',
       'For continuous regression problems, Mean Squared Error (MSE) is standard: it measures the squared difference between the network prediction ŷ and the ground truth target y.',
+      'Softmax, Numerical Stability & Cross-Entropy: For multi-class classification (pick 1 of K classes), Softmax converts raw logits z into probabilities p_k = exp(z_k - max(z)) / Σ exp(z_j - max(z))—subtracting max(z) prevents exp() overflow without changing the output. Pairing Softmax with Cross-Entropy L_CE = -Σ y_k log(p_k) yields the clean gradient ∂L/∂z_k = p_k - y_k. For multi-label classification (multiple independent tags per image), use element-wise Sigmoid + Binary Cross-Entropy instead of Softmax.',
       'Note on conventions: In mathematical derivations, single-sample loss is often scaled by 1/2: L = 1/2(ŷ - y)². This ensures the derivative cancels out cleanly: ∂L/∂ŷ = ŷ - y. For reporting dataset metrics, the unscaled average MSE = 1/N Σ(ŷ - y)² is typically cited.'
     ],
     mathFormulas: [
@@ -2433,7 +2434,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'The Golden Rule of ML Preprocessing: fit() on X_train ONLY; transform() on X_train, X_val, and X_test.',
       'Why do we need three splits (Train / Validation / Test) instead of two? Because every time you tweak a learning rate, add a layer, or pick a threshold based on validation accuracy, you are fitting hyperparameters to the validation set! The test set must stay locked in a vault until the very end.',
-      'For time-series or longitudinal data (stock prices, UPI transactions over months, patient visits), random train_test_split leaks the future into the past! You must use a temporal split (train < T_cutoff ≤ test) or GroupKFold by user_id so the same user\'s records don\'t straddle train and test.'
+      'For time-series or longitudinal data (stock prices, UPI transactions over months, patient visits), random train_test_split leaks the future into the past! You must use a temporal split (train < T_cutoff ≤ test) or GroupKFold by user_id so the same user\'s records don\'t straddle train and test.',
+      'Target Leakage vs Train-Test Contamination: Train-test contamination happens when test rows influence preprocessing (e.g. global scaling); Target leakage happens when a feature contains information created AFTER the prediction time (like including "loan_default_fee" to predict loan default).',
+      'Data Drift & Train-Serving Skew: Even with a leak-free split, production inputs P_prod(X) drift over time (covariate shift) or feature code in production differs from offline training scripts (train-serving skew)—which is why wrapping preprocessing in a single Pipeline and monitoring feature distributions is essential.'
     ],
     mathFormulas: [
       {
@@ -3255,7 +3258,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'The Gated Recurrent Unit (GRU, Cho et al. 2014) streamlines the LSTM: it eliminates the separate cell state C_t and uses two gates—the Reset Gate r_t (which gates how much of h_{t-1} enters the candidate h̃_t = tanh(W_h x_t + U_h(r_t ⊙ h_{t-1}) + b_h)) and the Update Gate z_t (which couples forgetting and writing via h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t). Note that PyTorch\'s torch.nn.GRU implementation swaps the roles of z_t and (1 - z_t), writing h_t = (1 - z_t) ⊙ n_t + z_t ⊙ h_{t-1}. A GRU uses 3(Hd + H² + H) parameters instead of 4(Hd + H² + H) (25% smaller).',
       'For tasks where input and output sequences have different lengths—like Machine Translation, Summarization, or Speech-to-Text—Seq2Seq (Encoder-Decoder) pairs an Encoder RNN with a Decoder RNN.',
       'During training, Seq2Seq uses Teacher Forcing: feeding the ground-truth previous target token y_{t-1} into the decoder at step t (rather than the model\'s own noisy prediction ŷ_{t-1}) so the decoder learns rapidly without compounding early mistakes.',
-      'Crucially, cramming an entire 40-word sentence into a single fixed encoder vector h_S creates an information bottleneck. Adding Attention lets the decoder compute a fresh context vector c_t = Σ α_{ti} h_i at every step—either via Bahdanau (2014) additive attention e_{ti} = v^T tanh(W_1 h_i + W_2 s_t) or Luong (2015) dot-product attention e_{ti} = s_t^T h_i, the direct bridge to Track 6 (Transformers)!'
+      'Crucially, cramming an entire 40-word sentence into a single fixed encoder vector h_S creates an information bottleneck. Adding Attention lets the decoder compute a fresh context vector c_t = Σ α_{ti} h_i at every step—either via Bahdanau (2014) additive attention e_{ti} = v^T tanh(W_1 h_i + W_2 s_t) or Luong (2015) dot-product attention e_{ti} = s_t^T h_i, the direct bridge to Track 7 (Transformers)!',
+      'Decoding & Evaluation Tradeoffs: At inference time (without teacher forcing), Greedy decoding picks argmax at every step, whereas Beam Search tracks the top-B sequence hypotheses to avoid dead-end phrases. Classic n-gram overlap metrics like BLEU miss valid paraphrases and semantic meaning, which is why modern systems also use learned metrics and LLM-as-a-Judge.'
     ],
     mathFormulas: [
       {
@@ -4603,10 +4607,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'When you train a pet with treats, the pet cannot rewrite your brain\'s definition of a good trick, whereas an unregularized LLM (β = 0) will quickly discover adversarial string patterns ("reward hacking") that trick a neural Reward Model into outputting +999 for repetitive nonsense!',
     intuition: [
-      'The 3-Stage Modern Alignment Pipeline: (1) Pretraining on trillions of tokens (next-token prediction) builds world knowledge; (2) Supervised Fine-Tuning (SFT) on high-quality (prompt, ideal_response) demonstrations teaches instruction-following; (3) Preference Alignment (RLHF / DPO) teaches helpfulness, harmlessness, and reasoning depth.',
-      'Why Pairwise Comparisons (Bradley-Terry)? If 10 human annotators grade essays on a 1–10 scale, every annotator has a different internal baseline. Asking *"Which of these two responses (y_w, y_l) to prompt x is better?"* yields far higher inter-annotator agreement. The Bradley-Terry model defines P(y_w ≻ y_l | x) = σ(r(x, y_w) - r(x, y_l)).',
-      'Why the KL Penalty β · D_KL(π_θ || π_ref) Is Mandatory: The Reward Model r_ϕ(x, y) is only an imperfect neural proxy for human judgment. By Goodhart\'s Law, if the policy π_θ drifts too far from the SFT reference π_ref, it finds out-of-distribution gibberish that scores artificially high reward (Reward Hacking).',
-      'Direct Preference Optimization (DPO, Rafailov et al., 2023): By solving for the optimal KL-constrained policy analytically, DPO expresses the reward margin directly in terms of log-probability ratios β log(π_θ(y|x) / π_ref(y|x)), training the LLM on (x, y_w, y_l) pairs with simple binary cross-entropy—no separate Reward Model or PPO reinforcement loop required!'
+      '1. Reinforcement Learning Fundamentals: Before RLHF, understand the RL loop—an Agent observes a State s_t (prompt + generated tokens so far), takes an Action a_t (next token) according to a Policy π_θ(a|s), transitions in the Environment, and receives a Reward r_t. The discounted Return G_t = Σ γ^k r_{t+k} (0 < γ ≤ 1) measures total future reward, while a Value Function V(s) estimates expected return from state s.',
+      '2. Policy Gradients & PPO: Policy Gradient methods increase log π_θ(a|s) when an action yields higher-than-expected return (positive Advantage A_t = G_t - V(s)). Proximal Policy Optimization (PPO) clips large policy ratio updates so training stays stable.',
+      '3. The 3-Stage LLM Alignment Pipeline (Pretrain → SFT → RLHF): Pretraining builds knowledge via next-token prediction; SFT teaches instruction format; RLHF trains a Bradley-Terry Reward Model on pairwise human preferences P(y_w ≻ y_l | x) = σ(r(x, y_w) - r(x, y_l)) and optimizes the policy with a KL penalty β · D_KL(π_θ || π_ref) to prevent reward hacking.',
+      '4. Direct Preference Optimization (DPO, Rafailov et al., 2023): Solving for the optimal KL-constrained policy analytically expresses the reward margin directly in terms of log-probability ratios β log(π_θ(y|x) / π_ref(y|x)), training on (x, y_w, y_l) pairs with binary cross-entropy—no separate Reward Model or PPO loop required!'
     ],
     mathFormulas: [
       {
@@ -5289,9 +5293,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'We can draw 2D and 3D arrows on paper with a ruler and protractor, whereas deep learning vectors live in 512 to 4,096 dimensions—where human visual intuition fails, yet the exact same algebraic formula Σ a_i b_i and Cauchy-Schwarz bound |cos θ| ≤ 1 hold unchanged!',
     intuition: [
-      'Every Neural Layer Is Built on the Dot Product: Whether it is an artificial neuron (w^T x + b), a 2D convolution patch (⟨X_patch, K⟩), or Transformer Self-Attention (q_i^T k_j / √d_k), 95% of deep learning computation is taking dot products to measure alignment between an input pattern and a learned template!',
+      'Dot products and matrix multiplications are fundamental computational operations in neural networks, CNNs, and Transformers (from w^T x + b in a neuron to q_i^T k_j / √d_k in Self-Attention).',
+      'Dot Product vs Cosine Similarity: A raw dot product a · b = ||a||₂ ||b||₂ cos(θ) depends on BOTH alignment and vector magnitude. If two users have identical relative music tastes but one rates everything 2× higher, their dot product doubles while their Cosine Similarity cos(θ) stays identical—making cosine similarity ideal for comparing embeddings or normalized preference vectors.',
       'Algebraic vs Geometric Equivalence: By the Law of Cosines, a · b = ∑ a_i b_i = ||a||₂ ||b||₂ cos(θ). Therefore, if two non-zero vectors are orthogonal (θ = 90°), their dot product is strictly 0.',
-      'Matrix Multiplication as Parallel Dot Products & Space Transformation: Multiplying W ∈ R^{M × d} by x ∈ R^d requires that the inner dimensions match (d = d) and produces an M-dimensional vector where entry i is the dot product of row i of W with x. Geometrically, a matrix W shears, scales, and rotates the coordinate grid, scaling areas/volumes by |det(W)|.'
+      'Matrix Multiplication & Dimensionality: Multiplying W ∈ R^{M × d} by x ∈ R^d requires matching inner dimensions and produces an M-dimensional vector where entry i is row i of W dotted with x. For a square invertible matrix, |det(W)| gives the volume-scaling factor; a singular square matrix collapses at least one dimension (det(W) = 0); and a rectangular matrix changes dimensionality (where singular values describe its principal stretching factors rather than a determinant).'
     ],
     mathFormulas: [
       {
@@ -5354,8 +5359,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     summary: [
-      'The dot product a · b = Σ a_i b_i = ||a|| ||b|| cos(θ) measures directional alignment and projection.',
-      'Orthogonal vectors satisfy a · b = 0; parallel unit vectors satisfy a · b = 1.',
+      'The dot product a · b = Σ a_i b_i = ||a|| ||b|| cos(θ) measures alignment and magnitude; cosine similarity isolates direction independent of scale.',
+      'Orthogonal vectors satisfy a · b = 0; unit vectors pointing in the same direction have dot product +1, while antiparallel unit vectors have dot product −1.',
       'Matrix multiplication Y = X W computes a batch of dot products in parallel, transforming R^d → R^m.'
     ]
   },
@@ -6468,7 +6473,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'Two-Stage (R-CNN) vs Single-Stage (YOLO) Detectors: Older Two-Stage detectors (Faster R-CNN) first proposed ~2,000 candidate regions and then classified each region separately (accurate but slow). YOLO frames detection as a single regression pass from image pixels straight to an S × S grid of bounding boxes (x, y, w, h, confidence, class_probs), running at 60–150+ FPS on video streams!',
       'Why We Use IoU Instead of Raw Coordinate L2 Error: A 2-pixel error on a tiny distant helmet (10×10 pixels) is huge, whereas a 2-pixel error on a close-up bus (400×400 pixels) is negligible! Intersection over Union (IoU ∈ [0, 1]) is completely scale-invariant.',
-      'How Non-Maximum Suppression (NMS) Works: For each class: (1) sort all predicted boxes by confidence score above p_min; (2) pick the highest-scoring box B* and add it to final detections; (3) delete every remaining box B_j whose overlap with B* exceeds IoU(B*, B_j) ≥ τ_NMS (e.g. 0.50); (4) repeat until no boxes remain!'
+      'How Non-Maximum Suppression (NMS) Works: For each class: (1) sort all predicted boxes by confidence score above p_min; (2) pick the highest-scoring box B* and add it to final detections; (3) delete every remaining box B_j whose overlap with B* exceeds IoU(B*, B_j) ≥ τ_NMS (e.g. 0.50); (4) repeat until no boxes remain!',
+      'Evaluation via Precision-Recall, AP & mAP: A predicted box is a True Positive only if its class matches AND IoU ≥ threshold (e.g. 0.50). Sweeping confidence thresholds traces a Precision-Recall curve whose area is Average Precision (AP); averaging AP across all classes gives mAP@0.5 (and averaging over IoU thresholds 0.50:0.05:0.95 gives mAP@0.5:0.95). Modern detectors also use CIoU/GIoU bounding-box losses instead of L2.',
+      'Detection vs Semantic vs Instance Segmentation: Object detection outputs bounding boxes + class labels; Semantic Segmentation labels every pixel by class without separating two overlapping bikes; Instance Segmentation combines both with per-object pixel masks.'
     ],
     mathFormulas: [
       {

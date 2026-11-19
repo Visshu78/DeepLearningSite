@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CURRICULUM, ALL_LESSONS, getLessonBySlug, getTrackStageLabel } from '@/lib/lesson-data/curriculum';
+import { CURRICULUM, ALL_LESSONS, getLessonBySlug, getTrackStageLabel, TRACK_COMPETENCIES } from '@/lib/lesson-data/curriculum';
 import { getProjectsByTrack, TRACK_PROJECTS } from '@/lib/lesson-data/projects';
 import { useLearningProgress } from '@/lib/progress/progressStore';
 import { CheckCircle2, Clock, Lock, ArrowRight, Layers, Compass, FolderGit2, Sparkles } from 'lucide-react';
@@ -109,9 +109,25 @@ export default function LearnRoadmapPage() {
                 </div>
               </div>
 
-              {/* Track Description */}
-              <div className="px-5 py-3 text-xs text-[#54484E] border-b border-[#EAE2D5] bg-[#FCFCFA]">
-                {module.description}
+              {/* Track Description & 4-Level Competencies */}
+              <div className="px-5 py-3 text-xs text-[#54484E] border-b border-[#EAE2D5] bg-[#FCFCFA] space-y-2.5">
+                <p>{module.description}</p>
+                {TRACK_COMPETENCIES[module.number] && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1 text-[11px]">
+                    <div className="p-2 rounded bg-white border border-[#EAE2D5]">
+                      <strong className="text-[#6E1A2B]">1. Intuition:</strong> {TRACK_COMPETENCIES[module.number].intuition}
+                    </div>
+                    <div className="p-2 rounded bg-white border border-[#EAE2D5]">
+                      <strong className="text-[#C28E38]">2. Math:</strong> {TRACK_COMPETENCIES[module.number].math}
+                    </div>
+                    <div className="p-2 rounded bg-white border border-[#EAE2D5]">
+                      <strong className="text-[#1D4E35]">3. Implement:</strong> {TRACK_COMPETENCIES[module.number].implement}
+                    </div>
+                    <div className="p-2 rounded bg-white border border-[#EAE2D5]">
+                      <strong className="text-[#1D1819]">4. Evaluate:</strong> {TRACK_COMPETENCIES[module.number].evaluate}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Lessons List */}
