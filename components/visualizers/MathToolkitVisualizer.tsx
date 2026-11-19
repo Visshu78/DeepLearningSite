@@ -56,9 +56,10 @@ export function MathToolkitVisualizer({
   // 0.2 Gradients State
   const [posX, setPosX] = useState<number>(1.5);
   const [posY, setPosY] = useState<number>(-1.2);
+  const [gradLr, setGradLr] = useState<number>(0.1);
   const gradRes = useMemo(
-    () => computeSurfaceGradientStep(posX, posY, 1.0, 0.5, 2.0, 0.1),
-    [posX, posY]
+    () => computeSurfaceGradientStep(posX, posY, 1.0, 0.5, 2.0, gradLr),
+    [posX, posY, gradLr]
   );
 
   // 0.3 Chain Rule State
@@ -325,11 +326,109 @@ export function MathToolkitVisualizer({
                     {gradRes.df_dy.toFixed(3)}
                   </div>
                 </div>
-                <div className="p-3 bg-[#F0FDF4] border border-[#BBF7D0] rounded">
-                  <div className="text-[#166534]">After -0.1·∇f Step</div>
-                  <div className="text-base font-bold text-[#166534]">
+                <div
+                  className={`p-3 rounded border ${
+                    gradRes.fAfterStep > gradRes.fValue + 1e-9
+                      ? 'bg-[#FEF2F2] border-[#FECACA]'
+                      : 'bg-[#F0FDF4] border-[#BBF7D0]'
+                  }`}
+                >
+                  <div
+                    className={
+                      gradRes.fAfterStep > gradRes.fValue + 1e-9
+                        ? 'text-[#991B1B]'
+                        : 'text-[#166534]'
+                    }
+                  >
+                    After -{gradLr.toFixed(2)}·∇f Step
+                  </div>
+                  <div
+                    className={`text-base font-bold ${
+                      gradRes.fAfterStep > gradRes.fValue + 1e-9
+                        ? 'text-[#991B1B]'
+                        : 'text-[#166534]'
+                    }`}
+                  >
                     {gradRes.fAfterStep.toFixed(3)}
                   </div>
+                </div>
+              </div>
+
+              {/* Live Formula Trace & 2D Contour Gradient Geometry */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3.5 items-center">
+                <div className="sm:col-span-7 space-y-2 text-xs font-mono-num text-[#1D1819]">
+                  <div className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#625956]">
+                    Live Formula Trace — f(x, y) = x² + 0.5xy + 2y²
+                  </div>
+                  <div className="p-2 bg-white border border-[#E8E2D9] rounded leading-relaxed space-y-0.5">
+                    <div>
+                      <span className="text-[#786970]">∂f/∂x</span> = 2({posX.toFixed(2)}) + 0.5({posY.toFixed(2)}) ={' '}
+                      <strong className="text-[#7A1C30]">{gradRes.df_dx.toFixed(4)}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[#786970]">∂f/∂y</span> = 0.5({posX.toFixed(2)}) + 4({posY.toFixed(2)}) ={' '}
+                      <strong className="text-[#C28E38]">{gradRes.df_dy.toFixed(4)}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[#786970]">||∇f||₂</span> ={' '}
+                      <strong>{gradRes.gradientNorm.toFixed(4)}</strong> (steepest-ascent slope)
+                    </div>
+                    <div>
+                      <span className="text-[#786970]">(x, y)_new</span> = [{gradRes.steepestDescentStep[0].toFixed(4)}, {gradRes.steepestDescentStep[1].toFixed(4)}] → f ={' '}
+                      <strong
+                        className={
+                          gradRes.fAfterStep > gradRes.fValue + 1e-9
+                            ? 'text-[#991B1B]'
+                            : 'text-[#166534]'
+                        }
+                      >
+                        {gradRes.fAfterStep.toFixed(4)}
+                      </strong>
+                      {gradRes.fAfterStep > gradRes.fValue + 1e-9 && ' (overshot!)'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sm:col-span-5">
+                  <svg viewBox="0 0 180 120" className="w-full h-28 bg-white rounded border border-[#E8E2D9]">
+                    <line x1="90" y1="6" x2="90" y2="114" stroke="#E8E2D9" strokeWidth="1" />
+                    <line x1="10" y1="60" x2="170" y2="60" stroke="#E8E2D9" strokeWidth="1" />
+                    {/* Valley minimum at (0, 0) */}
+                    <ellipse cx="90" cy="60" rx="22" ry="13" fill="none" stroke="#EAE2D5" strokeWidth="1" transform="rotate(-7 90 60)" />
+                    <ellipse cx="90" cy="60" rx="44" ry="26" fill="none" stroke="#EAE2D5" strokeWidth="1" transform="rotate(-7 90 60)" />
+                    <ellipse cx="90" cy="60" rx="66" ry="39" fill="none" stroke="#EAE2D5" strokeWidth="1" transform="rotate(-7 90 60)" />
+                    <circle cx="90" cy="60" r="2.5" fill="#786970" />
+                    {/* Uphill gradient direction (+∇f, normalized for display) */}
+                    {gradRes.gradientNorm > 1e-6 && (
+                      <line
+                        x1={90 + posX * 32}
+                        y1={60 - posY * 22}
+                        x2={90 + posX * 32 + (gradRes.df_dx / gradRes.gradientNorm) * 20}
+                        y2={60 - posY * 22 - (gradRes.df_dy / gradRes.gradientNorm) * 14}
+                        stroke="#7A1C30"
+                        strokeWidth="2"
+                      />
+                    )}
+                    {/* Descent step (-η∇f) */}
+                    <line
+                      x1={90 + posX * 32}
+                      y1={60 - posY * 22}
+                      x2={90 + Math.max(-2.4, Math.min(2.4, gradRes.steepestDescentStep[0])) * 32}
+                      y2={60 - Math.max(-2.4, Math.min(2.4, gradRes.steepestDescentStep[1])) * 22}
+                      stroke="#166534"
+                      strokeWidth="2.2"
+                    />
+                    <circle
+                      cx={90 + Math.max(-2.4, Math.min(2.4, gradRes.steepestDescentStep[0])) * 32}
+                      cy={60 - Math.max(-2.4, Math.min(2.4, gradRes.steepestDescentStep[1])) * 22}
+                      r="3"
+                      fill="#166534"
+                    />
+                    {/* Current position */}
+                    <circle cx={90 + posX * 32} cy={60 - posY * 22} r="3.8" fill="#7A1C30" />
+                    <text x="12" y="16" fontSize="8" fontWeight="bold" fill="#7A1C30">+∇f uphill</text>
+                    <text x="12" y="26" fontSize="8" fontWeight="bold" fill="#166534">-η∇f step</text>
+                  </svg>
                 </div>
               </div>
             </div>
@@ -371,6 +470,48 @@ export function MathToolkitVisualizer({
                     onChange={e => setPosY(parseFloat(e.target.value))}
                     className="w-full accent-[#C28E38]"
                   />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="grad-lr-slider" className="font-bold text-[#1D1819]">
+                      Learning Rate (η)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#166534]">{gradLr.toFixed(2)}</span>
+                  </div>
+                  <input
+                    id="grad-lr-slider"
+                    type="range"
+                    min="0.02"
+                    max="0.50"
+                    step="0.02"
+                    value={gradLr}
+                    onChange={e => setGradLr(parseFloat(e.target.value))}
+                    className="w-full accent-[#166534]"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const [nx, ny] = gradRes.steepestDescentStep;
+                      setPosX(Math.max(-2.0, Math.min(2.0, Number(nx.toFixed(2)))));
+                      setPosY(Math.max(-2.0, Math.min(2.0, Number(ny.toFixed(2)))));
+                    }}
+                    className="px-3 py-1.5 rounded text-xs font-bold bg-[#166534] text-white hover:bg-[#14532D] transition-colors cursor-pointer"
+                  >
+                    Step Once (-η∇f)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPosX(1.5);
+                      setPosY(-1.2);
+                      setGradLr(0.1);
+                    }}
+                    className="px-3 py-1.5 rounded text-xs font-bold bg-white border border-[#E8E2D9] text-[#5C4E4F] hover:bg-[#FAF8F5] transition-colors cursor-pointer"
+                  >
+                    Reset
+                  </button>
                 </div>
               </div>
             </div>

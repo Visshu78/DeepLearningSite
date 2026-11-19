@@ -5296,7 +5296,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Dot products and matrix multiplications are fundamental computational operations in neural networks, CNNs, and Transformers (from w^T x + b in a neuron to q_i^T k_j / √d_k in Self-Attention).',
       'Dot Product vs Cosine Similarity: A raw dot product a · b = ||a||₂ ||b||₂ cos(θ) depends on BOTH alignment and vector magnitude. If two users have identical relative music tastes but one rates everything 2× higher, their dot product doubles while their Cosine Similarity cos(θ) stays identical—making cosine similarity ideal for comparing embeddings or normalized preference vectors.',
       'Algebraic vs Geometric Equivalence: By the Law of Cosines, a · b = ∑ a_i b_i = ||a||₂ ||b||₂ cos(θ). Therefore, if two non-zero vectors are orthogonal (θ = 90°), their dot product is strictly 0.',
-      'Matrix Multiplication & Dimensionality: Multiplying W ∈ R^{M × d} by x ∈ R^d requires matching inner dimensions and produces an M-dimensional vector where entry i is row i of W dotted with x. For a square invertible matrix, |det(W)| gives the volume-scaling factor; a singular square matrix collapses at least one dimension (det(W) = 0); and a rectangular matrix changes dimensionality (where singular values describe its principal stretching factors rather than a determinant).'
+      'Matrix Multiplication & Dimensionality: Multiplying W ∈ R^{M × d} by x ∈ R^d requires matching inner dimensions and produces an M-dimensional vector where entry i is row i of W dotted with x. For a square invertible matrix, |det(W)| gives the volume-scaling factor; a singular square matrix has determinant zero, indicating dimensional collapse. A rectangular matrix maps vectors between spaces of potentially different dimensions: its rank determines the effective dimension of its output, while its singular values describe stretching along principal directions.'
     ],
     mathFormulas: [
       {
@@ -5377,22 +5377,34 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     },
     mapping: [
       {
+        scenePart: 'Slope of a 1D trail going strictly East-West',
+        modelPart: 'Ordinary Derivative',
+        symbol: 'df/dx = lim_{h→0} (f(x + h) - f(x)) / h',
+        role: 'Scalar instantaneous rate of change (local tangent slope) for f: R → R'
+      },
+      {
         scenePart: 'Slope felt when stepping along a single axis while holding others fixed',
         modelPart: 'Partial Derivative',
         symbol: '∂f / ∂x_i = lim_{h→0} (f(x + h e_i) - f(x)) / h',
-        role: 'Measures local sensitivity of loss to parameter i alone'
+        role: 'Measures local sensitivity of loss to parameter i alone while others stay constant'
       },
       {
         scenePart: 'Compass arrow pointing straight up the steepest slope',
         modelPart: 'Gradient Vector',
-        symbol: '∇f(x) = [∂f/∂x_1, ..., ∂f/∂x_d]^T',
-        role: 'Orthogonal to contour lines; points in direction of maximum increase'
+        symbol: '∇f(x) = [∂f/∂x_1, ..., ∂f/∂x_d]^T ∈ R^d',
+        role: 'Vector of all partial derivatives; points in direction of steepest increase'
+      },
+      {
+        scenePart: 'Slope felt when walking in any chosen compass heading u',
+        modelPart: 'Directional Derivative',
+        symbol: 'D_u f(x) = ∇f(x) · u (||u||₂ = 1)',
+        role: 'Scalar slope along unit direction u; maximized when u aligns with +∇f'
       },
       {
         scenePart: 'Flat valley bottom (or saddle pass) where ground is level',
         modelPart: 'Stationary / Critical Point',
         symbol: '∇f(x*) = 0',
-        role: 'Necessary condition for a local/global minimum in unconstrained optimization'
+        role: 'Necessary condition for an unconstrained minimum, though it can also be a maximum or saddle point'
       },
       {
         scenePart: 'Checking a formula slope by taking a tiny step +h and -h',
@@ -5402,38 +5414,45 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 0.2 ("Derivatives & Gradients"). Drag "Hill East-West Coordinate (x)" and "Hill North-South Coordinate (y)" to inspect the live Partial Derivatives ∂f/∂x and ∂f/∂y and verify that taking a -0.1·∇f step strictly lowers Elevation f(x, y)!',
+      'Open Tab 0.2 ("Derivatives & Gradients"). Drag "Hill East-West Coordinate (x)", "Hill North-South Coordinate (y)", and "Learning Rate (η)" to inspect the live Partial Derivatives ∂f/∂x and ∂f/∂y, the gradient vector ∇f, and what happens when η is small vs. too large (overshooting). Click "Step Once (-η∇f)" to descend the surface or "Reset" to start over.',
     analogyBreaks:
-      'On a physical hill you can look around with your eyes to see the valley 500 meters away, whereas the gradient ∇f(x) is purely local—it only knows the slope at the exact millimeter under your boots.',
+      'On a physical hill you can look around with your eyes to see a distant valley, whereas the gradient ∇f(x) is purely local—it only knows the slope at the exact point under your boots. Moreover, ∇f(x*) = 0 does not guarantee you are at a global minimum: in high-dimensional loss landscapes, most zero-gradient points are saddle points (going uphill along some axes and downhill along others).',
     intuition: [
-      'What a Derivative Really Means in ML: If ∂L/∂w = +3.0, nudging weight w by +0.001 will change the loss L by approximately (+3.0)(+0.001) = +0.003. Therefore, to reduce the loss, we nudge w in the opposite sign of its derivative!',
-      'Why the Gradient ∇f Points Steepest Uphill: For any unit direction vector u (||u||₂ = 1), the directional derivative is D_u f = ∇f · u = ||∇f||₂ ||u||₂ cos(θ). This dot product is maximized when cos(θ) = +1 (u points along +∇f) and minimized (-||∇f||₂) when cos(θ) = -1 (u points along -∇f)!',
-      'Always Verify Analytical Gradients with Central Differences: The centered difference (f(x + h) - f(x - h)) / (2h) cancels even-order Taylor error terms, achieving O(h²) accuracy (~10⁻¹⁰ precision at h = 10⁻⁶). Every single math module in NeuroPlay is tested this way!'
+      'Derivative vs Partial Derivative vs Gradient vs Directional Derivative: For a 1D function f: R → R, the ordinary derivative df/dx is a scalar local tangent slope. For a multivariable function f: R^d → R, a partial derivative ∂f/∂x_i differentiates with respect to x_i while holding all other coordinates fixed. Packing all d partial derivatives into a vector gives the gradient ∇f(x) ∈ R^d. Finally, the directional derivative D_u f(x) = ∇f(x) · u is a scalar giving the slope along any unit direction u (||u||₂ = 1).',
+      'Why Derivatives Matter in ML & Why Gradient Descent Uses -∇L: If ∂L/∂w = +3.0, nudging weight w by +0.001 changes loss L by approximately (+3.0)(+0.001) = +0.003. Because D_u L = ∇L · u = ||∇L||₂ ||u||₂ cos(θ) is maximized when cos(θ) = +1, the gradient ∇L ALWAYS points in the direction of steepest INCREASE (uphill)—not steepest decrease! To reduce the loss, gradient descent steps in the opposite direction: -∇L (where cos(θ) = -1).',
+      'Learning Rate η vs Gradient ∇L: The gradient tells you the direction and local steepness of the surface, while the learning rate η > 0 is a separate step-size hyperparameter in w_new = w - η ∇L(w). A tiny η makes slow progress; an overly large η can overshoot the valley and actually increase the loss.',
+      'Common Misconception — Zero Gradient ≠ Global Minimum: Finding ∇L(w*) = 0 only tells you that w* is a stationary critical point. It could be a global minimum, a local minimum, a local maximum, or a saddle point.',
+      'Implementation — Always Verify Gradients with Central Differences: The centered difference (f(x + h) - f(x - h)) / (2h) cancels even-order Taylor error terms, achieving O(h²) accuracy (~10⁻¹⁰ precision at h = 10⁻⁶) to unit-test analytical derivatives.'
     ],
     mathFormulas: [
       {
-        name: 'Partial Derivatives & The Gradient Vector',
-        latex: '\\nabla f(\\mathbf{x}) = \\begin{bmatrix} \\frac{\\partial f}{\\partial x_1} & \\frac{\\partial f}{\\partial x_2} & \\cdots & \\frac{\\partial f}{\\partial x_d} \\end{bmatrix}^\\top, \\qquad D_{\\mathbf{u}} f(\\mathbf{x}) = \\nabla f(\\mathbf{x}) \\cdot \\mathbf{u}',
-        explanation: 'Collects all partial derivatives into a vector pointing in the direction of steepest local ascent.'
+        name: 'Ordinary Derivative & Partial Derivative',
+        latex: '\\frac{df}{dx} = \\lim_{h \\to 0} \\frac{f(x + h) - f(x)}{h}, \\qquad \\frac{\\partial f}{\\partial x_i} = \\lim_{h \\to 0} \\frac{f(\\mathbf{x} + h\\mathbf{e}_i) - f(\\mathbf{x})}{h}',
+        explanation: 'Ordinary derivatives measure local tangent slope in 1D; partial derivatives vary one coordinate while holding all others fixed.'
       },
       {
-        name: 'Central Finite-Difference Approximation',
-        latex: '\\frac{\\partial f}{\\partial x_i} = \\frac{f(\\mathbf{x} + h\\mathbf{e}_i) - f(\\mathbf{x} - h\\mathbf{e}_i)}{2h} + \\mathcal{O}(h^2)',
-        explanation: 'Gold-standard numerical gradient check for verifying backpropagation code.'
+        name: 'Gradient Vector & Directional Derivative',
+        latex: '\\nabla f(\\mathbf{x}) = \\begin{bmatrix} \\frac{\\partial f}{\\partial x_1} & \\frac{\\partial f}{\\partial x_2} & \\cdots & \\frac{\\partial f}{\\partial x_d} \\end{bmatrix}^\\top \\in \\mathbb{R}^d, \\qquad D_{\\mathbf{u}} f(\\mathbf{x}) = \\nabla f(\\mathbf{x}) \\cdot \\mathbf{u}',
+        explanation: 'The gradient collects all partial derivatives into a d-dimensional vector pointing in the direction of steepest local ascent.'
+      },
+      {
+        name: 'Gradient Descent Step & Central Finite Difference',
+        latex: '\\mathbf{w}_{\\text{new}} = \\mathbf{w} - \\eta \\nabla L(\\mathbf{w}), \\qquad \\frac{\\partial f}{\\partial x_i} = \\frac{f(\\mathbf{x} + h\\mathbf{e}_i) - f(\\mathbf{x} - h\\mathbf{e}_i)}{2h} + \\mathcal{O}(h^2)',
+        explanation: 'Gradient descent scales -∇L by learning rate η; central differences provide O(h²) numerical verification.'
       }
     ],
     workedExample: {
-      scenario: 'For the 2D bowl f(x, y) = x² + 3y² at point (x, y) = (2, 1), compute the gradient ∇f(2, 1) and the new position after one steepest descent step with learning rate η = 0.1.',
+      scenario: 'For the 2D bowl f(x, y) = x² + 3y² at point (x, y) = (2, 1), compute the gradient ∇f(2, 1), the steepest-ascent directional derivative ||∇f(2, 1)||₂, and the new position after one steepest descent step with learning rate η = 0.1.',
       steps: [
         {
-          label: 'Step 1: Differentiate w.r.t x and y analytically',
+          label: 'Step 1: Differentiate w.r.t. x (holding y fixed) and y (holding x fixed)',
           math: '\\frac{\\partial f}{\\partial x} = 2x = 2(2) = 4.0, \\qquad \\frac{\\partial f}{\\partial y} = 6y = 6(1) = 6.0',
-          note: 'Gradient vector is ∇f(2, 1) = [4.0, 6.0]^T, and current elevation is f(2, 1) = 4 + 3 = 7.0.'
+          note: 'Gradient vector is ∇f(2, 1) = [4.0, 6.0]^T ∈ R², current elevation is f(2, 1) = 4 + 3 = 7.0, and steepest-ascent slope is ||∇f(2, 1)||₂ = √(4² + 6²) = √52 ≈ 7.2111.'
         },
         {
           label: 'Step 2: Take steepest descent step (x, y)_new = (x, y) - η ∇f',
           math: 'x_{\\text{new}} = 2.0 - 0.1(4.0) = 1.60, \\qquad y_{\\text{new}} = 1.0 - 0.1(6.0) = 0.40',
-          note: 'Stepping opposite to the gradient.'
+          note: 'Stepping opposite to the gradient, scaled by learning rate η = 0.1.'
         },
         {
           label: 'Step 3: Verify new elevation f(1.60, 0.40)',
@@ -5441,7 +5460,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
           note: 'Elevation dropped from 7.00 down to 3.04 in a single step!'
         }
       ],
-      result: '∇f(2, 1) = [4.0, 6.0]^T; after step, f drops from 7.00 to 3.04.',
+      result: '∇f(2, 1) = [4.0, 6.0]^T (||∇f||₂ ≈ 7.2111); after η = 0.1 descent step, f drops from 7.00 to 3.04.',
       params: {}
     },
     quiz: [
@@ -5455,7 +5474,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
           'The optimizer learning rate hyperparameter η is zero.'
         ],
         correctIndex: 1,
-        explanation: 'A zero gradient means the first-order slope in every direction is zero (a minimum, maximum, or saddle point).'
+        explanation: 'A zero gradient means the first-order slope in every direction is zero—a stationary critical point, which can be a local minimum, global minimum, local maximum, or saddle point (not necessarily L(w) = 0 or w = 0).'
       },
       {
         id: 'grad-q2',
@@ -5467,13 +5486,25 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
           'Forward difference approximations always return negative slope values.'
         ],
         correctIndex: 0,
-        explanation: 'f(x+h) - f(x-h) = 2h f\'(x) + (h³/3) f\'\'\'(x) + ..., so dividing by 2h leaves an O(h²) error instead of O(h).'
+        explanation: 'Expanding f(x+h) and f(x-h) gives f(x+h) - f(x-h) = 2h f\'(x) + (h³/3) f\'\'\'(x) + ..., so dividing by 2h leaves O(h²) error instead of O(h). Central difference evaluates f twice (at x+h and x-h) using real step sizes.'
+      },
+      {
+        id: 'grad-q3',
+        question: 'At a weight vector w where ∇L(w) ≠ 0, which statement accurately describes the gradient ∇L(w) and the learning rate η?',
+        options: [
+          '∇L(w) points in the direction of steepest increase of L, so gradient descent steps along -η∇L(w).',
+          '∇L(w) points in the direction of steepest decrease of L, so gradient descent steps along +η∇L(w).',
+          'The learning rate η is the magnitude ||∇L(w)||₂ of the gradient vector.',
+          'A scalar derivative df/dx and a multivariable gradient ∇f(x) always have the same dimension.'
+        ],
+        correctIndex: 0,
+        explanation: 'Because D_u L = ∇L · u is maximized when u aligns with +∇L, the gradient points steepest uphill (increase). Gradient descent therefore moves in -∇L, scaled by the independent learning-rate hyperparameter η.'
       }
     ],
     summary: [
-      'A partial derivative ∂f/∂x_i measures the rate of change along coordinate i with all other coordinates held fixed.',
-      'The gradient vector ∇f points in the direction of steepest ascent; -∇f points in the direction of steepest descent.',
-      'Central finite differences provide O(h²) numerical verification of analytical derivatives.'
+      'An ordinary derivative df/dx is a 1D scalar slope; a partial derivative ∂f/∂x_i varies one coordinate while holding all others fixed.',
+      'The gradient vector ∇f(x) ∈ R^d points in the direction of steepest ascent; -∇f points in the direction of steepest descent, scaled by learning rate η.',
+      'A zero gradient ∇f(x*) = 0 indicates a stationary point (minimum, maximum, or saddle), not necessarily a global minimum; central differences verify gradients to O(h²) accuracy.'
     ]
   },
 
