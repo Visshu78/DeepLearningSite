@@ -57,10 +57,23 @@ export function MathToolkitVisualizer({
   const [posX, setPosX] = useState<number>(1.5);
   const [posY, setPosY] = useState<number>(-1.2);
   const [gradLr, setGradLr] = useState<number>(0.1);
+  const [dirAngleDeg, setDirAngleDeg] = useState<number>(45);
   const gradRes = useMemo(
     () => computeSurfaceGradientStep(posX, posY, 1.0, 0.5, 2.0, gradLr),
     [posX, posY, gradLr]
   );
+  const gradDirMetrics = useMemo(() => {
+    const rad = (dirAngleDeg * Math.PI) / 180;
+    const ux = Math.cos(rad);
+    const uy = Math.sin(rad);
+    const directionalDerivative = gradRes.df_dx * ux + gradRes.df_dy * uy;
+    const hasNonZeroGrad = gradRes.gradientNorm > 1e-9;
+    const cosTheta = hasNonZeroGrad
+      ? Math.max(-1, Math.min(1, directionalDerivative / gradRes.gradientNorm))
+      : null;
+    const angleBetweenDeg = cosTheta !== null ? (Math.acos(cosTheta) * 180) / Math.PI : null;
+    return { ux, uy, directionalDerivative, hasNonZeroGrad, angleBetweenDeg };
+  }, [dirAngleDeg, gradRes]);
 
   // 0.3 Chain Rule State
   const [chainX, setChainX] = useState<number>(1.2);
@@ -374,6 +387,14 @@ export function MathToolkitVisualizer({
                       <strong>{gradRes.gradientNorm.toFixed(4)}</strong> (steepest-ascent slope)
                     </div>
                     <div>
+                      <span className="text-[#786970]">u({dirAngleDeg}°)</span> = [{gradDirMetrics.ux.toFixed(3)}, {gradDirMetrics.uy.toFixed(3)}],{' '}
+                      <span className="text-[#786970]">D_u f</span> ={' '}
+                      <strong className="text-[#B45309]">{gradDirMetrics.directionalDerivative.toFixed(4)}</strong>
+                      {gradDirMetrics.angleBetweenDeg !== null
+                        ? `, ∠(∇f, u) = ${gradDirMetrics.angleBetweenDeg.toFixed(1)}°`
+                        : ' (∇f = 0: no preferred uphill direction)'}
+                    </div>
+                    <div>
                       <span className="text-[#786970]">(x, y)_new</span> = [{gradRes.steepestDescentStep[0].toFixed(4)}, {gradRes.steepestDescentStep[1].toFixed(4)}] → f ={' '}
                       <strong
                         className={
@@ -390,45 +411,96 @@ export function MathToolkitVisualizer({
                 </div>
 
                 <div className="sm:col-span-5">
-                  <svg viewBox="0 0 180 120" className="w-full h-28 bg-white rounded border border-[#E8E2D9]">
-                    <line x1="90" y1="6" x2="90" y2="114" stroke="#E8E2D9" strokeWidth="1" />
-                    <line x1="10" y1="60" x2="170" y2="60" stroke="#E8E2D9" strokeWidth="1" />
-                    {/* Valley minimum at (0, 0) */}
-                    <ellipse cx="90" cy="60" rx="22" ry="13" fill="none" stroke="#EAE2D5" strokeWidth="1" transform="rotate(-7 90 60)" />
-                    <ellipse cx="90" cy="60" rx="44" ry="26" fill="none" stroke="#EAE2D5" strokeWidth="1" transform="rotate(-7 90 60)" />
-                    <ellipse cx="90" cy="60" rx="66" ry="39" fill="none" stroke="#EAE2D5" strokeWidth="1" transform="rotate(-7 90 60)" />
-                    <circle cx="90" cy="60" r="2.5" fill="#786970" />
-                    {/* Uphill gradient direction (+∇f, normalized for display) */}
-                    {gradRes.gradientNorm > 1e-6 && (
-                      <line
-                        x1={90 + posX * 32}
-                        y1={60 - posY * 22}
-                        x2={90 + posX * 32 + (gradRes.df_dx / gradRes.gradientNorm) * 20}
-                        y2={60 - posY * 22 - (gradRes.df_dy / gradRes.gradientNorm) * 14}
-                        stroke="#7A1C30"
-                        strokeWidth="2"
-                      />
-                    )}
-                    {/* Descent step (-η∇f) */}
-                    <line
-                      x1={90 + posX * 32}
-                      y1={60 - posY * 22}
-                      x2={90 + Math.max(-2.4, Math.min(2.4, gradRes.steepestDescentStep[0])) * 32}
-                      y2={60 - Math.max(-2.4, Math.min(2.4, gradRes.steepestDescentStep[1])) * 22}
-                      stroke="#166534"
-                      strokeWidth="2.2"
-                    />
-                    <circle
-                      cx={90 + Math.max(-2.4, Math.min(2.4, gradRes.steepestDescentStep[0])) * 32}
-                      cy={60 - Math.max(-2.4, Math.min(2.4, gradRes.steepestDescentStep[1])) * 22}
-                      r="3"
-                      fill="#166534"
-                    />
-                    {/* Current position */}
-                    <circle cx={90 + posX * 32} cy={60 - posY * 22} r="3.8" fill="#7A1C30" />
-                    <text x="12" y="16" fontSize="8" fontWeight="bold" fill="#7A1C30">+∇f uphill</text>
-                    <text x="12" y="26" fontSize="8" fontWeight="bold" fill="#166534">-η∇f step</text>
-                  </svg>
+                  {(() => {
+                    const cx = 90 + posX * 32;
+                    const cy = 60 - posY * 22;
+                    const gLen = 24;
+                    const uLen = 22;
+                    const gx = gradDirMetrics.hasNonZeroGrad ? (gradRes.df_dx / gradRes.gradientNorm) * gLen : 0;
+                    const gy = gradDirMetrics.hasNonZeroGrad ? -(gradRes.df_dy / gradRes.gradientNorm) * gLen : 0;
+                    const uxSvg = gradDirMetrics.ux * uLen;
+                    const uySvg = -gradDirMetrics.uy * uLen;
+                    const arcR = 11;
+                    const gNormSvg = Math.hypot(gx, gy);
+                    const uNormSvg = Math.hypot(uxSvg, uySvg);
+                    let arcPath = '';
+                    if (gradDirMetrics.hasNonZeroGrad && gNormSvg > 1e-6 && uNormSvg > 1e-6) {
+                      const ax = cx + (gx / gNormSvg) * arcR;
+                      const ay = cy + (gy / gNormSvg) * arcR;
+                      const bx = cx + (uxSvg / uNormSvg) * arcR;
+                      const by = cy + (uySvg / uNormSvg) * arcR;
+                      const cross = gx * uySvg - gy * uxSvg;
+                      const sweep = cross >= 0 ? 1 : 0;
+                      arcPath = `M ${ax.toFixed(2)} ${ay.toFixed(2)} A ${arcR} ${arcR} 0 0 ${sweep} ${bx.toFixed(2)} ${by.toFixed(2)}`;
+                    }
+                    return (
+                      <svg viewBox="0 0 180 120" className="w-full h-28 bg-white rounded border border-[#E8E2D9]">
+                        <defs>
+                          <marker id="grad-arrow-up" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+                            <path d="M0,0 L5,2.5 L0,5 Z" fill="#7A1C30" />
+                          </marker>
+                          <marker id="grad-arrow-down" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+                            <path d="M0,0 L5,2.5 L0,5 Z" fill="#166534" />
+                          </marker>
+                          <marker id="grad-arrow-u" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+                            <path d="M0,0 L5,2.5 L0,5 Z" fill="#C28E38" />
+                          </marker>
+                        </defs>
+                        <line x1="90" y1="6" x2="90" y2="114" stroke="#E8E2D9" strokeWidth="1" />
+                        <line x1="10" y1="60" x2="170" y2="60" stroke="#E8E2D9" strokeWidth="1" />
+                        {/* Valley minimum at (0, 0) */}
+                        <ellipse cx="90" cy="60" rx="22" ry="13" fill="none" stroke="#EAE2D5" strokeWidth="1" transform="rotate(-7 90 60)" />
+                        <ellipse cx="90" cy="60" rx="44" ry="26" fill="none" stroke="#EAE2D5" strokeWidth="1" transform="rotate(-7 90 60)" />
+                        <ellipse cx="90" cy="60" rx="66" ry="39" fill="none" stroke="#EAE2D5" strokeWidth="1" transform="rotate(-7 90 60)" />
+                        <circle cx="90" cy="60" r="2.5" fill="#786970" />
+                        {/* Visual angle arc between +∇f and u */}
+                        {arcPath && (
+                          <path d={arcPath} fill="none" stroke="#625956" strokeWidth="1.2" strokeDasharray="2 1.5" />
+                        )}
+                        {/* Uphill gradient arrow (+∇f) */}
+                        {gradDirMetrics.hasNonZeroGrad && (
+                          <line
+                            x1={cx}
+                            y1={cy}
+                            x2={cx + gx}
+                            y2={cy + gy}
+                            stroke="#7A1C30"
+                            strokeWidth="2"
+                            markerEnd="url(#grad-arrow-up)"
+                          />
+                        )}
+                        {/* Negative gradient arrow (-∇f) */}
+                        {gradDirMetrics.hasNonZeroGrad && (
+                          <line
+                            x1={cx}
+                            y1={cy}
+                            x2={cx - gx}
+                            y2={cy - gy}
+                            stroke="#166534"
+                            strokeWidth="2"
+                            markerEnd="url(#grad-arrow-down)"
+                          />
+                        )}
+                        {/* User-selected unit direction vector (u) */}
+                        <line
+                          x1={cx}
+                          y1={cy}
+                          x2={cx + uxSvg}
+                          y2={cy + uySvg}
+                          stroke="#C28E38"
+                          strokeWidth="2"
+                          markerEnd="url(#grad-arrow-u)"
+                        />
+                        {/* Current position */}
+                        <circle cx={cx} cy={cy} r="3.4" fill="#1D1819" />
+                        <text x="10" y="14" fontSize="7.5" fontWeight="bold" fill="#7A1C30">+∇f uphill</text>
+                        <text x="10" y="23" fontSize="7.5" fontWeight="bold" fill="#166534">-∇f downhill</text>
+                        <text x="10" y="32" fontSize="7.5" fontWeight="bold" fill="#B45309">
+                          u ({gradDirMetrics.angleBetweenDeg !== null ? `${gradDirMetrics.angleBetweenDeg.toFixed(0)}°` : '—'})
+                        </text>
+                      </svg>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -489,6 +561,24 @@ export function MathToolkitVisualizer({
                     className="w-full accent-[#166534]"
                   />
                 </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="grad-dir-slider" className="font-bold text-[#1D1819]">
+                      Direction Vector Angle (φ)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#B45309]">{dirAngleDeg}°</span>
+                  </div>
+                  <input
+                    id="grad-dir-slider"
+                    type="range"
+                    min="0"
+                    max="355"
+                    step="5"
+                    value={dirAngleDeg}
+                    onChange={e => setDirAngleDeg(parseInt(e.target.value, 10))}
+                    className="w-full accent-[#C28E38]"
+                  />
+                </div>
                 <div className="flex flex-wrap gap-2 pt-1">
                   <button
                     type="button"
@@ -507,6 +597,7 @@ export function MathToolkitVisualizer({
                       setPosX(1.5);
                       setPosY(-1.2);
                       setGradLr(0.1);
+                      setDirAngleDeg(45);
                     }}
                     className="px-3 py-1.5 rounded text-xs font-bold bg-white border border-[#E8E2D9] text-[#5C4E4F] hover:bg-[#FAF8F5] transition-colors cursor-pointer"
                   >

@@ -5373,7 +5373,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'Feeling the Slope of a Hill Under Your Feet in Two Compass Directions',
       narrative:
-        'Imagine standing on a grassy hillside at coordinates (x, y) where x is East and y is North, and your altitude is f(x, y). If you freeze your North-South foot and take a tiny step Δx East, the steepness you feel is the Partial Derivative ∂f/∂x. If you freeze your East-West foot and step North, the steepness is ∂f/∂y. Pack both slopes into a single 2D arrow ∇f = [∂f/∂x, ∂f/∂y]^T and you have the Gradient Vector—which ALWAYS points in the direction of steepest uphill climb! To walk straight down to the valley floor, just step in the opposite direction: -η ∇f!'
+        'Imagine standing on a grassy hillside at coordinates (x, y) where x is East and y is North, and your altitude is f(x, y). If you freeze your North-South foot and take a tiny step Δx East, the steepness you feel is the Partial Derivative ∂f/∂x. If you freeze your East-West foot and step North, the steepness is ∂f/∂y. Pack both slopes into a single 2D arrow ∇f = [∂f/∂x, ∂f/∂y]^T and you have the Gradient Vector—which, whenever ∇f ≠ 0 (under the Euclidean norm), points perpendicular to the contour lines in the direction of steepest uphill climb! When ∇f = 0, the ground is locally flat and there is no preferred uphill direction. To walk straight down to the valley floor, step in the opposite direction: -η ∇f!'
     },
     mapping: [
       {
@@ -5389,10 +5389,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         role: 'Measures local sensitivity of loss to parameter i alone while others stay constant'
       },
       {
-        scenePart: 'Compass arrow pointing straight up the steepest slope',
+        scenePart: 'Compass arrow pointing straight up the steepest slope (crossing contour lines at 90°)',
         modelPart: 'Gradient Vector',
         symbol: '∇f(x) = [∂f/∂x_1, ..., ∂f/∂x_d]^T ∈ R^d',
-        role: 'Vector of all partial derivatives; points in direction of steepest increase'
+        role: 'Vector of all partial derivatives; when nonzero under Euclidean norm, points in direction of steepest increase'
       },
       {
         scenePart: 'Slope felt when walking in any chosen compass heading u',
@@ -5414,15 +5414,16 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 0.2 ("Derivatives & Gradients"). Drag "Hill East-West Coordinate (x)", "Hill North-South Coordinate (y)", and "Learning Rate (η)" to inspect the live Partial Derivatives ∂f/∂x and ∂f/∂y, the gradient vector ∇f, and what happens when η is small vs. too large (overshooting). Click "Step Once (-η∇f)" to descend the surface or "Reset" to start over.',
+      'Open Tab 0.2 ("Derivatives & Gradients"). Drag "Hill East-West Coordinate (x)", "Hill North-South Coordinate (y)", "Learning Rate (η)", and "Direction Vector Angle (φ)" to compare the uphill gradient (+∇f), descent direction (-∇f), and directional derivative D_u f = ∇f · u. Click "Step Once (-η∇f)" to descend the surface or "Reset" to start over.',
     analogyBreaks:
-      'On a physical hill you can look around with your eyes to see a distant valley, whereas the gradient ∇f(x) is purely local—it only knows the slope at the exact point under your boots. Moreover, ∇f(x*) = 0 does not guarantee you are at a global minimum: in high-dimensional loss landscapes, most zero-gradient points are saddle points (going uphill along some axes and downhill along others).',
+      'On a physical hill you can look around with your eyes to see a distant valley, whereas the gradient ∇f(x) is purely local—it only knows the slope at the exact point under your boots. Moreover, ∇f(x*) = 0 does not guarantee you are at a global minimum: in many high-dimensional non-convex optimization problems, saddle points are common and can complicate optimization (going uphill along some axes and downhill along others).',
     intuition: [
       'Derivative vs Partial Derivative vs Gradient vs Directional Derivative: For a 1D function f: R → R, the ordinary derivative df/dx is a scalar local tangent slope. For a multivariable function f: R^d → R, a partial derivative ∂f/∂x_i differentiates with respect to x_i while holding all other coordinates fixed. Packing all d partial derivatives into a vector gives the gradient ∇f(x) ∈ R^d. Finally, the directional derivative D_u f(x) = ∇f(x) · u is a scalar giving the slope along any unit direction u (||u||₂ = 1).',
-      'Why Derivatives Matter in ML & Why Gradient Descent Uses -∇L: If ∂L/∂w = +3.0, nudging weight w by +0.001 changes loss L by approximately (+3.0)(+0.001) = +0.003. Because D_u L = ∇L · u = ||∇L||₂ ||u||₂ cos(θ) is maximized when cos(θ) = +1, the gradient ∇L ALWAYS points in the direction of steepest INCREASE (uphill)—not steepest decrease! To reduce the loss, gradient descent steps in the opposite direction: -∇L (where cos(θ) = -1).',
+      'Why Gradient Descent Uses -∇L (and Why ∇L Points Steepest Uphill): If ∂L/∂w = +3.0, nudging weight w by +0.001 changes loss L by approximately (+3.0)(+0.001) = +0.003. When ∇L ≠ 0 and direction is measured under the Euclidean norm, D_u L = ∇L · u = ||∇L||₂ ||u||₂ cos(θ) is maximized when cos(θ) = +1—so ∇L points in the direction of steepest INCREASE (uphill), not steepest decrease! When ∇L = 0, there is no preferred uphill direction. To reduce the loss, gradient descent steps in the opposite direction: -∇L (where cos(θ) = -1).',
+      'Geometric Intuition — Orthogonal to Level Curves & Contour Lines: Wherever ∇f(x) ≠ 0, the gradient is perpendicular (90°) to the local level curve (or level surface in higher dimensions) of f. On a topographic contour map of a hill, walking along a contour line keeps elevation f(x, y) constant (so D_u f = ∇f · u = 0), which means ∇f points straight across the contour lines in the steepest uphill direction.',
       'Learning Rate η vs Gradient ∇L: The gradient tells you the direction and local steepness of the surface, while the learning rate η > 0 is a separate step-size hyperparameter in w_new = w - η ∇L(w). A tiny η makes slow progress; an overly large η can overshoot the valley and actually increase the loss.',
       'Common Misconception — Zero Gradient ≠ Global Minimum: Finding ∇L(w*) = 0 only tells you that w* is a stationary critical point. It could be a global minimum, a local minimum, a local maximum, or a saddle point.',
-      'Implementation — Always Verify Gradients with Central Differences: The centered difference (f(x + h) - f(x - h)) / (2h) cancels even-order Taylor error terms, achieving O(h²) accuracy (~10⁻¹⁰ precision at h = 10⁻⁶) to unit-test analytical derivatives.'
+      'Implementation — Verify Gradients with Central Differences: Central differences have second-order truncation error, O(h²). In practice, the step size must balance truncation error and floating-point round-off. A step size of 10⁻⁶ can be useful for some well-scaled functions but is not a universal precision guarantee.'
     ],
     mathFormulas: [
       {
