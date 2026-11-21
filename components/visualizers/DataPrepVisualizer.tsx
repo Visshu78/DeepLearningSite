@@ -141,13 +141,13 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
   );
 
   const tabs: { id: DataPrepTab; label: string }[] = [
-    { id: 'eda', label: '9.1 EDA' },
-    { id: 'missing-outliers', label: '9.2 Missing' },
-    { id: 'scaling', label: '9.3 Scaling' },
-    { id: 'encoding', label: '9.4 Encoding' },
-    { id: 'leakage', label: '9.5 Leakage' },
-    { id: 'imbalance', label: '9.6 Imbalance' },
-    { id: 'pipelines', label: '9.7 Pipelines' },
+    { id: 'eda', label: '1.1 EDA' },
+    { id: 'missing-outliers', label: '1.2 Missing' },
+    { id: 'scaling', label: '1.3 Scaling' },
+    { id: 'encoding', label: '1.4 Encoding' },
+    { id: 'leakage', label: '1.5 Leakage' },
+    { id: 'imbalance', label: '1.6 Imbalance' },
+    { id: 'pipelines', label: '1.7 Pipelines' },
   ];
 
   return (
@@ -157,7 +157,7 @@ export function DataPrepVisualizer({ defaultTab = 'eda' }: DataPrepVisualizerPro
         <div className="flex items-center gap-2">
           <Database className="w-4 h-4 text-[#7A1C30]" />
           <span className="text-xs font-bold uppercase tracking-wider text-[#1F191B]">
-            Track 9 Data Preparation &amp; Feature Engineering Workbench
+            Track 1 Data Preparation &amp; Feature Engineering Workbench
           </span>
         </div>
 

@@ -68,10 +68,10 @@ export function TrainingDynamicsVisualizer({
   );
 
   const tabs: { id: TrainingTab; label: string }[] = [
-    { id: 'init', label: '3.1 Weight Init' },
-    { id: 'norm', label: '3.2 Batch & LayerNorm' },
-    { id: 'schedule', label: '3.5 LR Warmup & Cosine' },
-    { id: 'debugging', label: '3.6 Loss Curves & Debug' },
+    { id: 'init', label: '4.1 Weight Init' },
+    { id: 'norm', label: '4.2 Batch & LayerNorm' },
+    { id: 'schedule', label: '4.5 LR Warmup & Cosine' },
+    { id: 'debugging', label: '4.6 Loss Curves & Debug' },
   ];
 
   return (
@@ -80,7 +80,7 @@ export function TrainingDynamicsVisualizer({
         <div className="flex items-center gap-2">
           <Gauge className="w-4 h-4 text-[#7A1C30]" />
           <span className="text-xs font-bold uppercase tracking-wider text-[#1F191B]">
-            Track 3 Training Stability, Normalization &amp; Diagnostics Workbench
+            Track 4 Training Stability, Normalization &amp; Diagnostics Workbench
           </span>
         </div>
 

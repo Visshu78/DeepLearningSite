@@ -9,7 +9,7 @@ import {
 } from '@/lib/math/modernLlm';
 import { Bot } from 'lucide-react';
 
-export type ModernLlmTab = 'tokenization' | 'lora' | 'rag' | 'rlhf';
+export type ModernLlmTab = 'tokenization' | 'lora' | 'rag' | 'rlhf' | 'quantization-kv';
 
 interface ModernLLMVisualizerProps {
   defaultTab?: ModernLlmTab;
@@ -80,11 +80,29 @@ export function ModernLLMVisualizer({
     [rewardChosen, rewardRejected, betaKl]
   );
 
+  // 9.6 Quantization & KV Cache state
+  const [paramsB, setParamsB] = useState<number>(7);
+  const [weightBits, setWeightBits] = useState<4 | 8 | 16>(4);
+  const [ctxSeqLen, setCtxSeqLen] = useState<number>(4096);
+  const [kvLayers, setKvLayers] = useState<number>(32);
+  const quantKvRes = useMemo(() => {
+    const bytesPerParam = weightBits / 8;
+    const weightVramGb = paramsB * bytesPerParam;
+    // KV cache for batch=1, n_kv_heads=8 (GQA), d_head=128, FP16 (2 bytes)
+    const kvCacheBytes = 2 * kvLayers * 8 * 128 * ctxSeqLen * 2;
+    const kvCacheGb = kvCacheBytes / 1e9;
+    const totalVramGb = weightVramGb + kvCacheGb;
+    const fp16WeightGb = paramsB * 2;
+    const savingsRatio = fp16WeightGb / weightVramGb;
+    return { weightVramGb, kvCacheGb, totalVramGb, fp16WeightGb, savingsRatio };
+  }, [paramsB, weightBits, ctxSeqLen, kvLayers]);
+
   const tabs: { id: ModernLlmTab; label: string }[] = [
-    { id: 'tokenization', label: '8.1 Tokens & Perplexity' },
-    { id: 'lora', label: '8.2 LoRA Adapters' },
-    { id: 'rag', label: '8.3 RAG Retrieval' },
-    { id: 'rlhf', label: '8.4 RLHF & DPO' },
+    { id: 'tokenization', label: '9.1 Tokens & Perplexity' },
+    { id: 'lora', label: '9.2 LoRA Adapters' },
+    { id: 'rag', label: '9.3 RAG Retrieval' },
+    { id: 'rlhf', label: '9.4 RLHF & DPO' },
+    { id: 'quantization-kv', label: '9.6 Quantization & KV' },
   ];
 
   return (
@@ -440,6 +458,129 @@ export function ModernLLMVisualizer({
                     value={betaKl}
                     onChange={e => setBetaKl(parseFloat(e.target.value))}
                     className="w-full accent-[#C28E38]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 9.6: QUANTIZATION & KV CACHE */}
+        {activeTab === 'quantization-kv' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-7 space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono-num">
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">Weights ({weightBits}-bit)</div>
+                  <div className="text-base font-bold text-[#7A1C30]">
+                    {quantKvRes.weightVramGb.toFixed(2)} GB
+                  </div>
+                </div>
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">KV Cache (FP16)</div>
+                  <div className="text-base font-bold text-[#C28E38]">
+                    {quantKvRes.kvCacheGb.toFixed(2)} GB
+                  </div>
+                </div>
+                <div className="p-3 bg-[#F0FDF4] border border-[#BBF7D0] rounded">
+                  <div className="text-[#166534]">Total Inference VRAM</div>
+                  <div className="text-base font-bold text-[#166534]">
+                    {quantKvRes.totalVramGb.toFixed(2)} GB
+                  </div>
+                </div>
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">vs FP16 Weights</div>
+                  <div className="text-base font-bold text-[#1D1819]">
+                    {quantKvRes.savingsRatio.toFixed(1)}× smaller
+                  </div>
+                </div>
+              </div>
+              <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg text-xs font-mono-num text-[#5C4E4F] space-y-1">
+                <div>
+                  <strong>Weight Formula:</strong> {paramsB}B × ({weightBits}/8) B = {quantKvRes.weightVramGb.toFixed(2)} GB (FP16 = {quantKvRes.fp16WeightGb.toFixed(1)} GB)
+                </div>
+                <div>
+                  <strong>KV-Cache Formula (batch=1, 8 KV heads, d=128, FP16):</strong> 2 × {kvLayers} × 8 × 128 × {ctxSeqLen} × 2 B = {quantKvRes.kvCacheGb.toFixed(3)} GB
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 space-y-4">
+              <div className="bg-[#FAF5EE] border border-[#EAE2D5] rounded-lg p-4 space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-bold text-[#1D1819]">Weight Precision</span>
+                    <span className="font-mono-num font-bold text-[#7A1C30]">INT{weightBits === 16 ? ' / FP16' : weightBits}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    {([16, 8, 4] as const).map(bits => (
+                      <button
+                        key={bits}
+                        type="button"
+                        onClick={() => setWeightBits(bits)}
+                        className={`flex-1 py-1.5 rounded text-xs font-bold border cursor-pointer ${
+                          weightBits === bits
+                            ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
+                            : 'bg-white text-[#5C4E4F] border-[#E8E2D9]'
+                        }`}
+                      >
+                        {bits === 16 ? 'FP16' : `INT${bits}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="qkv-params-slider" className="font-bold text-[#1D1819]">
+                      Model Size (Billion Params)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#7A1C30]">{paramsB}B</span>
+                  </div>
+                  <input
+                    id="qkv-params-slider"
+                    type="range"
+                    min="1"
+                    max="70"
+                    step="1"
+                    value={paramsB}
+                    onChange={e => setParamsB(parseInt(e.target.value, 10))}
+                    className="w-full accent-[#7A1C30]"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="qkv-seq-slider" className="font-bold text-[#1D1819]">
+                      Context Length (Tokens S)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#C28E38]">{ctxSeqLen}</span>
+                  </div>
+                  <input
+                    id="qkv-seq-slider"
+                    type="range"
+                    min="512"
+                    max="32768"
+                    step="512"
+                    value={ctxSeqLen}
+                    onChange={e => setCtxSeqLen(parseInt(e.target.value, 10))}
+                    className="w-full accent-[#C28E38]"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="qkv-layers-slider" className="font-bold text-[#1D1819]">
+                      Transformer Layers (L)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#166534]">{kvLayers}</span>
+                  </div>
+                  <input
+                    id="qkv-layers-slider"
+                    type="range"
+                    min="16"
+                    max="64"
+                    step="8"
+                    value={kvLayers}
+                    onChange={e => setKvLayers(parseInt(e.target.value, 10))}
+                    className="w-full accent-[#166534]"
                   />
                 </div>
               </div>

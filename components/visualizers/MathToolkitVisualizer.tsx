@@ -117,10 +117,30 @@ export function MathToolkitVisualizer({
     [normPtX, normPtY]
   );
   const [pcaCov, setPcaCov] = useState<number>(0.85);
+  const [pcaK, setPcaK] = useState<1 | 2>(1);
   const pcaRes = useMemo(
     () => computeSymmetric2x2EigenPCA(1.4, 0.9, pcaCov),
     [pcaCov]
   );
+  const pcaCloud = useMemo(() => {
+    const basePts: [number, number][] = [
+      [-1.3, -0.7],
+      [-0.8, -0.5],
+      [-0.4, -0.1],
+      [0.3, 0.2],
+      [0.9, 0.5],
+      [1.3, 0.6],
+    ];
+    return basePts.map(([bx, by]) => {
+      const px = bx * Math.sqrt(pcaRes.lambda1) * pcaRes.eigvec1[0] + by * Math.sqrt(Math.max(0.02, pcaRes.lambda2)) * pcaRes.eigvec2[0];
+      const py = bx * Math.sqrt(pcaRes.lambda1) * pcaRes.eigvec1[1] + by * Math.sqrt(Math.max(0.02, pcaRes.lambda2)) * pcaRes.eigvec2[1];
+      const proj1 = px * pcaRes.eigvec1[0] + py * pcaRes.eigvec1[1];
+      const rx = pcaK === 1 ? proj1 * pcaRes.eigvec1[0] : px;
+      const ry = pcaK === 1 ? proj1 * pcaRes.eigvec1[1] : py;
+      const errSq = (px - rx) ** 2 + (py - ry) ** 2;
+      return { px, py, rx, ry, errSq };
+    });
+  }, [pcaRes, pcaK]);
 
   // 0.7 Partial Derivatives, Jacobian & Hessian State
   const [jhX, setJhX] = useState<number>(0.8);
@@ -187,11 +207,10 @@ export function MathToolkitVisualizer({
               key={t.id}
               type="button"
               onClick={() => setActiveTab(t.id)}
-              className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
-                activeTab === t.id
+              className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${activeTab === t.id
                   ? 'bg-[#7A1C30] text-white'
                   : 'text-[#54484E] hover:text-[#1F191B]'
-              }`}
+                }`}
             >
               {t.label}
             </button>
@@ -340,11 +359,10 @@ export function MathToolkitVisualizer({
                   </div>
                 </div>
                 <div
-                  className={`p-3 rounded border ${
-                    gradRes.fAfterStep > gradRes.fValue + 1e-9
+                  className={`p-3 rounded border ${gradRes.fAfterStep > gradRes.fValue + 1e-9
                       ? 'bg-[#FEF2F2] border-[#FECACA]'
                       : 'bg-[#F0FDF4] border-[#BBF7D0]'
-                  }`}
+                    }`}
                 >
                   <div
                     className={
@@ -356,11 +374,10 @@ export function MathToolkitVisualizer({
                     After -{gradLr.toFixed(2)}·∇f Step
                   </div>
                   <div
-                    className={`text-base font-bold ${
-                      gradRes.fAfterStep > gradRes.fValue + 1e-9
+                    className={`text-base font-bold ${gradRes.fAfterStep > gradRes.fValue + 1e-9
                         ? 'text-[#991B1B]'
                         : 'text-[#166534]'
-                    }`}
+                      }`}
                   >
                     {gradRes.fAfterStep.toFixed(3)}
                   </div>
@@ -627,10 +644,48 @@ export function MathToolkitVisualizer({
                   </div>
                 </div>
                 <div className="p-3 bg-[#F0FDF4] border border-[#BBF7D0] rounded">
-                  <div className="text-[#166534]">Total dz/dx</div>
+                  <div className="text-[#166534]">Accumulated dz/dx</div>
                   <div className="text-base font-bold text-[#166534]">
                     {chainRes.totalDz_Dx.toFixed(3)}
                   </div>
+                </div>
+              </div>
+
+              {/* Computational Graph: Forward Values, Local Derivatives & Backward Accumulation */}
+              <div className="bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-3 space-y-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-[#625956]">
+                  Computational Graph (Forward → &amp; Backward ← Gradient Accumulation)
+                </div>
+                <svg viewBox="0 0 360 120" className="w-full h-32 bg-white rounded border border-[#E8E2D9]">
+                  {/* Edges */}
+                  <line x1="65" y1="60" x2="145" y2="28" stroke="#D6CEC2" strokeWidth="2" />
+                  <line x1="65" y1="60" x2="145" y2="92" stroke="#D6CEC2" strokeWidth="2" />
+                  <line x1="215" y1="28" x2="290" y2="60" stroke="#D6CEC2" strokeWidth="2" />
+                  <line x1="215" y1="92" x2="290" y2="60" stroke="#D6CEC2" strokeWidth="2" />
+                  {/* Edge Labels */}
+                  <text x="86" y="34" fontSize="8" fill="#7A1C30" fontWeight="bold">du/dx={chainRes.du_dx.toFixed(2)}</text>
+                  <text x="86" y="96" fontSize="8" fill="#C28E38" fontWeight="bold">dv/dx={chainRes.dv_dx.toFixed(2)}</text>
+                  <text x="228" y="34" fontSize="8" fill="#7A1C30" fontWeight="bold">∂z/∂u={chainRes.dz_du.toFixed(2)}</text>
+                  <text x="228" y="96" fontSize="8" fill="#C28E38" fontWeight="bold">∂z/∂v={chainRes.dz_dv.toFixed(2)}</text>
+                  {/* Node x */}
+                  <rect x="12" y="42" width="56" height="36" rx="6" fill="#FAF5EE" stroke="#166534" strokeWidth="1.5" />
+                  <text x="40" y="56" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1D1819]">x={chainX.toFixed(2)}</text>
+                  <text x="40" y="70" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#166534">← {chainRes.totalDz_Dx.toFixed(2)}</text>
+                  {/* Node u */}
+                  <rect x="145" y="10" width="70" height="36" rx="6" fill="#FAF5EE" stroke="#7A1C30" strokeWidth="1.5" />
+                  <text x="180" y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1D1819]">u={chainRes.u.toFixed(2)}</text>
+                  <text x="180" y="38" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#7A1C30">← {chainRes.dz_du.toFixed(2)}</text>
+                  {/* Node v */}
+                  <rect x="145" y="74" width="70" height="36" rx="6" fill="#FAF5EE" stroke="#C28E38" strokeWidth="1.5" />
+                  <text x="180" y="88" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1D1819]">v={chainRes.v.toFixed(2)}</text>
+                  <text x="180" y="102" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#B45309">← {chainRes.dz_dv.toFixed(2)}</text>
+                  {/* Node z */}
+                  <rect x="288" y="42" width="60" height="36" rx="6" fill="#F0FDF4" stroke="#166534" strokeWidth="1.5" />
+                  <text x="318" y="56" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1D1819]">z={chainRes.z.toFixed(2)}</text>
+                  <text x="318" y="70" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#166534">∂z/∂z=1</text>
+                </svg>
+                <div className="text-[11px] font-mono-num text-[#5C4E4F]">
+                  Accumulation at x: ({chainRes.dz_du.toFixed(2)})({chainRes.du_dx.toFixed(2)}) + ({chainRes.dz_dv.toFixed(2)})({chainRes.dv_dx.toFixed(2)}) = <strong>{chainRes.totalDz_Dx.toFixed(4)}</strong>
                 </div>
               </div>
             </div>
@@ -708,6 +763,16 @@ export function MathToolkitVisualizer({
                   </div>
                 </div>
               </div>
+              <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg text-xs font-mono-num text-[#5C4E4F] space-y-1">
+                <div>
+                  <strong>MSE (x=1.80, μ={gaussMu.toFixed(2)}):</strong> (1.80 - {gaussMu.toFixed(2)})² = <strong>{((1.8 - gaussMu) ** 2).toFixed(4)}</strong>
+                </div>
+                <div>
+                  <strong>Fixed-σ (σ=0.80) NLL:</strong>{' '}
+                  {(0.5 * Math.log(2 * Math.PI * 0.64) + ((1.8 - gaussMu) ** 2) / (2 * 0.64)).toFixed(4)} nats vs{' '}
+                  <strong>Current σ={gaussSigma.toFixed(2)} NLL:</strong> {probRes.gaussianNll.toFixed(4)} nats
+                </div>
+              </div>
             </div>
 
             <div className="lg:col-span-5 space-y-4">
@@ -746,6 +811,24 @@ export function MathToolkitVisualizer({
                     value={gaussMu}
                     onChange={e => setGaussMu(parseFloat(e.target.value))}
                     className="w-full accent-[#C28E38]"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="prob-sigma-slider" className="font-bold text-[#1D1819]">
+                      Gaussian Std Dev (σ)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#166534]">{gaussSigma.toFixed(2)}</span>
+                  </div>
+                  <input
+                    id="prob-sigma-slider"
+                    type="range"
+                    min="0.3"
+                    max="2.5"
+                    step="0.1"
+                    value={gaussSigma}
+                    onChange={e => setGaussSigma(parseFloat(e.target.value))}
+                    className="w-full accent-[#166534]"
                   />
                 </div>
               </div>
@@ -934,7 +1017,22 @@ export function MathToolkitVisualizer({
             </div>
 
             <div className="lg:col-span-6 space-y-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg p-4">
-              <div className="text-xs font-bold text-[#1D1819]">Eigenvalues &amp; PCA Principal Directions</div>
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-bold text-[#1D1819]">Centered Cloud, PCA Projection &amp; Reconstruction</div>
+                <div className="flex gap-1 text-[11px] font-bold">
+                  {([1, 2] as const).map(k => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => setPcaK(k)}
+                      className={`px-2 py-0.5 rounded border cursor-pointer ${pcaK === k ? 'bg-[#7A1C30] text-white border-[#7A1C30]' : 'bg-white text-[#5C4E4F] border-[#E8E2D9]'
+                        }`}
+                    >
+                      k={k} PC
+                    </button>
+                  ))}
+                </div>
+              </div>
               <svg viewBox="0 0 240 200" className="w-full h-48 bg-white rounded border border-[#E8E2D9]">
                 <line x1="120" y1="10" x2="120" y2="190" stroke="#E8E2D9" strokeWidth="1" />
                 <line x1="20" y1="100" x2="220" y2="100" stroke="#E8E2D9" strokeWidth="1" />
@@ -956,13 +1054,29 @@ export function MathToolkitVisualizer({
                   stroke="#C28E38"
                   strokeWidth="2.5"
                 />
+                {/* Centered points + projection & reconstruction */}
+                {pcaCloud.map((pt, i) => (
+                  <g key={i}>
+                    <line
+                      x1={120 + pt.px * 38}
+                      y1={100 - pt.py * 38}
+                      x2={120 + pt.rx * 38}
+                      y2={100 - pt.ry * 38}
+                      stroke="#94A3B8"
+                      strokeWidth="1"
+                      strokeDasharray="2 2"
+                    />
+                    <circle cx={120 + pt.px * 38} cy={100 - pt.py * 38} r="3" fill="#1D1819" />
+                    <circle cx={120 + pt.rx * 38} cy={100 - pt.ry * 38} r="2.8" fill="#166534" />
+                  </g>
+                ))}
               </svg>
               <div className="grid grid-cols-2 gap-2 text-xs font-mono-num">
                 <div className="p-2 bg-white border border-[#E8E2D9] rounded">
-                  PC1 λ₁: <strong className="text-[#7A1C30]">{pcaRes.lambda1.toFixed(2)}</strong> ({(pcaRes.explainedVarianceRatio1 * 100).toFixed(1)}%)
+                  Retained (k={pcaK}): <strong className="text-[#7A1C30]">{((pcaK === 1 ? pcaRes.explainedVarianceRatio1 : 1) * 100).toFixed(1)}%</strong> var
                 </div>
                 <div className="p-2 bg-white border border-[#E8E2D9] rounded">
-                  PC2 λ₂: <strong className="text-[#C28E38]">{pcaRes.lambda2.toFixed(2)}</strong> ({(pcaRes.explainedVarianceRatio2 * 100).toFixed(1)}%)
+                  Recon MSE: <strong className="text-[#166534]">{(pcaCloud.reduce((s, p) => s + p.errSq, 0) / pcaCloud.length).toFixed(3)}</strong>
                 </div>
               </div>
               <div className="space-y-1 text-xs">
@@ -1003,13 +1117,12 @@ export function MathToolkitVisualizer({
                     Hessian Curvature of f(x, y) = ax² + bxy + cy²
                   </span>
                   <span
-                    className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
-                      jhRes.curvatureType === 'minimum'
+                    className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${jhRes.curvatureType === 'minimum'
                         ? 'bg-[#EEF5F0] text-[#1D4E35]'
                         : jhRes.curvatureType === 'saddle'
-                        ? 'bg-[#FEF3C7] text-[#92400E]'
-                        : 'bg-[#FDF2F2] text-[#7A1C30]'
-                    }`}
+                          ? 'bg-[#FEF3C7] text-[#92400E]'
+                          : 'bg-[#FDF2F2] text-[#7A1C30]'
+                      }`}
                   >
                     {jhRes.curvatureType}
                   </span>
@@ -1133,11 +1246,10 @@ export function MathToolkitVisualizer({
                       key={k}
                       type="button"
                       onClick={() => setDistKind(k)}
-                      className={`px-2.5 py-1 rounded capitalize font-semibold border ${
-                        distKind === k
+                      className={`px-2.5 py-1 rounded capitalize font-semibold border ${distKind === k
                           ? 'bg-[#7A1C30] text-white border-[#7A1C30]'
                           : 'bg-white text-[#4A3B3E] border-[#EAE2D5]'
-                      }`}
+                        }`}
                     >
                       {k}
                     </button>

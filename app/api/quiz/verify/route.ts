@@ -11,9 +11,15 @@ export async function POST(req: NextRequest) {
       selectedIndex?: number;
     };
 
-    if (!lessonSlug || !questionId || typeof selectedIndex !== 'number') {
+    if (
+      !lessonSlug ||
+      !questionId ||
+      typeof selectedIndex !== 'number' ||
+      !Number.isInteger(selectedIndex) ||
+      selectedIndex < 0
+    ) {
       return NextResponse.json(
-        { error: 'Missing lessonSlug, questionId, or selectedIndex' },
+        { error: 'Missing or invalid lessonSlug, questionId, or selectedIndex' },
         { status: 400 }
       );
     }
@@ -22,6 +28,9 @@ export async function POST(req: NextRequest) {
       const challenge = PRACTICE_CHALLENGES.find(c => c.id === questionId);
       if (!challenge) {
         return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
+      }
+      if (selectedIndex >= challenge.options.length) {
+        return NextResponse.json({ error: 'selectedIndex out of range' }, { status: 400 });
       }
       return NextResponse.json({
         isCorrect: selectedIndex === challenge.correctIndex,
@@ -38,6 +47,9 @@ export async function POST(req: NextRequest) {
     const question = lesson.quiz.find(q => q.id === questionId);
     if (!question) {
       return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+    }
+    if (selectedIndex >= question.options.length) {
+      return NextResponse.json({ error: 'selectedIndex out of range' }, { status: 400 });
     }
 
     return NextResponse.json({

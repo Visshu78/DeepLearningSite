@@ -1,5 +1,5 @@
 /**
- * Pure analytical mathematical functions for Track 9:
+ * Pure analytical mathematical functions for Track 1: Data Preparation & Feature Engineering
  * Data Preparation and Feature Engineering (Lessons 9.1 – 9.6)
  */
 

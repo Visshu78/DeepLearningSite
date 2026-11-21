@@ -1,7 +1,7 @@
 /**
- * Pure analytical mathematical engine for Track 1: Classical ML
- * (Lessons 1.1 to 1.5: Linear Regression, Logistic Regression, Bias-Variance &
- * Evaluation Metrics, Decision Trees & Random Forests, and k-Means & PCA).
+ * Pure analytical mathematical engine for Track 2: Classical ML
+ * (Linear Regression, Logistic Regression, Bias-Variance & Evaluation Metrics,
+ * Decision Trees & Random Forests, k-Means & PCA, k-NN/SVM/NB, Boosting).
  *
  * Every equation and backward derivative is verified via automated unit tests.
  */
@@ -35,6 +35,9 @@ export interface LinearRegressionResult {
  *     dL/db = (2 / N) * sum (yHat_i - y_i)
  * - Coefficient of Determination:
  *     R^2 = 1 - SS_res / SS_tot
+ *     (When SS_tot <= EPS, R^2 is mathematically undefined; we follow the
+ *      standard finite convention returning 1 only for exact predictions
+ *      SS_res <= EPS, and 0 otherwise.)
  */
 export function computeLinearRegression(
   xs: number[],
@@ -89,7 +92,7 @@ export function computeLinearRegression(
 
   const mseLoss = ssRes / N;
   const rmse = Math.sqrt(mseLoss);
-  const rSquared = ssTot > EPS ? 1 - ssRes / ssTot : 1;
+  const rSquared = ssTot > EPS ? 1 - ssRes / ssTot : ssRes <= EPS ? 1 : 0;
 
   return {
     wOpt,
@@ -141,8 +144,8 @@ export function computeLogisticRegressionStep(
   threshold: number = 0.5
 ): LogisticRegressionResult {
   const logit = w * x + b;
-  const odds = Math.exp(Math.min(20, Math.max(-20, logit)));
   const rawP = sigmoid(logit);
+  const odds = Math.exp(logit);
   const pClamped = Math.min(1 - EPS, Math.max(EPS, rawP));
 
   const bceLoss = -(y * Math.log(pClamped) + (1 - y) * Math.log(1 - pClamped));

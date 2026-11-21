@@ -124,7 +124,7 @@ function getVisualizerForSlug(slug: string): React.ReactNode {
     case 'kmeans-and-pca':
       return <ClassicalMLVisualizer defaultTab="kmeans-pca" />;
     case 'knn-svm-and-naive-bayes':
-      return <ClassicalMLVisualizer defaultTab="logreg" />;
+      return <ClassicalMLVisualizer defaultTab="knn-svm-nb" />;
     case 'gradient-boosting-and-xgboost':
       return <ClassicalMLVisualizer defaultTab="trees" />;
     // Track 2.7: Universal Approximation
@@ -169,7 +169,7 @@ function getVisualizerForSlug(slug: string): React.ReactNode {
     case 'vision-transformer-vit':
       return <VisionAndTransformerExtendedVisualizer defaultTab="vit" />;
     case 'text-generation-decoding-and-llm-evaluation':
-      return <VisionAndTransformerExtendedVisualizer defaultTab="bert-gpt" />;
+      return <VisionAndTransformerExtendedVisualizer defaultTab="decoding-eval" />;
     // Track 7: Generative Models
     case 'autoencoders':
       return <GenerativeModelsVisualizer defaultTab="autoencoder" />;
@@ -191,7 +191,7 @@ function getVisualizerForSlug(slug: string): React.ReactNode {
     case 'advanced-rag-reranking-and-retrieval-eval':
       return <ModernLLMVisualizer defaultTab="rag" />;
     case 'llm-quantization-kv-cache-and-inference':
-      return <ModernLLMVisualizer defaultTab="lora" />;
+      return <ModernLLMVisualizer defaultTab="quantization-kv" />;
     default:
       return (
         <div className="p-8 text-center text-sm text-[#5C626B]">

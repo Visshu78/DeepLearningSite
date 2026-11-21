@@ -33,9 +33,15 @@ describe('Track 1: Classical ML Analytical Math Engine', () => {
       (2 * h);
     expect(nonOpt.gradW).toBeCloseTo(fdW, 6);
     expect(nonOpt.gradB).toBeCloseTo(fdB, 6);
+
+    // MATH-01: Constant target y = [3, 3]
+    const constBad = computeLinearRegression([1, 2], [3, 3], 0, 0);
+    expect(constBad.rSquared).toBe(0);
+    const constExact = computeLinearRegression([1, 2], [3, 3], 0, 3);
+    expect(constExact.rSquared).toBe(1);
   });
 
-  it('1.2 Logistic Regression BCE loss derivatives match finite differences', () => {
+  it('1.2 Logistic Regression BCE loss derivatives match finite differences and odds match exp(logit)', () => {
     const x = 2.5;
     const y: 0 | 1 = 1;
     const w = 0.6;
@@ -54,6 +60,16 @@ describe('Track 1: Classical ML Analytical Math Engine', () => {
 
     expect(step.gradW).toBeCloseTo(fdW, 6);
     expect(step.gradB).toBeCloseTo(fdB, 6);
+
+    // MATH-02: odds consistent with probability at logit 0, ±20, ±21
+    for (const z of [0, 20, -20, 21, -21]) {
+      const res = computeLogisticRegressionStep(1, 1, z, 0);
+      expect(res.odds).toBeCloseTo(Math.exp(z), 4);
+      const implied = res.probability / (1 - res.probability);
+      if (Number.isFinite(implied) && implied > 0) {
+        expect(Math.abs(res.odds - implied) / res.odds).toBeLessThan(1e-6);
+      }
+    }
   });
 
   it('1.3 Bias-Variance Decomposition equals Bias^2 + Variance + Noise', () => {

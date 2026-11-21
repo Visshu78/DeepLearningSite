@@ -10,7 +10,7 @@ import {
 } from '@/lib/math/classicalMl';
 import { LineChart } from 'lucide-react';
 
-export type ClassicalMlTab = 'linreg' | 'logreg' | 'biasvar' | 'trees' | 'kmeans-pca';
+export type ClassicalMlTab = 'linreg' | 'logreg' | 'biasvar' | 'trees' | 'kmeans-pca' | 'knn-svm-nb';
 
 interface ClassicalMLVisualizerProps {
   defaultTab?: ClassicalMlTab;
@@ -76,12 +76,44 @@ export function ClassicalMLVisualizer({
     [sampleGuests, c0X, c1X]
   );
 
+  // 2.6 k-NN, SVM & Naive Bayes State
+  const [queryX, setQueryX] = useState<number>(0.4);
+  const [knnK, setKnnK] = useState<number>(3);
+  const [svmMargin, setSvmMargin] = useState<number>(1.0);
+  const knnSvmNbRes = useMemo(() => {
+    const pts: { x: number; label: 'A' | 'B' }[] = [
+      { x: -1.8, label: 'A' },
+      { x: -1.0, label: 'A' },
+      { x: -0.2, label: 'A' },
+      { x: 0.3, label: 'B' },
+      { x: 1.1, label: 'B' },
+      { x: 1.9, label: 'B' },
+    ];
+    const sorted = [...pts]
+      .map(p => ({ ...p, dist: Math.abs(queryX - p.x) }))
+      .sort((a, b) => a.dist - b.dist);
+    const neighbors = sorted.slice(0, knnK);
+    const votesB = neighbors.filter(n => n.label === 'B').length;
+    const knnPred = votesB > knnK / 2 ? 'Class B' : 'Class A';
+
+    const wSvm = 2 / svmMargin;
+    const svmScore = wSvm * queryX;
+    const inMargin = Math.abs(svmScore) < 1;
+
+    const sigma = 0.65;
+    const llA = -0.5 * Math.pow((queryX - -1.0) / sigma, 2);
+    const llB = -0.5 * Math.pow((queryX - 1.1) / sigma, 2);
+    const pB = 1 / (1 + Math.exp(llA - llB));
+    return { neighbors, votesB, knnPred, wSvm, svmScore, inMargin, pB };
+  }, [queryX, knnK, svmMargin]);
+
   const tabs: { id: ClassicalMlTab; label: string }[] = [
-    { id: 'linreg', label: '1.1 Linear Regression' },
-    { id: 'logreg', label: '1.2 Logistic Regression' },
-    { id: 'biasvar', label: '1.3 Bias-Variance' },
-    { id: 'trees', label: '1.4 Trees & Forests' },
-    { id: 'kmeans-pca', label: '1.5 k-Means & PCA' },
+    { id: 'linreg', label: '2.1 Linear Regression' },
+    { id: 'logreg', label: '2.2 Logistic Regression' },
+    { id: 'biasvar', label: '2.3 Bias-Variance' },
+    { id: 'trees', label: '2.4 Trees & Forests' },
+    { id: 'kmeans-pca', label: '2.5 k-Means & PCA' },
+    { id: 'knn-svm-nb', label: '2.6 k-NN, SVM & NB' },
   ];
 
   return (
@@ -90,7 +122,7 @@ export function ClassicalMLVisualizer({
         <div className="flex items-center gap-2">
           <LineChart className="w-4 h-4 text-[#7A1C30]" />
           <span className="text-xs font-bold uppercase tracking-wider text-[#1F191B]">
-            Track 1 Classical Machine Learning &amp; Tabular Algorithms Workbench
+            Track 2 Classical Machine Learning &amp; Tabular Algorithms Workbench
           </span>
         </div>
 
@@ -716,6 +748,109 @@ export function ClassicalMLVisualizer({
                     step="0.1"
                     value={c1X}
                     onChange={e => setC1X(parseFloat(e.target.value))}
+                    className="w-full accent-[#C28E38]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2.6: k-NN, SVM & NAIVE BAYES */}
+        {activeTab === 'knn-svm-nb' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-7 space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono-num">
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">k-NN (k={knnK})</div>
+                  <div className="text-base font-bold text-[#7A1C30]">{knnSvmNbRes.knnPred}</div>
+                </div>
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">SVM Score w·x</div>
+                  <div className="text-base font-bold text-[#1D1819]">
+                    {knnSvmNbRes.svmScore.toFixed(2)}
+                  </div>
+                </div>
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">Margin 2/||w||</div>
+                  <div className="text-base font-bold text-[#C28E38]">
+                    {svmMargin.toFixed(2)}
+                  </div>
+                </div>
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">Naive Bayes P(B|x)</div>
+                  <div className="text-base font-bold text-[#166534]">
+                    {(knnSvmNbRes.pB * 100).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+              <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg text-xs text-[#5C4E4F] space-y-1">
+                <div>
+                  <strong>k-NN Nearest Neighbors:</strong>{' '}
+                  {knnSvmNbRes.neighbors.map(n => `${n.label}(${n.x.toFixed(1)}, d=${n.dist.toFixed(2)})`).join(', ')}
+                </div>
+                <div>
+                  <strong>SVM Margin Status:</strong>{' '}
+                  {knnSvmNbRes.inMargin
+                    ? 'Inside margin street (|w·x| < 1)'
+                    : 'Outside margin street (|w·x| ≥ 1)'}
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 space-y-4">
+              <div className="bg-[#FAF5EE] border border-[#EAE2D5] rounded-lg p-4 space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="knn-x-slider" className="font-bold text-[#1D1819]">
+                      Query Point (x)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#7A1C30]">{queryX.toFixed(2)}</span>
+                  </div>
+                  <input
+                    id="knn-x-slider"
+                    type="range"
+                    min="-2.0"
+                    max="2.0"
+                    step="0.1"
+                    value={queryX}
+                    onChange={e => setQueryX(parseFloat(e.target.value))}
+                    className="w-full accent-[#7A1C30]"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="knn-k-slider" className="font-bold text-[#1D1819]">
+                      Neighbors (k)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#166534]">{knnK}</span>
+                  </div>
+                  <input
+                    id="knn-k-slider"
+                    type="range"
+                    min="1"
+                    max="5"
+                    step="2"
+                    value={knnK}
+                    onChange={e => setKnnK(parseInt(e.target.value, 10))}
+                    className="w-full accent-[#166534]"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="svm-m-slider" className="font-bold text-[#1D1819]">
+                      SVM Margin Width (2/||w||)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#C28E38]">{svmMargin.toFixed(2)}</span>
+                  </div>
+                  <input
+                    id="svm-m-slider"
+                    type="range"
+                    min="0.4"
+                    max="2.0"
+                    step="0.2"
+                    value={svmMargin}
+                    onChange={e => setSvmMargin(parseFloat(e.target.value))}
                     className="w-full accent-[#C28E38]"
                   />
                 </div>

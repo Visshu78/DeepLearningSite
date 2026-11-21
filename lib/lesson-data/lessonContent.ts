@@ -201,9 +201,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'People change their response style depending on who is asking, whereas every neuron in a standard layer applies the exact same deterministic activation curve φ(z) to every scalar input.',
     intuition: [
       'Why do neural networks need activation functions at all? If every layer only calculated linear combinations (W · x + b), composing multiple layers would simply collapse into a single linear transformation: W₂ · (W₁ · x + b₁) + b₂ = W_new · x + b_new.',
-      'Activation functions introduce non-linearity. This enables networks to approximate arbitrary continuous functions and fold high-dimensional decision boundaries.',
-      'However, not all activation functions behave equally. Sigmoid and Tanh squash inputs into bounded ranges, but their derivatives become virtually zero when inputs are very large or very negative. This causes the famous vanishing gradient problem.',
-      'ReLU (Rectified Linear Unit) solves this by maintaining a constant unit derivative (slope = 1) for all positive inputs, allowing gradients to flow unimpeded through hundreds of layers.'
+      'Activation functions introduce non-linearity, enabling networks to approximate non-linear functions and fold high-dimensional decision boundaries. Comparing common choices: Linear (identity, collapses stacked layers), Sigmoid (maps to (0, 1), max derivative 0.25, saturates at tails), Tanh (zero-centered (-1, 1), max derivative 1.0, saturates at tails), ReLU (piecewise linear, derivative 1 for z > 0 and 0 for z < 0), Leaky ReLU (small slope α > 0 for z < 0 to prevent dead neurons), and GELU (smooth probabilistic gating used in Transformers).',
+      'At ReLU\'s kink z = 0, the function is not classically differentiable (left slope 0, right slope 1); any subgradient in [0, 1] is valid, and autodiff frameworks typically adopt 0 (or 1) by convention.',
+      'How Derivatives Affect Gradient Propagation (Not Directly Learning Speed): Larger activation derivatives help preserve backward gradient flow across many layers, whereas Sigmoid and Tanh saturate near 0 in their tails. However, actual parameter update magnitude and learning speed also depend on upstream gradients, weight scales, loss curvature, and optimizer behavior (e.g., Adam/learning rate).'
     ],
     mathFormulas: [
       {
@@ -219,7 +219,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       {
         name: 'Rectified Linear Unit (ReLU)',
         latex: '\\text{ReLU}(z) = \\max(0, z), \\quad \\text{ReLU}\'(z) = \\begin{cases} 1 & \\text{if } z > 0 \\\\ 0 & \\text{if } z \\le 0 \\end{cases}',
-        explanation: 'Piecewise linear. Constant gradient of 1 for positive signals; zero for negative signals.'
+        explanation: 'Piecewise linear. Slope is 1 for z > 0 and 0 for z < 0; at z = 0 any subgradient in [0, 1] is valid (0 by convention here).'
       }
     ],
     workedExample: {
@@ -230,7 +230,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         { label: 'Step 3: Calculate ReLU activation', math: '\\text{ReLU}(3.0) = \\max(0, 3.0) = 3.000', note: 'Unbounded linear transmission.' },
         { label: 'Step 4: Calculate ReLU derivative', math: "\\text{ReLU}'(3.0) = 1.000", note: 'Full 100% gradient transmission without decay.' }
       ],
-      result: 'ReLU transmits a gradient 22× larger than Sigmoid at z = 3.0, explaining why deep networks train substantially faster with ReLU.',
+      result: 'At z = 3.0, ReLU\'s local derivative (1.000) is ~22× larger than Sigmoid\'s (0.0451), preserving stronger gradient flow through deep layers (actual update speed still depends on weights, loss, and optimizer).',
       params: { zProbe: 3.0 }
     },
     quiz: [
@@ -530,7 +530,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'Imagine standing on a hilly landscape in thick fog. You cannot see the lowest valley, but you can feel the slope of the ground beneath your boots.',
       'To reach the bottom, you take a step in the direction of the steepest downward slope. This is the core intuition of Gradient Descent.',
-      'The gradient vector ∇L points in the direction of steepest ascent (where loss increases fastest). Therefore, stepping in the negative gradient direction (-∇L) guarantees moving toward lower loss for a sufficiently small step.',
+      'The gradient vector ∇L points in the direction of steepest ascent (when nonzero). Therefore, stepping in the negative gradient direction (-∇L) reduces loss for a sufficiently small step. Note on convexity: every local minimum of a convex function is a global minimum, though a minimum is not guaranteed to exist (e.g. e^{-θ}) and need not be unique (e.g. a flat-bottomed convex valley).',
       'The learning rate η (eta) controls the step size. If η is too small, convergence takes thousands of iterations. If η exceeds the mathematical stability limit (η > 2/L_max for quadratic bowls), updates will overshoot the valley, bounce wildly, and diverge to infinity!'
     ],
     mathFormulas: [
@@ -630,8 +630,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'In a real college group project, teammates argue, deflect blame, or rewrite their part from scratch; in backpropagation, blame (δ) is routed by exact, deterministic calculus derivatives through the transpose of the forward weights.',
     intuition: [
-      'Backpropagation is the mathematical engine of deep learning. Every forward pass builds a Computational Graph—a Directed Acyclic Graph (DAG) where inputs, weights, and operations (+, ×, ReLU, matmul) are nodes and intermediate activations are cached.',
-      'During the backward pass, reverse-mode autodiff traverses this DAG in reverse topological order: each node multiplies its incoming upstream gradient by its local derivative (∂node/∂input). When a node fans out to multiple downstream branches, incoming gradients accumulate via addition (+=), turning an exponential chain-rule tree into a single O(E) linear pass.'
+      'Three Distinct Roles — Forward, Backprop, Optimizer: (1) Forward propagation computes and caches activations along the Computational Graph (a DAG of operations); (2) Backpropagation (reverse-mode autodiff) traverses the DAG backward to compute parameter gradients ∂L/∂w; (3) The Optimizer (SGD, Momentum, Adam) uses those gradients to actually update the weights.',
+      'During the backward pass, reverse-mode autodiff traverses this DAG in reverse topological order: each node multiplies its incoming upstream gradient by its local derivative (∂node/∂input). When a node fans out to multiple downstream branches, incoming gradients accumulate via addition (+=), turning an exponential chain-rule tree into a single O(V + E) linear pass.'
     ],
     mathFormulas: [
       {
@@ -746,7 +746,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'A neural network with millions of parameters has sufficient expressive power to memorize individual training samples, including idiosyncratic noise.',
       'When a model fits training noise, its training loss reaches near-zero while test loss explodes—a state termed Overfitting or High Variance.',
-      'L2 Regularization (Weight Decay) discourages large weights by penalizing their squared magnitudes, ensuring individual neurons cannot develop overly brittle sensitivities. Note that while L2 regularization and weight decay are identical under vanilla SGD, they differ under adaptive optimizers like Adam because L2 gradients get rescaled by the second-moment estimate—which is why AdamW (Loshchilov & Hutter, 2019) decouples weight decay from the gradient step.',
+      'L2 Penalty vs Coupled Weight Decay vs AdamW (Decoupled): Adding (λ/2)||w||₂² to the loss gives the same update w_{t+1} = (1 - ηλ)w_t - η∇L_0(w_t) under vanilla SGD (coupled weight decay). Under adaptive optimizers like Adam, however, an L2 loss penalty gets divided by √v̂_t—shrinking weights unevenly! AdamW (Loshchilov & Hutter, 2019) decouples weight decay so (1 - ηλ)w_t is applied directly, independent of adaptive gradient scaling.',
       'Dropout temporarily disables random subsets of neurons during each training step, breaking co-dependencies and acting like an ensemble of exponentially many thinned networks.'
     ],
     mathFormulas: [
@@ -873,8 +873,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       },
       {
         name: 'Adam (Adaptive Moment Estimation)',
-        latex: '\\hat{\\mathbf{m}}_t = \\frac{\\mathbf{m}_t}{1 - \\beta_1^t}, \\quad \\hat{\\mathbf{v}}_t = \\frac{\\mathbf{v}_t}{1 - \\beta_2^t}, \\quad \\boldsymbol{\\theta}_{t+1} = \\boldsymbol{\\theta}_t - \\frac{\\eta}{\\sqrt{\\hat{\\mathbf{v}}_t} + \\epsilon} \\hat{\\mathbf{m}}_t',
-        explanation: 'Combines first moments (momentum) with second moments (RMSprop), corrected for zero-initialization bias via (1 - β^t).'
+        latex: 'm_t = \\beta_1 m_{t-1} + (1 - \\beta_1)g_t, \\; v_t = \\beta_2 v_{t-1} + (1 - \\beta_2)g_t^2, \\; \\hat{m}_t = \\frac{m_t}{1 - \\beta_1^t}, \\; \\hat{v}_t = \\frac{v_t}{1 - \\beta_2^t}, \\; \\theta_{t+1} = \\theta_t - \\frac{\\eta}{\\sqrt{\\hat{v}_t} + \\epsilon}\\hat{m}_t',
+        explanation: 'Tracks first moment (m_t) and second moment (v_t), applies bias correction for zero initialization, and updates θ_t.'
       }
     ],
     workedExample: {
@@ -1885,44 +1885,44 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
   'first-look-at-data-eda': {
     slug: 'first-look-at-data-eda',
     scene: {
-      title: 'Looking Over a Used Scooter Before You Pay a Single Rupee',
+      title: 'Checking 10 Hostel Mess Bills Before Splitting the Tab',
       narrative:
-        'Imagine buying a second-hand scooter outside your hostel. You would never hand over ₹35,000 just because the seller says "average mileage is 45 kmpl." You check the odometer, inspect the tyres, look for rust under the mat, and ask whether one highway trip skewed that average. Exploratory Data Analysis (EDA) is that exact inspection for a dataset: before you touch a neural network, you check distributions, spot skewed tails where the mean lies to you, compare median and IQR against standard deviation, and catch broken columns.'
+        'Imagine 10 hostel students comparing their monthly mess bills before splitting a shared bill. Nine students paid ₹12k–₹19k, while one student hosted a farewell feast and racked up ₹90k—pulling the "average" bill way above what almost anyone actually paid! Exploratory Data Analysis (EDA) is that exact first inspection of a dataset: before you touch a neural network, you check distributions, spot skewed tails where the mean lies to you, compare median and IQR against standard deviation, and catch broken columns.'
     },
     mapping: [
       {
-        scenePart: 'Seller\'s claimed "average" across all rides',
+        scenePart: 'Claimed "average" bill across all 10 students',
         modelPart: 'Sample Mean',
         symbol: 'μ = (1/N) Σ x_i',
-        role: 'Center of mass of the feature—highly sensitive to a single extreme bill or ride'
+        role: 'Center of mass of the feature—highly sensitive to a single extreme bill'
       },
       {
-        scenePart: 'The middle scooter ride when sorted from shortest to longest',
+        scenePart: 'The middle student\'s bill when sorted from lowest to highest',
         modelPart: 'Sample Median (50th Percentile)',
         symbol: 'Q_2 = median(x)',
         role: 'Robust center that ignores extreme spikes in the tail'
       },
       {
-        scenePart: 'Spread of the middle 50% of normal daily rides',
+        scenePart: 'Spread of the middle 50% of typical student mess bills',
         modelPart: 'Interquartile Range (IQR)',
         symbol: 'IQR = Q_3 - Q_1',
         role: 'Robust spread between the 75th and 25th percentiles'
       },
       {
-        scenePart: 'How lopsided the ride-length histogram looks',
+        scenePart: 'How lopsided the mess-bill histogram looks',
         modelPart: 'Sample Skewness',
         symbol: 'γ_1',
         role: 'Measures tail asymmetry; γ_1 > 1 signals strong right-skew'
       }
     ],
     playWithItPrompt:
-      'In Tab 9.1 ("EDA & Skew"), drag the "10th Student\'s Bill / Extreme Value (x₁₀)" slider from ₹24k up to ₹140k. Watch how the Mean (μ) and Std Dev (σ) get dragged across the chart while the green Median (Q₂) and gold IQR box barely budge!',
+      'In Tab 1.1 ("EDA & Skew"), drag the "10th Student\'s Bill / Extreme Value (x₁₀)" slider from ₹24k up to ₹140k. Watch how the Mean (μ) and Std Dev (σ) get dragged across the chart while the green Median (Q₂) and gold IQR box barely budge!',
     analogyBreaks:
-      'Inspecting a scooter checks one physical machine with your eyes, whereas real ML datasets often have 100+ columns and 100,000 rows—so visual inspection must be paired with automated programmatic assertions (schema checks, null-rate thresholds, and correlation matrices).',
+      'Checking 10 hostel mess bills by eye takes five seconds, whereas real ML datasets often have 100+ columns and 100,000 rows—so visual inspection must be paired with automated programmatic assertions (schema checks, null-rate thresholds, and correlation matrices).',
     intuition: [
       'Most beginner ML failures happen before line 1 of the model is ever run: a column of numbers is silently stored as strings because of one blank space, a sensor glitch recorded -999 for missing temperatures, or a right-skewed income column has a mean three times larger than its median.',
       'When a distribution is symmetric (like student heights), the sample mean μ and sample standard deviation σ summarize the center and spread faithfully.',
-      'When a distribution is heavily skewed (like monthly app spending, house prices, or hospital stays), a tiny fraction of extreme values pulls μ and inflates σ—making the median Q₂ and Interquartile Range (IQR = Q₃ - Q₁) far more honest descriptors.'
+      'When a distribution is heavily skewed or contains extreme observations, a small fraction of outliers pulls μ and inflates σ—making the median Q₂ and Interquartile Range (IQR = Q₃ - Q₁) generally more robust, though their actual robustness depends on the contamination pattern and fraction of corrupted rows (50% breakdown point for median, 25% for IQR).'
     ],
     mathFormulas: [
       {
@@ -2047,12 +2047,13 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Switch to Tab 9.2 ("Missing"). Toggle the Blank-Cell Fill Rule between Median and Mean on the income table—notice how one high earner (₹140k) pulls Mean imputation up to ₹42.2k while Median imputation stays anchored at ₹23.5k alongside the binary m_i = 1 indicator flag!',
+      'Switch to Tab 1.2 ("Missing"). Toggle the Blank-Cell Fill Rule between Median and Mean on the income table—notice how one high earner (₹140k) pulls Mean imputation up to ₹42.2k while Median imputation stays anchored at ₹23.5k alongside the binary m_i = 1 indicator flag!',
     analogyBreaks:
       'In a small classroom you can call the student to ask why a box was left blank, whereas in production ML you must infer whether missingness is MCAR (random glitch), MAR (explained by other columns), or MNAR (informative absence) and preserve that signal with an indicator column.',
     intuition: [
       'Neural networks and linear models cannot multiply NaN: a single missing value propagates NaN through every weight dot-product and gradient update.',
-      'Before filling blanks, diagnose the mechanism: Missing Completely At Random (MCAR, safe to drop if <5% of rows), Missing At Random (MAR, predictable from other observed columns via KNN/IterativeImputer), or Missing Not At Random (MNAR, where the blank itself is a strong clue).',
+      'Diagnose the missingness mechanism before choosing a strategy: (1) MCAR (Missing Completely At Random) means missingness is unrelated to any data; (2) MAR (Missing At Random) means missingness depends on other observed columns (so KNNImputer or IterativeImputer can leverage correlated features); (3) MNAR (Missing Not At Random) means missingness depends on the unobserved value itself—making the binary missingness indicator m_i essential.',
+      'Avoid rigid percentage cutoffs for dropping rows or columns: whether to drop or impute depends on sample size, feature importance, whether missingness is MCAR vs MNAR, and downstream model sensitivity.',
       'For categorical columns, fill missing entries with either the most frequent value (mode) or an explicit "Unknown" category so missingness becomes its own bucket.',
       'When a feature is structurally absent (such as "Existing Credit Card Limit" for an applicant who has never had a credit card), filling with 0 plus a binary indicator column m_i ∈ {0, 1} is far more accurate than filling with the median of cardholders.',
       'For general skewed numeric columns, median imputation (fitted on the training split only!) resists high-income spikes that distort mean imputation. Note that gradient boosted tree libraries—XGBoost, LightGBM, and CatBoost—handle missing values natively by learning the optimal split direction for NaN without manual imputation.'
@@ -2113,15 +2114,15 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     summary: [
-      'Never blindly drop rows with missing values without checking if the absence itself is informative (MNAR).',
+      'Never blindly drop rows or columns with missing values using fixed percentage rules—base the decision on mechanism (MCAR/MAR/MNAR), sample size, and feature signal.',
       'Fill numeric columns with the training median (+ binary m_i flag) or structural 0; fill categorical columns with the most frequent mode or an "Unknown" category.',
-      'Drop a column altogether if more than ~60% of its values are missing and carry no special indicator signal; note that XGBoost, LightGBM, and CatBoost handle NaNs natively.',
+      'Use multivariate imputation (KNN/IterativeImputer) when missingness is MAR and correlated features exist; note that XGBoost, LightGBM, and CatBoost handle NaNs natively.',
       'Always fit imputers (Median, Mode, KNNImputer) strictly on the training split to prevent data leakage.'
     ],
     cheatSheet: {
-      title: '9.2 Handling Missing Data Cheat Sheet',
+      title: '1.2 Handling Missing Data Cheat Sheet',
       rules: [
-        '<5% missing completely at random (MCAR): dropping rows is usually safe; >60% missing in a column: usually drop the column.',
+        'Diagnose MCAR vs MAR vs MNAR first; drop rows/columns only when missingness is uninformative and sample/feature loss is acceptable.',
         'Numeric column: fill with training Median (or Mean if symmetric) + add_indicator=True when missingness carries signal.',
         'Categorical column: fill with most_frequent (mode) or constant "Unknown" category.',
         'XGBoost, LightGBM, and CatBoost handle NaN values natively at split time.'
@@ -2140,45 +2141,45 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
   'outliers-and-feature-scaling': {
     slug: 'outliers-and-feature-scaling',
     scene: {
-      title: 'One Typo or Billionaire in the List, and Comparing Marks Out of 100 with Income in Lakhs',
+      title: 'One Penthouse Rent Outlier in a Student Apartment List, and Comparing Rooms with Rupees',
       narrative:
-        'Suppose a scholarship dataset has two issues: first, one entry says "950/100" because a data-entry clerk\'s finger slipped, and one applicant\'s family income is ₹2.5 Crore while everyone else earns ₹2–5 Lakhs. Second, Entrance Score is measured in tens (0 to 100) while Family Income is measured in lakhs (₹1,00,000 to ₹50,00,000), making the income gradient 50,000× steeper! Tukey\'s IQR fences catch and Winsorize extreme outliers without getting fooled by inflated standard deviations, and Feature Scaling (StandardScaler, Min-Max, RobustScaler, or Log1p) puts every column on a fair yardstick.'
+        'Suppose a student apartment dataset has two issues: first, six normal rooms rent for ₹10k–₹30k per month, while one luxury penthouse is listed at ₹150k–₹250k (or a data-entry typo adds an extra zero). Second, "Number of Rooms" ranges from 1 to 4 while "Monthly Rent" ranges from ₹10,000 to ₹2,50,000, making the rent gradient tens of thousands of times steeper! Tukey\'s IQR fences catch and Winsorize extreme outliers without getting fooled by inflated standard deviations, and Feature Scaling (StandardScaler, Min-Max, RobustScaler, or Log1p) puts every column on a fair yardstick.'
     },
     mapping: [
       {
-        scenePart: 'Quartile boundaries that catch a 950/100 typo without getting fooled by it',
+        scenePart: 'Quartile boundaries that catch a ₹250k penthouse outlier without getting fooled by it',
         modelPart: 'Tukey IQR Outlier Fences & Winsorization',
         symbol: '[Q_1 - 1.5·IQR, Q_3 + 1.5·IQR]',
         role: 'Flags and clips extreme values using order statistics immune to outlier masking'
       },
       {
-        scenePart: 'Centering around the class average and measuring in standard-deviation steps',
+        scenePart: 'Centering around the average apartment rent and measuring in standard-deviation steps',
         modelPart: 'Z-Score Standardization (StandardScaler)',
         symbol: 'x̃ = (x - μ_train) / σ_train',
         role: 'Gives every training feature mean 0 and unit variance 1'
       },
       {
-        scenePart: 'Mapping the lowest training score to 0.0 and highest training score to 1.0',
+        scenePart: 'Mapping the lowest training rent to 0.0 and highest training rent to 1.0',
         modelPart: 'Min-Max Normalization',
         symbol: 'x̃ = (x - x_min,tr) / (x_max,tr - x_min,tr)',
         role: 'Maps training data to [0, 1] (note: unseen test values outside train range can fall outside [0, 1]!)'
       },
       {
-        scenePart: 'Measuring distance from the median in IQR units so one billionaire doesn\'t squash everyone else',
+        scenePart: 'Measuring distance from the median rent in IQR units so one penthouse doesn\'t squash everyone else',
         modelPart: 'Robust Scaling (RobustScaler)',
         symbol: 'x̃ = (x - Q_2) / IQR',
         role: 'Scales heavy-tailed features without outlier compression'
       }
     ],
     playWithItPrompt:
-      'Open Tab 9.3 ("Scaling"), select "Min-Max [0, 1]", and drag the "Penthouse Rent Outlier (x₇)" slider up to ₹250k. Watch how the first 6 normal rooms get squashed into [0.00, 0.08]! Now click "Robust (IQR)" and see how the normal rooms immediately spread back out cleanly.',
+      'Open Tab 1.3 ("Scaling"), select "Min-Max [0, 1]", and drag the "Penthouse Rent Outlier (x₇)" slider up to ₹250k. Watch how the first 6 normal rooms get squashed into [0.00, 0.08]! Now click "Robust (IQR)" and see how the normal rooms immediately spread back out cleanly.',
     analogyBreaks:
-      'Rescaling exam marks and rupees makes gradient descent and distance-based models (KNN, SVM, Neural Nets) vastly happier, but tree-based models (Decision Trees, Random Forests, XGBoost) only split on rank thresholds (x > c)—so monotone feature scaling does not change a tree\'s splits at all!',
+      'Rescaling room counts and apartment rents in rupees makes gradient descent and distance-based models (KNN, SVM, Neural Nets) vastly happier, but tree-based models (Decision Trees, Random Forests, XGBoost) only split on rank thresholds (x > c)—so monotone feature scaling does not change a tree\'s splits at all!',
     intuition: [
-      'For outlier detection, using a Z-score rule |x - μ| / σ > 3 often fails on small or skewed samples because a single huge outlier inflates σ in the denominator ("masking" its own Z-score!). Tukey\'s IQR fences [Q₁ - 1.5·IQR, Q₃ + 1.5·IQR] rely on quartiles that a single extreme typo cannot corrupt, and Winsorization clips values at [L, U] without throwing away the row.',
-      'In a linear or neural layer z = w₁x₁ + w₂x₂ + b, the gradient ∂L/∂w_j is proportional to x_j. If x₁ ∈ [0, 1] and x₂ ∈ [0, 100000], the loss surface is an elongated ravine where gradient descent zig-zags violently.',
-      'Z-Score Standardization (StandardScaler) centers each feature at 0 and divides by σ_train. Min-Max Scaling maps the training range [x_min,train, x_max,train] to [0, 1]—important note: Min-Max gives [0, 1] ONLY on training data! If an unseen test sample is smaller than x_min,train or larger than x_max,train, its Min-Max scaled value will be < 0 or > 1.',
-      'When genuine outliers must be kept, RobustScaler ((x - median)/IQR) or Log1p compression ln(1 + x) prevents outliers from squashing normal data points into a tiny band.'
+      'Outlier Detection vs Outlier Treatment: Tukey\'s IQR fences [Q₁ - 1.5·IQR, Q₃ + 1.5·IQR] only IDENTIFY potentially unusual observations; they do not automatically justify modifying or removing them! First verify whether a flagged point is a sensor/typo error (which may warrant removal or Winsorization/clipping to [L, U]) or a genuine rare event (like fraud or a luxury penthouse) that should be kept.',
+      'Standardization vs Robust Scaling: StandardScaler (x - μ_train)/σ_train works well when features are roughly symmetric without extreme tails, whereas RobustScaler (x - Q₂)/IQR resists outlier compression because Q₂ and IQR ignore extreme tails.',
+      'Why Feature Scaling Matters for Gradient Descent: In a linear or neural layer z = w₁x₁ + w₂x₂ + b, the gradient ∂L/∂w_j is proportional to x_j. If x₁ ∈ [1, 4] and x₂ ∈ [10000, 250000], the loss surface is an elongated ravine where gradient descent zig-zags violently.',
+      'Min-Max Scaling maps the training range [x_min,train, x_max,train] to [0, 1] ONLY on training data—note that unseen test samples outside the training range will map to < 0 or > 1, and genuine outliers in training will squash normal points unless you use RobustScaler or Log1p compression ln(1 + x).'
     ],
     mathFormulas: [
       {
@@ -2303,15 +2304,15 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Switch to Tab 9.4 ("Encoding"). Look at "NewPinCode (n=1)" which had 1 order that happened to succeed (raw target mean = 1.000). Slide the "Skepticism Prior / Smoothing Weight (m)" from 0 to 15 and watch how its encoded value shrinks safely toward the global average!',
+      'Switch to Tab 1.4 ("Encoding"). Look at "NewPinCode (n=1)" which had 1 order that happened to succeed (raw target mean = 1.000). Slide the "Skepticism Prior / Smoothing Weight (m)" from 0 to 15 and watch how its encoded value shrinks safely toward the global average!',
     analogyBreaks:
       'A human delivery manager knows two adjacent PIN codes (560001 and 560002) are physically next door in Bengaluru even if 560002 is brand new, whereas Target Encoding treats every PIN code string as an isolated island unless you add geographic latitude/longitude features.',
     intuition: [
-      'Machine learning models only understand numbers, so how you translate text categories into numbers determines what geometry the model sees.',
-      'Use Ordinal Encoding (0, 1, 2) ONLY when the spacing and order are genuinely meaningful (e.g. Cold < Warm < Hot). Using integers for unordered cities (Delhi=1, Mumbai=2, Chennai=3) forces a linear layer to assume w·Mumbai = 0.5·(w·Delhi + w·Chennai).',
-      'Use One-Hot Encoding for low-cardinality nominal categories (K ≤ 15). Each category gets an orthogonal unit vector [1, 0, 0], [0, 1, 0].',
-      'For high-cardinality categories (10,000 PIN codes or merchant IDs), One-Hot creates 10,000 sparse columns. Smoothed Out-of-Fold Target Encoding replaces each category with a shrinkage estimate between the category\'s training target average and the global prior, while Binary / Hashing Encoding maps categories into log2(K) bits or fixed hash buckets when memory is tightly capped (trading off interpretability and rare hash collisions).',
-      'In deep neural networks with huge vocabularies (user IDs, item IDs), Learned Embeddings map each category index to a dense trainable vector trained via backpropagation. Meanwhile, CatBoost and LightGBM provide native categorical split handling without manual one-hot expansion.'
+      'Machine learning models only understand numbers, so choosing an encoding depends on five factors: cardinality, frequency distribution (how many rare categories exist), model family (linear/MLP vs tree-based), memory constraints, and whether categories are ordinal.',
+      'Ordinal Encoding (0, 1, 2): Use ONLY when order is genuinely meaningful (e.g. Cold < Warm < Hot). Using integers for unordered cities (Delhi=1, Mumbai=2, Chennai=3) forces a linear layer to assume w·Mumbai = 0.5·(w·Delhi + w·Chennai).',
+      'One-Hot vs Frequency Encoding: One-Hot gives each category an orthogonal unit vector and works well for low-to-moderate cardinality nominal features, though memory and sparsity grow with cardinality and rare categories. Frequency Encoding replaces each category with its training-set count or proportion—compact, but can collide if two distinct categories share the same frequency.',
+      'Smoothed Out-of-Fold Target Encoding: For high-cardinality nominal features (PIN codes, merchant IDs), compute target averages strictly out-of-fold (using only other rows\' training labels so a row never encodes its own label!) and apply Empirical Bayes smoothing toward the global prior to prevent rare-category overfitting and target leakage.',
+      'In deep neural networks with huge vocabularies (user IDs, item IDs), Learned Embeddings map each category index to a dense trainable vector trained via backpropagation. Meanwhile, CatBoost and LightGBM provide native categorical split handling.'
     ],
     mathFormulas: [
       {
@@ -2370,16 +2371,16 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     ],
     summary: [
       'Use Ordinal Encoding only when categories have a true monotonic rank order.',
-      'Use One-Hot Encoding for nominal features with modest cardinality (K ≤ 15).',
-      'Use Smoothed Out-of-Fold Target Encoding, Binary/Hashing Encoding (under strict memory limits), or Learned Embeddings (for neural nets with abundant data) on high-cardinality categories.',
+      'Choose One-Hot, Frequency, or Target Encoding based on cardinality, frequency distribution, model family, and memory budget.',
+      'Use Smoothed Out-of-Fold Target Encoding (computed strictly out-of-fold to prevent leakage), Binary/Hashing Encoding, or Learned Embeddings for high-cardinality categories.',
       'CatBoost and LightGBM support categorical columns natively; always map unseen test categories to the global prior or an <UNK> bucket.'
     ],
     cheatSheet: {
-      title: '9.4 Encoding Categorical Features Cheat Sheet',
+      title: '1.4 Encoding Categorical Features Cheat Sheet',
       rules: [
-        'Low cardinality unordered (K ≤ 15): OneHotEncoder(handle_unknown="ignore").',
+        'Unordered nominal (modest cardinality / memory): OneHotEncoder(handle_unknown="ignore").',
         'True rank order (Small < Med < Large): OrdinalEncoder(categories=[...]).',
-        'High cardinality (PIN codes, IDs): TargetEncoder (out-of-fold + smoothing), Binary/Hashing (tight RAM), or Learned Embeddings (neural nets).',
+        'High cardinality (PIN codes, IDs): Out-of-fold TargetEncoder with smoothing, Frequency Encoding, or Learned Embeddings.',
         'CatBoost / LightGBM: pass categorical columns natively.'
       ],
       pitfalls: [
@@ -2427,13 +2428,13 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 9.5 ("Leakage Audit"). Drag the "Unseen Exam Spike / Test Outlier Value (x_test)" slider up to 280 and compare the green Zero-Leakage card against the red Leaked Pipeline card to see how fitting before splitting distorts every coordinate!',
+      'Open Tab 1.5 ("Leakage Audit"). Drag the "Unseen Exam Spike / Test Outlier Value (x_test)" slider up to 280 and compare the green Zero-Leakage card against the red Leaked Pipeline card to see how fitting before splitting distorts every coordinate!',
     analogyBreaks:
       'Even if you never touch D_test with .fit(), looking at D_test 50 times to pick the best model architecture still leaks 1-2 bits of information through human selection ("adaptive overfitting to the test set")—which is why competitions use a separate private leaderboard.',
     intuition: [
       'The Golden Rule of ML Preprocessing: fit() on X_train ONLY; transform() on X_train, X_val, and X_test.',
-      'Why do we need three splits (Train / Validation / Test) instead of two? Because every time you tweak a learning rate, add a layer, or pick a threshold based on validation accuracy, you are fitting hyperparameters to the validation set! The test set must stay locked in a vault until the very end.',
-      'For time-series or longitudinal data (stock prices, UPI transactions over months, patient visits), random train_test_split leaks the future into the past! You must use a temporal split (train < T_cutoff ≤ test) or GroupKFold by user_id so the same user\'s records don\'t straddle train and test.',
+      'Choosing the Right Validation Split: (1) K-Fold splits randomly into K folds (note: CV provides multiple estimates and reduces dependence on one particular split, though its statistical variance depends on the data and design rather than always shrinking); (2) Stratified K-Fold preserves class proportions; (3) Group K-Fold keeps all rows from the same patient/user/device together; (4) Time-Series Split (expanding/rolling window) trains strictly on the past and validates on the future.',
+      'Why three splits (Train / Validation / Test)? Every time you tune a hyperparameter or threshold on validation accuracy, you adapt to validation! The test set stays locked until final evaluation.',
       'Target Leakage vs Train-Test Contamination: Train-test contamination happens when test rows influence preprocessing (e.g. global scaling); Target leakage happens when a feature contains information created AFTER the prediction time (like including "loan_default_fee" to predict loan default).',
       'Data Drift & Train-Serving Skew: Even with a leak-free split, production inputs P_prod(X) drift over time (covariate shift) or feature code in production differs from offline training scripts (train-serving skew)—which is why wrapping preprocessing in a single Pipeline and monitoring feature distributions is essential.'
     ],
@@ -2499,7 +2500,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Never tune hyperparameters or thresholds on the final test split.'
     ],
     cheatSheet: {
-      title: '9.5 Splits, Cross-Validation & Leakage Cheat Sheet',
+      title: '1.5 Splits, Cross-Validation & Leakage Cheat Sheet',
       rules: [
         'Split first, preprocess second: .fit() only on X_train; .transform() on X_val and X_test.',
         'Use StratifiedKFold for classification, GroupKFold when one user/patient has multiple rows, and TimeSeriesSplit for temporal data.',
@@ -2614,7 +2615,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'If using oversampling or SMOTE, apply it strictly to X_train inside each training fold—never to validation or test.'
     ],
     cheatSheet: {
-      title: '9.6 Imbalanced Data & Metrics Cheat Sheet',
+      title: '1.6 Imbalanced Data & Metrics Cheat Sheet',
       rules: [
         'Never judge a 99:1 dataset by Accuracy; evaluate Precision, Recall, F1, and PR-AUC.',
         'Start with class_weight="balanced" (w_c = N / (2 * N_c)) and tune the decision threshold on validation probabilities.',
@@ -2665,13 +2666,13 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 9.7 ("Pipelines"). Drag the "Order Timestamp / Hour of Day (t)" slider to 23:00 and compare the Raw Hour Gap (23 hrs!) against the Circle Distance to 00:00 (0.261)—then slide to 01:00 and verify that 23:00 and 01:00 are equidistant from Midnight!',
+      'Open Tab 1.7 ("Pipelines"). Drag the "Order Timestamp / Hour of Day (t)" slider to 23:00 and compare the Raw Hour Gap (23 hrs!) against the Circle Distance to 00:00 (0.261)—then slide to 01:00 and verify that 23:00 and 01:00 are equidistant from Midnight!',
     analogyBreaks:
       'A kitchen recipe never changes once printed, whereas real production data drifts over months (inflation shifts salaries, new PIN codes appear)—so even a leak-free Pipeline must be monitored and periodically re-fitted.',
     intuition: [
-      'Raw columns are rarely in the coordinates that make learning easiest. Two numbers (Monthly_EMI and Monthly_Income) are far more predictive when combined into a domain ratio Debt_to_Income = EMI / (Income + ε).',
-      'Periodic features—hour of day (T = 24), day of week (T = 7), month (T = 12), or wind direction (T = 360°)—have a wrap-around boundary where T meets 0. Note that you need both sin(2πt/T) and cos(2πt/T): sin alone is not injective because sin(θ) = sin(π - θ) (for example, 3 AM and 9 AM both have sin(45°) = sin(135°) ≈ 0.707 and would collide without cos!).',
-      'Finally, wiring every imputation, encoding, and scaling step into a single ColumnTransformer + Pipeline object prevents training-serving skew and eliminates cross-validation leakage.'
+      'Feature Transformation vs Construction vs Selection vs Extraction: (1) Transformation rescales or embeds existing columns (e.g. Log1p or cyclical sin/cos); (2) Construction creates domain interactions (e.g. Debt_to_Income = EMI / (Income + ε)); (3) Selection keeps a subset of informative raw features (e.g. Mutual Information); (4) Extraction projects features into new lower-dimensional combinations (e.g. PCA).',
+      'Periodic features—hour of day (T = 24), day of week (T = 7), month (T = 12), or wind direction (T = 360°)—have a wrap-around boundary where T meets 0. You need both sin(2πt/T) and cos(2πt/T): sin alone is not injective because sin(θ) = sin(π - θ) (for example, 3 AM and 9 AM both have sin(45°) = sin(135°) ≈ 0.707 and would collide without cos!).',
+      'Pipeline Composition & Leakage Limits: Wiring Raw Data → Imputation → Scaling → Encoding → Feature Selection → Model inside a single ColumnTransformer + Pipeline prevents preprocessing leakage across CV folds and prevents train-serving skew—but a Pipeline does NOT automatically eliminate every form of leakage (for example, post-outcome target-leakage columns or using random K-Fold on grouped/temporal data).'
     ],
     mathFormulas: [
       {
@@ -2737,10 +2738,10 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Encode periodic variables (hour, day, month, angle) with both sin(2πt/T) and cos(2πt/T).',
       'Construct domain ratios and differences to give linear and shallow layers direct access to interactions.',
       'Use ColumnTransformer + Pipeline to bundle all numeric and categorical preprocessing with the estimator.',
-      'Now put all 7 lessons of Track 9 into action in the Track 9 Project: Clean the Messy Dataset!'
+      'Now put all 7 lessons of Track 1 into action in the Track 1 Project: Clean the Messy Dataset!'
     ],
     cheatSheet: {
-      title: '9.7 Feature Engineering & Pipelines Cheat Sheet',
+      title: '1.7 Feature Engineering & Pipelines Cheat Sheet',
       rules: [
         'Encode cyclical features (hour, day, month) using BOTH sin(2πt/T) and cos(2πt/T).',
         'Create domain ratios (EMI / (Income + ε)) to expose non-linear interactions to linear layers.',
@@ -3826,13 +3827,13 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'In Tab 3.1 ("Weight Init"), drag "Starting Weight Spread / Std Dev (σ_w)" to 0.05 (watches Layer 10 variance vanish to ~10⁻⁸!) and then to 0.25 (explodes!). Click "Snap to Xavier √(1/n_in)" and "Snap to Kaiming / He √(2/n_in)" to see Layer 10 variance lock onto 1.00e+0!',
+      'In Tab 4.1 ("Weight Init"), drag "Starting Weight Spread / Std Dev (σ_w)" to 0.05 (watches Layer 10 variance vanish to ~10⁻⁸!) and then to 0.25 (explodes!). Click "Snap to Xavier √(1/n_in)" and "Snap to Kaiming / He √(2/n_in)" to see Layer 10 variance lock onto 1.00e+0!',
     analogyBreaks:
       'Relay runners consciously adjust their grip if a baton is handed over too fast, whereas initial neural network layers blindly multiply by W^(l) before any gradient update has occurred.',
     intuition: [
       'Why Never Initialize Weights to Zero? If all weights W are initialized to 0 (or any identical constant), every hidden neuron in a layer receives the exact same pre-activation z and computes the exact same backward gradient ∂L/∂w. All neurons in that layer remain identical twins throughout training, reducing a 1,000-neuron layer to the capacity of 1 neuron! (Biases b, however, should be initialized to 0 since weights already break symmetry.)',
-      'Variance Preservation (Xavier / Glorot, 2010): For a linear sum z = ∑_{i=1}^{n_in} w_i x_i with independent zero-mean inputs and weights, Var(z) = n_in · Var(w) · Var(x). To keep Var(z) = Var(x) across 50 layers, we must set n_in · Var(w) = 1, which gives Var(w) = 1 / n_in (σ_w = 1 / √n_in).',
-      'Why ReLU Needs Kaiming / He Initialization (He et al., 2015): Because ReLU(z) = max(0, z) zeroes out the entire negative half of a symmetric zero-mean Gaussian distribution, the variance of the output is cut in half: Var(ReLU(z)) = ½ Var(z) = ½ n_in Var(w) Var(a). Setting ½ n_in Var(w) = 1 yields He Initialization: Var(w) = 2 / n_in (σ_w = √(2 / n_in)).'
+      'Variance Preservation & Assumptions (Xavier / Glorot, 2010): Assuming independent zero-mean weights and inputs in the linear regime around 0, Var(z) = n_in · Var(w) · Var(x). Setting Var(w) = 1 / n_in (or 2 / (n_in + n_out) to balance forward and backward variance) preserves variance across Tanh/Sigmoid layers—though it does not preserve all higher-order distribution shapes identically.',
+      'Why ReLU Needs Kaiming / He Initialization (He et al., 2015): Because ReLU(z) = max(0, z) zeroes out the negative half of a symmetric zero-mean distribution, output variance is halved: E[ReLU(z)²] = ½ Var(z) = ½ n_in Var(w) Var(a). Setting ½ n_in Var(w) = 1 yields He Initialization: Var(w) = 2 / n_in (σ_w = √(2 / n_in)).'
     ],
     mathFormulas: [
       {
@@ -3938,14 +3939,14 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Switch to Tab 3.2 ("Batch & LayerNorm"). Drag "Student 1 Raw Marks (x₁)" and notice that even when raw marks shift wildly, the Standardized vector x̂ always stays centered at mean 0 with variance 1! Then adjust "Curved Spread Multiplier (γ)" and "Grace Marks Offset (β)" to see y = γ·x̂ + β.',
+      'Switch to Tab 4.2 ("Batch & LayerNorm"). Drag "Student 1 Raw Marks (x₁)" and notice that even when raw marks shift wildly, the Standardized vector x̂ stays centered near mean 0 with variance ~1 (subject to ε)! Then adjust "Curved Spread Multiplier (γ)" and "Grace Marks Offset (β)" to see y = γ·x̂ + β.',
     analogyBreaks:
       'A school professor curves grades only once at the end of the semester, whereas BatchNorm/LayerNorm sits between every single block of a deep network and differentiates right through μ and σ² during backpropagation.',
     intuition: [
-      'How Normalization Accelerates Training: Ioffe & Szegedy (2015) introduced Batch Normalization (BatchNorm), showing that standardizing intermediate pre-activations allows 5–10× larger learning rates, reduces sensitivity to initialization, and acts as a mild regularizer.',
-      'Why Include Learnable γ and β? What if forcing inputs into mean 0 and variance 1 pushes a Sigmoid or Tanh layer strictly into its linear middle zone, robbing the network of non-linearity? By computing y = γ x̂ + β (initialized at γ = 1, β = 0), the network can learn to undo the normalization (γ = σ, β = μ) whenever raw activations are better!',
-      'Training vs Inference in BatchNorm: During training, BatchNorm uses the mini-batch mean μ_B and variance σ_B² and updates an Exponential Moving Average (μ_running, σ²_running). At inference (model.eval()), a single user request has batch size B = 1 (where batch variance would be 0!), so BatchNorm freezes and uses the saved running population statistics.',
-      'Why Transformers Use LayerNorm Instead of BatchNorm: In variable-length NLP sequences and autoregressive LLM decoding (generating 1 token at a time with batch size 1), Layer Normalization (Ba et al., 2016) normalizes across the d_model feature channels of each individual token independently—requiring no batch coupling and no running averages!'
+      'How BatchNorm Works on MLPs vs CNNs (N, C, H, W): For 2D tabular/MLP inputs (N, C), BatchNorm computes μ_B and σ_B² per feature across the batch N. For convolutional feature maps shaped (N, C, H, W), BatchNorm2d computes statistics per channel C over BOTH the batch N and spatial (H, W) dimensions! The standardized output x̂ has approximately zero mean and unit variance before γx̂ + β (subject to ε and biased-vs-unbiased variance conventions).',
+      'Why Include Learnable γ and β? By computing y = γ x̂ + β (initialized at γ = 1, β = 0), the network can learn to rescale or shift activations whenever raw non-unit scales are better.',
+      'Training vs Inference in BatchNorm: During training, BatchNorm uses mini-batch stats (μ_B, σ_B²) and updates an Exponential Moving Average (μ_running, σ²_running). At inference (model.eval()), BatchNorm freezes and uses the saved running population statistics so batch size B = 1 works.',
+      'Why Transformers Use LayerNorm Instead of BatchNorm: Layer Normalization (Ba et al., 2016) normalizes across the feature channels of each individual token independently—requiring no batch coupling and behaving identically in training and inference.'
     ],
     mathFormulas: [
       {
@@ -4046,13 +4047,13 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 3.5 ("LR Warmup & Cosine"). Drag "Current Training Epoch / Step (t)" from 0 up to "Warmup Ramp Duration (W)" to watch η climb linearly to 0.01000, then slide from W to 100 to compare smooth Cosine Annealing against Step Decay and Exponential Decay!',
+      'Open Tab 4.5 ("LR Warmup & Cosine"). Drag "Current Training Epoch / Step (t)" from 0 up to "Warmup Ramp Duration (W)" to watch η climb linearly to 0.01000, then slide from W to 100 to compare smooth Cosine Annealing against Step Decay and Exponential Decay!',
     analogyBreaks:
       'A car driver slows down because they can see the parking spot ahead with their eyes, whereas a learning rate schedule is a pre-programmed function of step count t that runs blindly unless paired with validation-plateau monitoring (ReduceLROnPlateau).',
     intuition: [
-      'Why Fixed Learning Rates Fail at the End of Training: With a large constant learning rate η, stochastic mini-batch noise keeps kicking the weights around the walls of the minimum (θ_t orbits the valley floor without ever settling). Decaying η → η_min lets the parameters settle into the bottom of the basin.',
-      'Why Transformers & ResNets Need Linear Warmup: At step t = 1, weights are freshly randomized, attention distributions are uniform, and Adam\'s running second moment v_t has only seen a single mini-batch (high variance!). Taking a full η_max stride on step 1 can hurl weights into saturated regions from which they never recover. Ramping η(t) = η_max · (t / W) over the first W steps lets v_t and early feature statistics stabilize first.',
-      'Why Cosine Annealing Is the Modern Default: Unlike Step Decay (which requires tuning milestone epochs and drop multipliers), Cosine Annealing (Loshchilov & Hutter, 2016) needs only η_max, η_min, and total steps T, spending substantial time at productive mid-range learning rates before gently landing at η_min.'
+      'Why Decay the Learning Rate? With a large constant learning rate η, stochastic mini-batch noise keeps kicking weights around the valley floor. Gradual decay reduces update sizes and can help stabilize convergence—though final generalization still depends on model, data, and optimization setup.',
+      'Why Linear Warmup Helps Early Stability: At step t = 1, weights are freshly randomized, initial gradients and curvature can be sharp, attention/normalization statistics are uncalibrated, and Adam\'s early variance estimates are noisy. Ramping η(t) = η_max · (t / W) over the first W steps helps stabilize early training (useful for SGD/Momentum as well as Adam).',
+      'Why Cosine Annealing Is Popular: Unlike Step Decay (which requires tuning milestone epochs and drop multipliers), Cosine Annealing (Loshchilov & Hutter, 2016) needs only η_max, η_min, and total steps T, smoothly tapering η down without sudden cliffs.'
     ],
     mathFormulas: [
       {
@@ -4158,11 +4159,11 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 3.6 ("Loss Curves & Debug"). Slide "Model Capacity / Depth" from 1.5 ("Underfitting") to 4.0 ("Sweet Spot") to 8.0 ("Overfitting") and watch the Train vs Validation Loss gap! Then drag "Step Size / Learning Rate (η)" above 0.90 to trigger "Diverging / Unstable" and test the "Gradient Clip Ceiling (c)"!',
+      'Open Tab 4.6 ("Loss Curves & Debug"). Slide "Model Capacity / Depth" from 1.5 ("Underfitting") to 4.0 ("Sweet Spot") to 8.0 ("Overfitting") and watch the Train vs Validation Loss gap! Then drag "Step Size / Learning Rate (η)" above 0.90 to trigger "Diverging / Unstable" and test the "Gradient Clip Ceiling (c)"!',
     analogyBreaks:
       'A human patient recovers with rest, whereas a neural network with a sign bug in its loss function or 90% dead ReLUs will never self-heal no matter how many GPU hours you wait.',
     intuition: [
-      'Symptom 1 — Loss Explodes to NaN or Inf: Almost always caused by (a) learning rate η too high, (b) unclipped exploding gradients, or (c) numerical overflow in log(0) or exp(z) (fix: use combined BCEWithLogitsLoss / CrossEntropyLoss instead of manual softmax + log!).',
+      'Symptom 1 — Loss Explodes to NaN or Inf: Often caused by (a) learning rate η too high, (b) unclipped exploding gradients, or (c) invalid arithmetic like log(0) or division by zero (use combined BCEWithLogitsLoss / CrossEntropyLoss!). Note: gradient clipping g ← g · min(1, c / ||g||₂) controls large gradient norms, but is NOT a universal cure for NaNs or invalid arithmetic.',
       'Symptom 2 — Dead ReLUs: If a large gradient step pushes a neuron\'s bias b strongly negative so that z = w·x + b < 0 for every sample in the dataset, ReLU(z) outputs 0 and its derivative is 0 forever—that neuron is permanently dead! Cure: lower η, use He initialization + warmup, or switch to Leaky ReLU / GELU / SiLU.',
       'Symptom 3 — Overfitting Fork (L_train ↓ while L_val ↑): The model has enough capacity to memorize the training set but fails to generalize. Cure: add more training data, data augmentation, L2 weight decay (AdamW), Dropout, or Early Stopping at the minimum of L_val.',
       'The Golden Debugging Rule (Karpathy\'s Recipe): Before running a 2-hour training job, take 1 single mini-batch of 8–16 examples and turn off regularization. Your model must be able to drive training loss on that tiny batch to ~0.000 within 100 steps. If it can\'t, you have a code bug (wrong label alignment, optimizer.zero_grad() missing, frozen weights, or inverted loss sign)!'
@@ -4231,7 +4232,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Always sanity-check new code by overfitting a single tiny batch of ~10 examples to near-zero loss.',
       'Both losses high = Underfitting; Train loss low & Val loss rising = Overfitting; Loss spiking/NaN = LR too high or unstable numerics.',
       'Dying ReLUs occur when large updates push pre-activations permanently negative (z ≤ 0); cure with warmup, lower LR, or GELU/Leaky ReLU.',
-      'Put your diagnostic skills to the test in the Track 3 Projects: Training Debugging Lab and Optimizer Benchmark!'
+      'Put your diagnostic skills to the test in the Track 4 Projects: Training Debugging Lab and Optimizer Benchmark!'
     ]
   },
 
@@ -4716,13 +4717,13 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'In Tab 1.1 ("Linear Regression"), drag "Per-Kilometer Rate / Slope (w)" and "Base Meter Flag-Down / Intercept (b)" to reduce MSE Loss and push R² toward 1.0000—or click "Snap to Closed-Form OLS Solution" to jump straight to w* = ₹15/km, b* = ₹30 where ∂L/∂w = 0 and ∂L/∂b = 0!',
+      'In Tab 2.1 ("Linear Regression"), drag "Per-Kilometer Rate / Slope (w)" and "Base Meter Flag-Down / Intercept (b)" to reduce MSE Loss and push R² toward 1.0000—or click "Snap to Closed-Form OLS Solution" to jump straight to w* = ₹15/km, b* = ₹30 where ∂L/∂w = 0 and ∂L/∂b = 0!',
     analogyBreaks:
       'An official auto meter has a fixed government tariff card with zero randomness, whereas real-world housing or salary datasets contain unmeasured factors and noise, and extrapolating a linear line to x = -10 km or x = 10,000 km produces absurd predictions.',
     intuition: [
       'Linear Regression Is a 1-Neuron Network with Identity Activation: The equation ŷ = w^T x + b is literally a single artificial neuron without a non-linear activation function!',
-      'Why Square the Residuals ((ŷ_i - y_i)²)? (1) Squaring makes positive and negative errors both positive; (2) it is smoothly differentiable everywhere (unlike |ŷ_i - y_i|); and (3) under Gaussian target noise y = w^T x + b + ε with ε ~ N(0, σ²), minimizing Mean Squared Error is mathematically identical to Maximum Likelihood Estimation (MLE)!',
-      'Closed-Form Normal Equation vs Gradient Descent: For D features, setting ∇_w L = 0 gives the analytical Normal Equation w* = (X^T X)^{-1} X^T y. When D ≤ 2,000, w* solves in milliseconds; when D = 100,000, inverting X^T X (O(D³)) is too slow, so we use Gradient Descent (O(N D) per step).'
+      'Why Square the Residuals ((ŷ_i - y_i)²)? (1) Squaring makes positive and negative errors both positive; (2) it is smoothly differentiable everywhere (unlike |ŷ_i - y_i|); and (3) under Gaussian target noise y = w^T x + b + ε with ε ~ N(0, σ²), minimizing Mean Squared Error is equivalent to Maximum Likelihood Estimation (MLE) for fixed σ².',
+      'Why Avoid Explicitly Inverting (X^T X)⁻¹ & When to Use GD: Although w* = (X^T X)^{-1} X^T y is the textbook Normal Equation, explicitly forming and inverting X^T X squares the condition number (κ(X^T X) = κ(X)²), amplifying numerical precision errors on collinear features. Production solvers use QR decomposition or SVD (e.g., np.linalg.lstsq) for numerical stability, and switch to iterative Gradient Descent (O(ND) per step) when D or N is too large for O(ND²) factorization.'
     ],
     mathFormulas: [
       {
@@ -4791,9 +4792,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     ],
     summary: [
       'Linear regression models continuous targets via ŷ = w^T x + b and minimizes Mean Squared Error.',
-      'Closed-form OLS w* = (X^T X)^{-1} X^T y solves small/medium feature tables in one step; Gradient Descent scales to massive dimensions.',
+      'Closed-form OLS solvers (preferring QR or SVD over explicit (X^T X)^{-1}) handle small/medium feature tables; iterative Gradient Descent scales to large dimensions.',
       'R² = 1 - SS_res/SS_tot measures the fraction of target variance explained by the model.',
-      'Apply this in the Track 1 Project: House Price Predictor (Indian Cities Edition)!'
+      'Apply this in the Track 2 Project: House Price Predictor (Indian Cities Edition)!'
     ]
   },
 
@@ -4805,7 +4806,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'Predicting the Probability of Bunking an 8 AM Lecture When Monsoon Rain Hits',
       narrative:
-        'What if your target y isn\'t a rupee amount, but a Yes/No binary outcome y ∈ {0, 1}—like "Will a customer churn?" or "Will I bunk tomorrow\'s 8 AM class if it pours rain?" A straight line w·x + b outputs unbounded numbers like -4.2 or +9.7, which aren\'t valid probabilities! Logistic Regression computes a linear score z = w·x + b (the Log-Odds) and squashes it through the Sigmoid curve σ(z) = 1 / (1 + e^{-z}) into a clean probability p ∈ (0, 1). And instead of MSE, it optimizes Binary Cross-Entropy (BCE) so the loss bowl stays strictly convex!'
+        'What if your target y isn\'t a rupee amount, but a Yes/No binary outcome y ∈ {0, 1}—like "Will a customer churn?" or "Will I bunk tomorrow\'s 8 AM class if it pours rain?" A straight line w·x + b outputs unbounded numbers like -4.2 or +9.7, which aren\'t valid probabilities! Logistic Regression computes a linear score z = w·x + b (the Log-Odds) and squashes it through the Sigmoid curve σ(z) = 1 / (1 + e^{-z}) into a clean probability p ∈ (0, 1). And instead of MSE, it optimizes Binary Cross-Entropy (BCE) so the loss surface is convex!'
     },
     mapping: [
       {
@@ -4834,12 +4835,13 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 1.2 ("Logistic Regression"). Drag "Morning Rain Intensity / Feature (x)" and "Rain Sensitivity / Weight (w)" to see the Log-Odds z, Sigmoid Probability σ(z), and BCE Loss update! Then slide "Classification Cutoff / Threshold (τ)" to see when Decision flips between Class 0 and Class 1.',
+      'Open Tab 2.2 ("Logistic Regression"). Drag "Morning Rain Intensity / Feature (x)" and "Rain Sensitivity / Weight (w)" to see the Log-Odds z, Sigmoid Probability σ(z), and BCE Loss update! Then slide "Classification Cutoff / Threshold (τ)" to see when Decision flips between Class 0 and Class 1.',
     analogyBreaks:
       'A human student might suddenly change their mind based on a single WhatsApp message from a friend, whereas Logistic Regression can only draw a single flat linear boundary (w^T x + b = 0) in feature space unless interaction features are engineered.',
     intuition: [
       'Why Not Use Linear Regression + MSE for Binary Classification? (1) Linear predictions w^T x + b can be < 0 or > 1; (2) a single extreme outlier far on the right pulls the whole MSE line and shifts the 0.5 decision boundary; and (3) if you put Sigmoid σ(w^T x + b) inside Mean Squared Error (σ(z) - y)², the loss surface becomes non-convex with flat saturated plateaus!',
-      'Why Binary Cross-Entropy + Sigmoid Is Magical: When you differentiate L_BCE = -[y ln σ(z) + (1 - y) ln(1 - σ(z))] with respect to z, the σ(z)(1 - σ(z)) numerator from the Sigmoid derivative cancels out the denominator completely, leaving the remarkably simple, linear-looking gradient: ∂L/∂z = σ(z) - y = p - y!',
+      'Convexity vs Strict Convexity in Logistic Regression: Standard linear logistic regression negative log-likelihood (BCE) is ALWAYS convex in (w, b), meaning it has no spurious non-global local minima. However, strict convexity (which guarantees a unique finite minimizer) requires suitable conditions—such as full column rank of the design matrix X and non-degenerate curvature (for example, linearly separable data without L2 regularization pushes ||w|| → ∞ rather than a finite unique optimum).',
+      'Why Binary Cross-Entropy + Sigmoid Is Magical: When you differentiate L_BCE = -[y ln σ(z) + (1 - y) ln(1 - σ(z))] with respect to z, the σ(z)(1 - σ(z)) numerator from the Sigmoid derivative cancels out the denominator completely, leaving ∂L/∂z = σ(z) - y = p - y!',
       'Interpreting Weights as Odds Ratios: Because ln(p / (1 - p)) = w^T x + b, increasing feature x_j by +1 unit multiplies the odds p / (1 - p) by exp(w_j). This interpretability makes Logistic Regression the gold standard in credit scoring and clinical risk models.'
     ],
     mathFormulas: [
@@ -4909,7 +4911,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     ],
     summary: [
       'Logistic Regression is a linear classifier that models log-odds z = w^T x + b and outputs p = σ(z) ∈ (0, 1).',
-      'Binary Cross-Entropy loss is strictly convex and yields the clean gradient ∂L/∂w = (p - y)x.',
+      'Binary Cross-Entropy loss is convex in (w, b) and yields ∂L/∂w = (p - y)x; strict convexity requires full-rank features and non-degenerate curvature (or L2 regularization).',
       'The decision boundary p = τ corresponds to the linear hyperplane w^T x + b = ln(τ / (1 - τ)).'
     ]
   },
@@ -5053,13 +5055,13 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 1.4 ("Trees & Forests"). Drag "Left Branch Positives (out of 10)" to 10 (a 100% pure split where all 10 positives go left and all 10 negatives go right): watch Child Gini hit 0.000, Gini Gain hit +0.500, and Info Gain hit +1.000 bit! Then increase "Number of Friends Polled / Forest Trees (B)" to see the Forest Variance Multiplier shrink!',
+      'Open Tab 2.4 ("Trees & Forests"). Drag "Left Branch Positives (out of 10)" to 10 (a 100% pure split where all 10 positives go left and all 10 negatives go right): watch Child Gini hit 0.000, Gini Gain hit +0.500, and Info Gain hit +1.000 bit! Then increase "Number of Friends Polled / Forest Trees (B)" to see the Forest Variance Multiplier shrink toward the correlation floor ρ!',
     analogyBreaks:
       'A human playing 20 Questions can ask diagonal or relational questions ("Is salary higher than rent?"), whereas a standard CART Decision Tree only makes axis-aligned orthogonal cuts (x_j ≤ t), requiring a staircase of many splits to approximate a diagonal line.',
     intuition: [
       'How CART Picks a Split: At a node with N samples, a Decision Tree scans every feature j and every midpoint threshold t between sorted values, computing the weighted impurity of the resulting Left (x_j ≤ t) and Right (x_j > t) children. It greedily chooses the (j*, t*) that maximizes impurity reduction.',
       'Gini Impurity vs Shannon Entropy: For binary classification with positive fraction p, Gini(p) = 2p(1 - p) (peaks at 0.50 when p = 0.5) and Entropy(p) = -p log₂ p - (1-p) log₂(1-p) (peaks at 1.00 bit when p = 0.5). Both are 0 when the node is pure (p = 0 or p = 1).',
-      'Why Random Forests Subsample Features (max_features = √D) at Every Split: If you only bootstrap rows (Bagging) and one feature (say, Credit_Score) is super strong, every single tree will pick Credit_Score at its root—making all B trees highly correlated (ρ ≈ 1), so averaging them barely reduces variance! By restricting each split to a random subset of √D candidate features, Random Forests (Breiman, 2001) decorrelate the trees (ρ ↓), driving ensemble variance (ρ + (1-ρ)/B) σ² way down!'
+      'Why Random Forests Subsample Features (max_features = √D) & Bootstrap Rows: Under equal tree variance σ² and equal pairwise correlation ρ, the ensemble variance is Var(f̄) = ρσ² + ((1 - ρ)/B)σ². If trees were independent (ρ = 0), variance would drop as σ²/B; when trees are correlated (ρ > 0), a correlation-dependent variance floor ρσ² remains even as B → ∞! Bootstrap sampling and random feature subsets at each split reduce ρ, shrinking that floor.'
     ],
     mathFormulas: [
       {
@@ -5130,7 +5132,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Decision Trees recursively split feature space to maximize Information Gain / Gini reduction.',
       'Deep unpruned trees have low bias and high variance; Random Forests reduce variance via Bagging + random feature subsets.',
       'Tree models are invariant to monotonic feature scaling but cannot extrapolate beyond the range of training targets.',
-      'Compare Logistic Regression vs Random Forest in the Track 1 Project: Telco Customer Churn!'
+      'Compare Logistic Regression vs Random Forest in the Track 2 Project: Telco Customer Churn!'
     ]
   },
 
@@ -5142,7 +5144,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'Seating Wedding Guests Around k Buffet Tables (k-Means) & Capturing the Best Camera Angle (PCA)',
       narrative:
-        'What if your dataset has NO target labels y at all (Unsupervised Learning)? Two classic tasks arise: (1) Clustering (k-Means): seat N wedding guests around k buffet tables (Centroids μ_1..μ_k) by alternating two steps—assign every guest to their nearest table, then move each table to the exact center of its assigned guests—minimizing within-cluster Inertia! (2) Dimensionality Reduction (PCA): rotate your camera to find the orthogonal axes (Eigenvectors of the Covariance Matrix) along which the cloud of points spreads out the most, keeping the top principal components that capture 95%+ of the variance!'
+        'What if your dataset has NO target labels y at all (Unsupervised Learning)? Two classic tasks arise: (1) Clustering (k-Means): seat N wedding guests around k buffet tables (Centroids μ_1..μ_k) by alternating two steps—assign every guest to their nearest table, then move each table to the exact center of its assigned guests—minimizing within-cluster Inertia! (2) Dimensionality Reduction (PCA): rotate your camera to find the orthogonal axes (Eigenvectors of the Covariance Matrix) along which the centered cloud of points spreads out the most, keeping the top k principal components that capture as much dataset-dependent variance as your task requires!'
     },
     mapping: [
       {
@@ -5171,7 +5173,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 1.5 ("k-Means & PCA"). Drag "Wedding Table 1 Center (μ₁_x)" and "Wedding Table 2 Center (μ₂_x)" to minimize the k-Means Inertia J! Also inspect the closed-form 2D PCA Eigenvalues λ₁, λ₂ and verify that PC1 captures 99.3%+ of the total variance along the diagonal!',
+      'Open Tab 2.5 ("k-Means & PCA"). Drag "Wedding Table 1 Center (μ₁_x)" and "Wedding Table 2 Center (μ₂_x)" to minimize the k-Means Inertia J! Also inspect the closed-form 2D PCA Eigenvalues λ₁, λ₂ to see how much variance PC1 captures on this diagonal cloud (note: exact explained variance depends on the dataset).',
     analogyBreaks:
       'At a real wedding, tables can be arranged for long curved family groups, whereas standard k-Means uses isotropic Euclidean distance ||x - μ_k||² and can only carve out convex spherical/Voronoi blobs of similar radius.',
     intuition: [
@@ -5545,8 +5547,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       'Currency exchange rates stay fixed regardless of how many rupees you convert, whereas in a non-linear neural network the local derivative ∂z/∂u changes depending on the exact forward activation value u cached during the forward pass.',
     intuition: [
       'Series Composition = Multiply Local Derivatives: If z = f(u) and u = g(x), a tiny nudge Δx produces Δu ≈ (du/dx) Δx, which in turn produces Δz ≈ (dz/du) Δu ≈ (dz/du)(du/dx) Δx.',
-      'Parallel Fan-Out = Sum Across Branches: Whenever a variable x feeds into multiple downstream operations (for example, a shared CNN kernel weight touching 9 image patches, or a ResNet input x splitting into residual branch F(x) and identity shortcut +x), the total derivative dz/dx is the sum of the derivatives along every path from x to z!',
-      'Why Reverse-Mode Autodiff (Backpropagation) Is O(1) Passes Instead of O(P): If a neural network has P = 1,000,000 weights and 1 scalar loss L, forward-mode differentiation would require 1,000,000 passes (one per weight). Reverse-mode differentiation starts at the single output L (∂L/∂L = 1) and sweeps backward once, computing the gradient for all 1,000,000 weights in a single backward pass!'
+      'Parallel Fan-Out = Sum Across Branches (Gradient Accumulation): Whenever a variable x feeds into multiple downstream operations (for example, a shared CNN kernel weight touching 9 image patches, or a ResNet input x splitting into residual branch F(x) and identity shortcut +x), the total derivative dz/dx is the sum of the derivatives along every path from x to z.',
+      'Forward-Mode vs Reverse-Mode Complexity O(V + E): For a computational graph with V nodes and E edges (assuming constant-cost elementary operations), a single reverse-mode pass costs O(V + E) and computes gradients of 1 scalar output (the loss L) with respect to ALL P inputs/weights—ideal for deep learning where P ≫ 1! By contrast, forward-mode costs O(V + E) per input, so computing all P parameter gradients takes O(P(V + E)), whereas forward-mode wins when there is 1 input and many outputs.'
     ],
     mathFormulas: [
       {
@@ -5605,8 +5607,8 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     ],
     summary: [
       'The Chain Rule differentiates composite functions by multiplying local derivatives along each path: dz/dx = (dz/du)(du/dx).',
-      'When a variable fans out to multiple paths in the forward pass, its gradients sum in the backward pass.',
-      'Reverse-mode automatic differentiation computes gradients for all parameters in a single backward sweep from the scalar loss.',
+      'When a variable fans out to multiple paths in the forward pass, its gradients accumulate (sum) in the backward pass.',
+      'For a graph with V nodes and E edges, reverse-mode autodiff computes gradients of a scalar loss w.r.t. all P parameters in O(V + E) time (whereas forward-mode takes O(P(V + E))).',
       'Build your own Karpathy-style micrograd engine in the Track 0 Project: Autodiff Engine From Scratch!'
     ]
   },
@@ -5654,7 +5656,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     intuition: [
       'Why Take the Logarithm of Likelihood? For N independent training examples, the joint probability is a product of N numbers in (0, 1): ∏_{i=1}^N P_θ(y_i | x_i). Multiplying 10,000 probabilities like 0.5¹⁰⁰⁰⁰ immediately underflows floating-point numbers to 0.0! Taking the logarithm turns the product into a numerically stable sum: log ∏ P_i = ∑ log P_i.',
       'Bernoulli MLE = Binary Cross-Entropy: Taking -log(p^y (1 - p)^{1-y}) gives -[y log p + (1 - y) log(1 - p)]—the exact BCE loss!',
-      'Gaussian MLE = Mean Squared Error: Taking -log N(y; ŷ, σ²) gives ½ log(2πσ²) + (y - ŷ)² / (2σ²). Minimizing this over ŷ is identical to minimizing (y - ŷ)² (MSE)!'
+      'Fixed-Variance Gaussian MLE vs Predicted Variance: Taking -log N(y; ŷ, σ²) gives ½ log(2πσ²) + (y - ŷ)² / (2σ²). Minimizing this over the predicted mean ŷ is equivalent to minimizing MSE (y - ŷ)² ONLY when σ² is fixed! If σ² is also predicted (heteroscedastic regression), the ½ log(2πσ²) penalty prevents σ → ∞, so MSE and Gaussian NLL are not universally interchangeable.'
     ],
     mathFormulas: [
       {
@@ -5669,25 +5671,25 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     workedExample: {
-      scenario: 'Evaluate the Gaussian Negative Log-Likelihood (NLL) and its derivative ∂NLL/∂μ for an observation x = 3.0 under N(μ = 1.0, σ = 1.0).',
+      scenario: 'Compare MSE vs Gaussian NLL for an observation x = 3.0 and predicted mean μ = 1.0 under fixed σ = 1.0 vs predicted σ = 2.0.',
       steps: [
         {
-          label: 'Step 1: Compute squared z-score term (x - μ)² / (2σ²)',
-          math: '\\frac{(3.0 - 1.0)^2}{2(1.0)^2} = \\frac{4.0}{2.0} = 2.000',
-          note: 'Observation x = 3.0 is 2 standard deviations above μ = 1.0.'
+          label: 'Step 1: Compute MSE and Fixed-Variance (σ = 1.0) Gaussian NLL',
+          math: '\\text{MSE} = (3.0 - 1.0)^2 = 4.000, \\quad \\text{NLL}_{\\sigma=1} = 0.5\\ln(2\\pi\\cdot 1^2) + \\frac{4.0}{2(1^2)} \\approx 0.9189 + 2.000 = 2.9189',
+          note: 'With fixed σ = 1.0, minimizing NLL w.r.t. μ is equivalent to minimizing MSE.'
         },
         {
-          label: 'Step 2: Add normalization constant ½ ln(2πσ²)',
-          math: '\\text{NLL} = 0.5\\ln(2\\pi) + 2.000 \\approx 0.9189 + 2.000 = 2.9189\\text{ nats}',
-          note: 'Total negative log-likelihood.'
+          label: 'Step 2: Compare Predicted-Variance (σ = 2.0) Gaussian NLL',
+          math: '\\text{NLL}_{\\sigma=2} = 0.5\\ln(2\\pi\\cdot 4) + \\frac{4.0}{2(4)} \\approx 1.6121 + 0.5000 = 2.1121',
+          note: 'MSE is unchanged (4.000), while NLL drops from 2.9189 to 2.1121 because the ½ ln(2πσ²) term trades off against (x - μ)²/(2σ²)!'
         },
         {
-          label: 'Step 3: Compute Analytical Derivative ∂NLL/∂μ',
+          label: 'Step 3: Compute Analytical Derivative ∂NLL/∂μ at σ = 1.0',
           math: '\\frac{\\partial \\text{NLL}}{\\partial \\mu} = \\frac{\\mu - x}{\\sigma^2} = \\frac{1.0 - 3.0}{1.0} = -2.000',
-          note: 'Negative gradient tells gradient descent to increase μ toward x = 3.0!'
+          note: 'Negative gradient tells gradient descent to increase μ toward x = 3.0.'
         }
       ],
-      result: 'NLL = 2.9189 nats; gradient ∂NLL/∂μ = -2.000.',
+      result: 'MSE = 4.000; NLL(σ=1) = 2.9189 nats vs NLL(σ=2) = 2.1121 nats; ∂NLL/∂μ = -2.000 at σ=1.',
       params: {}
     },
     quiz: [
@@ -5728,7 +5730,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'Rotating, Stretching & Shearing a Sheet of Graph Paper Without Bending Its Grid Lines',
       narrative:
-        'Every linear layer y = Wx + b in a neural network does something deeply visual: it takes the coordinate grid of your input features and rotates, stretches, shears, or squashes it into a new space. The columns of a matrix A tell you literally where the unit basis vectors î and ĵ land after the transformation. Multiplying two matrices A·B simply applies transformation B first and then A—which is why order matters (rotating then stretching is NOT the same as stretching then rotating!). And if a transformation squashes 2D space onto a 1D line (det(A) = 0), information is lost forever and no inverse matrix A⁻¹ can undo it.'
+        'A pure linear transformation y = Wx takes the coordinate grid of your input features and rotates, stretches, reflects, shears, or squashes it while keeping the origin fixed at (0, 0). Adding a nonzero bias vector (y = Wx + b) shifts the origin, turning it into an affine transformation! The columns of a matrix A tell you literally where the unit basis vectors î and ĵ land after the linear transformation. Multiplying two matrices A·B simply applies transformation B first and then A—which is why order matters (AB ≠ BA). And if a square transformation squashes 2D space onto a 1D line (det(A) = 0), information is lost and no inverse matrix A⁻¹ can undo it.'
     },
     mapping: [
       {
@@ -5761,6 +5763,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Pure linear transformations keep the origin fixed at (0, 0) and keep all grid lines parallel and evenly spaced; real neural layers add a bias (+ b) for translation and a non-linear activation (ReLU/GELU) to bend the grid.',
     intuition: [
+      'Linear (y = Wx) vs Affine (y = Wx + b): A strictly linear transformation must satisfy T(0) = 0, T(u + v) = T(u) + T(v), and T(cu) = cT(u). Adding a nonzero bias b makes y = Wx + b an affine transformation because T(0) = b ≠ 0 (translation shifts the origin).',
       'Columns Are Where Basis Vectors Land: For any 2×2 matrix A = [[a, b], [c, d]], the first column [a, c]ᵀ is where î = [1, 0]ᵀ lands, and the second column [b, d]ᵀ is where ĵ = [0, 1]ᵀ lands.',
       'Why AB ≠ BA: Matrix multiplication is function composition (A(B(x))). Rotating by 90° and then stretching along X gives a different result than stretching along X and then rotating by 90°.',
       'Transpose Reverses Order: Just like putting on socks then shoes reverses to taking off shoes then socks, (AB)ᵀ = BᵀAᵀ and (AB)⁻¹ = B⁻¹A⁻¹.'
@@ -5866,13 +5869,14 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Open Tab 0.6 ("Norms & Eigen/PCA"). Move u_x and u_y to compare the diamond L1 ball vs circular L2 ball. Then drag the Covariance slider Cov(X, Y) from 0.0 to 0.95 on the right and watch PC1 (λ₁) grow to capture over 90% of the total variance!',
+      'Open Tab 0.6 ("Norms & Eigen/PCA"). Move u_x and u_y to compare the diamond L1 ball vs circular L2 ball. On the right, drag Cov(X, Y) and toggle Retained Components k = 1 vs k = 2 to watch the centered data cloud project onto PC1, reconstruct, and update Explained Variance %!',
     analogyBreaks:
       'PCA only finds linear orthogonal axes of maximum variance; curved manifolds (like a Swiss roll) require non-linear methods such as autoencoders or UMAP.',
     intuition: [
       'Why L1 Produces Sparsity: The L1 unit ball is a diamond with sharp corners sitting right on the coordinate axes, so loss contours hit those zero-coordinate corners first.',
       'Eigenvectors Do Not Rotate: Most vectors change direction when multiplied by A, but an eigenvector v stays on its exact same span line, scaled by λ.',
-      'PCA Variance Explained: For a covariance matrix Σ, the trace (sum of variances) equals the sum of eigenvalues Σ λᵢ, so λ₁ / (λ₁ + λ₂) is the exact fraction of variance captured by PC1.'
+      'PCA Requires Centering & Is Scale-Sensitive: Before computing the covariance matrix Σ = (1/(N-1)) X_cᵀ X_c, you must center the data (X_c = X - μ). Because variance depends on feature units, unscaled features with large numeric ranges dominate PC1—so standardize features when units differ.',
+      'Projection, Reconstruction & Dataset-Dependent Variance: Keeping the top k eigenvectors V_k gives compressed coordinates Z = X_c V_k and reconstruction X̂_c = Z V_kᵀ. The fraction of variance captured (Σ_{i=1}^k λ_i / Σ_j λ_j) depends entirely on the dataset—95% is never guaranteed for a fixed k.'
     ],
     mathFormulas: [
       {
@@ -5979,9 +5983,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Computing the full N×N Hessian for a billion-parameter LLM would take 10¹⁸ numbers—completely impossible in RAM—so modern optimizers use diagonal approximations (Adam) or Hessian-vector products instead.',
     intuition: [
-      'Jacobian Is Backprop’s Engine: Forward pass applies a non-linear layer F(x); locally around x, F behaves like multiplication by J, so the backward pass multiplies upstream gradients by Jᵀ.',
-      'Saddle Points Dominate High Dimensions: In 1M dimensions, having all 1M Hessian eigenvalues positive (a true local minimum) is rare—most flat points where ∇L = 0 are saddle points with mixed-sign eigenvalues.',
-      'Condition Number & Learning Rate: If λ_max ≫ λ_min (large κ), a step size safe for the steep direction barely moves along the flat canyon floor.'
+      'Gradient vs Jacobian vs Hessian: For a scalar function f: ℝⁿ → ℝ, the Gradient ∇f ∈ ℝⁿ is a vector of first derivatives. For a vector-valued map F: ℝⁿ → ℝᵐ, the Jacobian J_F ∈ ℝᵐˣⁿ stacks all m×n first partial derivatives (so backprop computes ∂L/∂x = Jᵀ ∂L/∂y). For a scalar function f: ℝⁿ → ℝ, the Hessian H_f ∈ ℝⁿˣⁿ collects all second partial derivatives.',
+      'Second-Order Classification at a Stationary Point (∇f = 0): (1) Positive definite H (all λᵢ > 0): strict local minimum. (2) Negative definite H (all λᵢ < 0): strict local maximum. (3) Indefinite H (mixed positive and negative λᵢ): saddle point. (4) Positive or negative semidefinite / singular H (det(H) = 0, some λᵢ = 0): the second-order test may be inconclusive and requires higher-order or additional analysis.',
+      'Saddle Points & Condition Number: In many high-dimensional non-convex problems, saddle points are common and can complicate optimization. Meanwhile, if λ_max ≫ λ_min (large κ), a step size safe for the steep direction barely moves along the flat canyon floor.'
     ],
     mathFormulas: [
       {
@@ -6068,7 +6072,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         scenePart: 'Updating prior belief P(H) after observing evidence E',
         modelPart: 'Bayes’ Theorem',
         symbol: 'P(H | E) = P(E | H) P(H) / P(E)',
-        role: 'Powers Naive Bayes, Bayesian inference, and base-rate reasoning'
+        role: 'Combines Prior P(H), Likelihood P(E|H), and total Evidence P(E) to yield Posterior P(H|E)'
       },
       {
         scenePart: 'Whether two features rise together or move opposite',
@@ -6088,9 +6092,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     analogyBreaks:
       'Pearson correlation ρ = 0 only proves there is no LINEAR relationship; two variables can still have a strong non-linear relationship (like y = x² centered at 0) while having ρ = 0.',
     intuition: [
-      'Base-Rate Neglect: Never ignore P(H)! Even a 95%-accurate test yields mostly false alarms when the disease is very rare.',
-      'Bernoulli vs Binomial: Bernoulli is a single coin flip (n = 1); Binomial is the sum of n independent Bernoulli flips.',
-      'Uniform vs Gaussian: Uniform U(a, b) gives every point in [a, b] equal density 1/(b - a) (great for random seeds & Xavier/He init bounds), while Gaussian concentrates density near μ.'
+      'Four Roles in Bayes’ Theorem: Prior P(H) is your belief before seeing data; Likelihood P(E | H) is how probable the evidence is if H is true; Evidence P(E) = P(E|H)P(H) + P(E|¬H)P(¬H) normalizes across all hypotheses; and Posterior P(H | E) is your updated belief. Never ignore P(H) (base-rate neglect)!',
+      'Covariance vs Pearson Correlation: Cov(X, Y) = E[(X - μ_X)(Y - μ_Y)] depends on feature units (multiplying X by 100 multiplies Cov by 100). Pearson correlation ρ = Cov(X, Y) / (σ_X σ_Y) ∈ [-1, 1] normalizes by both standard deviations, making it dimensionless and scale-invariant.',
+      'Bernoulli vs Binomial & Uniform vs Gaussian: Bernoulli is a single coin flip (n = 1); Binomial is the sum of n independent flips. Uniform U(a, b) gives flat density 1/(b - a), while Gaussian N(μ, σ²) concentrates density near μ.'
     ],
     mathFormulas: [
       {
@@ -6167,7 +6171,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
     scene: {
       title: 'Approximating a Winding Hill Road Using Hinged Wooden Ruler Segments (Shallow) vs Folding Paper (Deep)',
       narrative:
-        'Why can a neural network fit almost any continuous curve in the universe? Think of a single ReLU neuron v_i · max(0, w_i x + b_i) as a hinged wooden ruler: it stays flat at 0 until the hinge point x = -b_i/w_i, where it bends with slope v_i w_i! Snap N hinged rulers together in 1 wide layer and you can trace any curvy road to arbitrary precision (the Universal Approximation Theorem)! Even better: why go Deep instead of just 1 giant wide layer? Because stacking L layers folds space like folding a sheet of paper L times—creating (N + 1)^L linear regions exponentially instead of just 1 + LN!'
+        'Why can a neural network fit almost any continuous curve in the universe? Think of a single ReLU neuron v_i · max(0, w_i x + b_i) as a hinged wooden ruler: it stays flat at 0 until the hinge point x = -b_i/w_i, where it bends with slope v_i w_i! Snap N hinged rulers together in 1 wide layer and you can trace any curvy road to arbitrary precision (the Universal Approximation Theorem)! Even better: why go Deep instead of just 1 giant wide layer? Because stacking L layers composes functions like folding a sheet of paper L times—in 1D illustrative sawtooth constructions, depth can multiply linear regions exponentially (up to (N + 1)^L vs 1 + LN for 1D width N and depth L), though actual region counts depend on input dimension, architecture, and weights!'
     },
     mapping: [
       {
@@ -6185,18 +6189,18 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       {
         scenePart: 'Folding a paper sheet L times to multiply creases exponentially',
         modelPart: 'Compositional Depth Advantage',
-        symbol: 'R_deep = (N + 1)^L vs R_shallow = 1 + L N',
-        role: 'Depth creates exponentially more piecewise-linear regions per parameter!'
+        symbol: '1D max regions: (N + 1)^L vs 1 + L N',
+        role: 'Illustrative 1D bound showing depth can create exponentially more regions than shallow width'
       }
     ],
     playWithItPrompt:
-      'In Tab 2.7 ("ReLU Depth"), drag "Road Position / Input (x)" across the hinge points to see the piecewise-linear output f(x) and exact slope df/dx jump as hinges switch on! Then drag "Network Depth / Stacked Layers (L)" from 1 to 6 to compare 1-Layer Regions vs L-Layer Regions!',
+      'In Tab 3.7 ("ReLU Depth"), drag "Road Position / Input (x)" across the hinge points to see the piecewise-linear output f(x) and exact slope df/dx jump as hinges switch on! Then drag "Network Depth / Stacked Layers (L)" from 1 to 6 to compare the illustrative 1D shallow vs deep region bounds!',
     analogyBreaks:
-      'The mathematical Universal Approximation Theorem guarantees that a wide 1-layer network exists that fits your function, but it does NOT guarantee that SGD will easily find those weights or generalize well on finite data—which is why deep compositional hierarchies win in practice.',
+      'The Universal Approximation Theorem establishes approximation capacity under specific conditions (a continuous target on a compact domain, non-polynomial activation, and sufficiently wide finite hidden layer); it does NOT guarantee a fixed neuron count or that SGD will successfully find those weights or generalize well on finite data.',
     intuition: [
       'How ReLU Builds Arbitrary Curves Out of Straight Lines: A single ReLU unit max(0, w_i x + b_i) is 0 for x < -b_i/w_i and linear with slope w_i for x > -b_i/w_i. Summing N such units creates a continuous piecewise-linear spline with N knots where the slope changes by v_i w_i at each knot.',
-      'The Universal Approximation Theorem (Cybenko 1989, Hornik 1991, Leshno 1993): A feed-forward network with a single hidden layer containing a finite number of neurons and any non-polynomial activation function (like Sigmoid, Tanh, or ReLU) can approximate any continuous function f: [0, 1]^d → R to within any desired error ε > 0.',
-      'Why Depth Beats Width (Montúfar et al., 2014; Telgarsky, 2016): If 1 hidden layer can approximate anything, why do we build 50-layer ResNets and 96-layer Transformers? Because a 1-hidden-layer network may require an exponentially huge width 2^L to represent a function that an L-layer network represents with just O(L) neurons! Each deeper layer composes features of features (edges → parts → objects).'
+      'The Universal Approximation Theorem (Cybenko 1989, Hornik 1991, Leshno 1993): A feed-forward network with a single hidden layer containing a finite number of neurons and a non-polynomial activation function can approximate any continuous function f: [0, 1]^d → R to within any desired error ε > 0—an existence theorem for capacity, not a training guarantee.',
+      'Why Depth Beats Width (Montúfar et al., 2014; Telgarsky, 2016): The number of linear regions in a ReLU network depends on input dimension, depth, widths, architecture, and specific weight configurations. For 1D inputs (d = 1), a single hidden layer of L·N units has at most 1 + LN linear pieces, whereas an L-layer width-N network can construct up to (N + 1)^L regions (an illustrative upper bound/construction, not a universal exact count for arbitrary networks).'
     ],
     mathFormulas: [
       {
@@ -6205,9 +6209,9 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
         explanation: 'At any input x, the derivative df/dx is simply the sum of slopes v_i w_i of all currently active ReLU hinges.'
       },
       {
-        name: '1D Linear Regions: Shallow vs Deep (Montúfar Bound)',
-        latex: 'R_{\\text{shallow}}(L\\cdot N) = 1 + LN, \\qquad R_{\\text{deep}}(L, N) = (N + 1)^L',
-        explanation: 'With L = 4 layers of N = 8 units (32 units total), a shallow layer creates 33 regions while a 4-layer network can fold up to 9⁴ = 6,561 regions!'
+        name: '1D Linear Regions: Shallow vs Deep (Illustrative Bounds)',
+        latex: 'R_{\\text{shallow, max}}(L\\cdot N) = 1 + LN, \\qquad R_{\\text{deep, max}}(L, N) = (N + 1)^L \\quad (d_{\\text{in}} = 1)',
+        explanation: 'Illustrative 1D bounds (for specific sawtooth constructions, not universal exact counts for arbitrary weights/dimensions): with L = 4, N = 8, 1D max regions grow from 33 to 9⁴ = 6,561.'
       }
     ],
     workedExample: {
@@ -7035,12 +7039,12 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Use the Logistic Regression & Decision Boundary workbench in Tab 1.2 alongside this lesson to see how linear decision margins and classification thresholds separate classes.',
+      'Open Tab 2.6 ("k-NN, SVM & NB"). Drag "Query Point (x)", "Neighbors (k)", and "SVM Margin Width (2/||w||)" to compare how k-NN majority voting, linear SVM margin boundaries (wᵀx + b = ±1), and Gaussian Naive Bayes posterior P(B|x) classify the same point!',
     analogyBreaks:
       'k-NN’s neighborhood intuition collapses in high dimensions (Curse of Dimensionality): in 1,000D, almost every point is nearly equidistant from every other point, so distances lose contrast.',
     intuition: [
       'Why k-NN Needs Feature Scaling: If feature 1 is Age (20–60) and feature 2 is Annual Income (₹300,000–₹3,000,000), Euclidean distance completely ignores Age unless you standardize both features first.',
-      'Soft-Margin SVM & C: Real data isn’t linearly separable. Regularization parameter C controls the tradeoff: large C penalizes margin violations heavily (narrow margin, low bias, risk of overfitting); small C allows slack ξᵢ for a wider, smoother margin.',
+      'Canonical SVM Margin = 2 / ||w||₂ & Kernel Feature Space: By scaling (w, b) so the closest margin-boundary hyperplanes satisfy wᵀx + b = +1 and wᵀx + b = -1, their perpendicular separation is exactly 2 / ||w||₂. Regularization C trades margin width for slack ξᵢ; for kernel SVMs (like RBF), that maximum-margin hyperplane lives in the induced RKHS feature space rather than raw input space.',
       'Why Naive Bayes Works Even When Features Are Correlated: Even though words in an email aren’t truly independent, classification only needs the argmax class—not calibrated exact probabilities.'
     ],
     mathFormulas: [
@@ -7147,7 +7151,7 @@ export const LESSON_DETAILS: Record<string, DetailedLessonContent> = {
       }
     ],
     playWithItPrompt:
-      'Compare parallel tree variance reduction in Tab 1.4 ("Trees & Forests") and see how individual shallow splits combine into strong ensembles.',
+      'Compare parallel tree variance reduction in Tab 2.4 ("Trees & Forests") and see how individual shallow splits combine into strong ensembles.',
     analogyBreaks:
       'Unlike Random Forests where adding more trees rarely overfits, Gradient Boosting CAN overfit if you add too many trees (M too large) or make trees too deep—always use validation early stopping.',
     intuition: [

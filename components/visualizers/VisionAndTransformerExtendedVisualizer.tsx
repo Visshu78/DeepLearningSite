@@ -11,6 +11,7 @@ import {
   computeBertVsGptAttentionRow,
   computeVitPatchGeometry,
 } from '@/lib/math/advancedVisionAndTransformers';
+import { computeTokenSamplingAndPerplexity } from '@/lib/math/modernLlm';
 import { Layers } from 'lucide-react';
 
 export type ExtendedArchitectureTab =
@@ -21,7 +22,8 @@ export type ExtendedArchitectureTab =
   | 'unet'
   | 'pos-encoding'
   | 'bert-gpt'
-  | 'vit';
+  | 'vit'
+  | 'decoding-eval';
 
 interface VisionAndTransformerExtendedVisualizerProps {
   defaultTab?: ExtendedArchitectureTab;
@@ -113,8 +115,17 @@ export function VisionAndTransformerExtendedVisualizer({
     [patchSizeP]
   );
 
+  // 7.6 Text Generation Decoding & Evaluation State
+  const [decodeTemp, setDecodeTemp] = useState<number>(0.8);
+  const [decodeTopP, setDecodeTopP] = useState<number>(0.9);
+  const [decodeTopK, setDecodeTopK] = useState<number>(3);
+  const decodeRes = useMemo(
+    () => computeTokenSamplingAndPerplexity([2.8, 1.7, 0.9, -0.3], decodeTemp, decodeTopP, 0),
+    [decodeTemp, decodeTopP]
+  );
+
   const tabs: { id: ExtendedArchitectureTab; label: string }[] = [
-    { id: 'universal', label: '2.7 ReLU Depth' },
+    { id: 'universal', label: '3.7 ReLU Depth' },
     { id: 'vgg', label: '4.5 LeNet to VGG' },
     { id: 'transfer', label: '4.8 Transfer Learning' },
     { id: 'yolo', label: '4.9 YOLO & IoU' },
@@ -122,6 +133,7 @@ export function VisionAndTransformerExtendedVisualizer({
     { id: 'pos-encoding', label: '6.3 Pos Encoding' },
     { id: 'bert-gpt', label: '6.4 BERT vs GPT' },
     { id: 'vit', label: '6.5 Vision Transformer' },
+    { id: 'decoding-eval', label: '7.6 Decoding & Eval' },
   ];
 
   return (
@@ -678,6 +690,117 @@ export function VisionAndTransformerExtendedVisualizer({
                     value={patchSizeP}
                     onChange={e => setPatchSizeP(parseInt(e.target.value, 10))}
                     className="w-full accent-[#7A1C30]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 7.6: TEXT GENERATION DECODING & EVALUATION */}
+        {activeTab === 'decoding-eval' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-7 space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono-num">
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">Top-1 Greedy Prob</div>
+                  <div className="text-base font-bold text-[#7A1C30]">
+                    {(decodeRes.probs[0] * 100).toFixed(1)}%
+                  </div>
+                </div>
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">Nucleus Kept (p)</div>
+                  <div className="text-base font-bold text-[#166534]">
+                    {decodeRes.topPFilteredProbs.filter(p => p > 0).length} / 4
+                  </div>
+                </div>
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">Top-k Kept</div>
+                  <div className="text-base font-bold text-[#C28E38]">
+                    {decodeTopK} / 4
+                  </div>
+                </div>
+                <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded">
+                  <div className="text-[#786970]">Perplexity exp(L)</div>
+                  <div className="text-base font-bold text-[#1D1819]">
+                    {decodeRes.perplexity.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+              <div className="p-3 bg-[#FAF8F5] border border-[#E8E2D9] rounded-lg space-y-2 text-xs font-mono-num">
+                {['"blue"', '"clear"', '"bright"', '"rainy"'].map((tok, i) => {
+                  const pct = (decodeRes.probs[i] * 100).toFixed(1);
+                  const inTopK = i < decodeTopK;
+                  return (
+                    <div key={tok} className="flex items-center gap-2">
+                      <span className="w-16 font-bold text-[#1D1819]">{tok}</span>
+                      <div className="flex-1 h-3 bg-white border border-[#E8E2D9] rounded overflow-hidden">
+                        <div
+                          className={`h-full ${inTopK ? 'bg-[#7A1C30]' : 'bg-[#D6CEC2]'}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="w-12 text-right">{pct}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 space-y-4">
+              <div className="bg-[#FAF5EE] border border-[#EAE2D5] rounded-lg p-4 space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="dec-temp-slider" className="font-bold text-[#1D1819]">
+                      Temperature (T)
+                    </label>
+                    <span className="font-mono-num font-bold text-[#7A1C30]">{decodeTemp.toFixed(2)}</span>
+                  </div>
+                  <input
+                    id="dec-temp-slider"
+                    type="range"
+                    min="0.2"
+                    max="2.0"
+                    step="0.1"
+                    value={decodeTemp}
+                    onChange={e => setDecodeTemp(parseFloat(e.target.value))}
+                    className="w-full accent-[#7A1C30]"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="dec-topp-slider" className="font-bold text-[#1D1819]">
+                      Top-p Nucleus Threshold
+                    </label>
+                    <span className="font-mono-num font-bold text-[#166534]">{decodeTopP.toFixed(2)}</span>
+                  </div>
+                  <input
+                    id="dec-topp-slider"
+                    type="range"
+                    min="0.2"
+                    max="1.0"
+                    step="0.05"
+                    value={decodeTopP}
+                    onChange={e => setDecodeTopP(parseFloat(e.target.value))}
+                    className="w-full accent-[#166534]"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <label htmlFor="dec-topk-slider" className="font-bold text-[#1D1819]">
+                      Top-k Cutoff
+                    </label>
+                    <span className="font-mono-num font-bold text-[#C28E38]">{decodeTopK}</span>
+                  </div>
+                  <input
+                    id="dec-topk-slider"
+                    type="range"
+                    min="1"
+                    max="4"
+                    step="1"
+                    value={decodeTopK}
+                    onChange={e => setDecodeTopK(parseInt(e.target.value, 10))}
+                    className="w-full accent-[#C28E38]"
                   />
                 </div>
               </div>
